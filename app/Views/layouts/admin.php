@@ -36,6 +36,7 @@ $scripts = array_merge(['admin.js'], $scripts ?? []);
 </head>
 <body class="admin">
 <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+<?php if (static_demo()): ?><div class="demobar" role="note"><?= icon('info', 'ic-sm') ?><span><strong>Prévia do painel da equipe.</strong> Dados de exemplo; nesta demonstração os botões não salvam nada.</span></div><?php endif; ?>
 <div class="adm">
 <aside class="adm-side" id="adm-side" aria-label="Menu do painel">
 <a class="logo inv" href="<?= e(url('/admin')) ?>"><?= partial('logo', ['sub' => 'Painel da equipe']) ?></a>

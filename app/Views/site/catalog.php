@@ -21,7 +21,7 @@ use App\Services\Catalog;
 <aside class="filters" id="filtros" aria-label="Filtros" data-filters>
 <div class="sheet-head"><h2>Filtrar cursos</h2><button class="icon-btn" type="button" aria-label="Fechar filtros" data-filters-close><?= icon('close') ?></button></div>
 <div class="f-head"><h2><?= icon('filter') ?>Filtros</h2><a class="f-clear" href="<?= e(url('/cursos', array_filter(['q' => $f['q']]))) ?>" data-clear-filters<?= $result['active_filters'] === 0 ? ' aria-disabled="true"' : '' ?>>Limpar filtros</a></div>
-<form class="filters-body" id="filtros-form" action="<?= e(url('/cursos')) ?>" method="get" data-filters-form>
+<form class="filters-body" id="filtros-form" action="<?= e(url('/cursos')) ?>" method="get" data-filters-form<?php if (static_demo()): ?> data-ranges="<?= json_attr(['carga' => array_map(static fn ($r) => [$r['min'], $r['max']], Catalog::HOURS), 'preco' => array_map(static fn ($r) => [$r['min'], $r['max']], Catalog::PRICES)]) ?>"<?php endif; ?>>
 <div data-filters-body>
 <?= View::file('site/partials/catalog-filters', ['f' => $f, 'result' => $result]) ?>
 </div>

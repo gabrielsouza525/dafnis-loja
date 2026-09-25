@@ -16,7 +16,10 @@ $cartCount = Cart::count();
 $nrIndex = Course::nrIndex();
 $nav = $nav ?? null;
 $notice = Settings::get('notice.text');
-if ($notice === null && !Payments::isOnline()) {
+if (static_demo()) {
+    $notice = '<strong>Prévia da loja para aprovação.</strong> Cursos e preços reais do catálogo; contas e pedidos são de exemplo e nenhuma compra é realizada.';
+    $noticeHtml = true;
+} elseif ($notice === null && !Payments::isOnline()) {
     $notice = '<strong>Pagamento online em ativação.</strong> Seu pedido é registrado e a nossa equipe envia as instruções de pagamento.';
     $noticeHtml = true;
 }

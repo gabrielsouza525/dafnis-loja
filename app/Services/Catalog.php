@@ -18,6 +18,12 @@ final class Catalog
 {
     public const PAGE_SIZE = 12;
 
+    /** Na prévia estática todos os cursos vão na mesma página (o filtro roda no navegador). */
+    public static function pageSize(): int
+    {
+        return static_demo() ? 1000 : self::PAGE_SIZE;
+    }
+
     public const HOURS = [
         'ate-4h' => ['label' => 'Até 4 h', 'min' => 0, 'max' => 4],
         '5-a-8h' => ['label' => '5 a 8 h', 'min' => 5, 'max' => 8],
@@ -105,11 +111,12 @@ final class Catalog
         $items = self::sort($items, $f['ordem'], $scores, $f['q'] !== '');
 
         $total = count($items);
-        $pages = max(1, (int) ceil($total / self::PAGE_SIZE));
+        $size = self::pageSize();
+        $pages = max(1, (int) ceil($total / $size));
         $page = min($f['pagina'], $pages);
 
         return [
-            'items' => array_slice($items, ($page - 1) * self::PAGE_SIZE, self::PAGE_SIZE),
+            'items' => array_slice($items, ($page - 1) * $size, $size),
             'total' => $total,
             'page' => $page,
             'pages' => $pages,

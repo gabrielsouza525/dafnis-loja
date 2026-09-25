@@ -130,7 +130,7 @@ final class PageController extends Controller
             '',
             'Sitemap: ' . absolute_url('/sitemap.xml'),
         ];
-        if (env('APP_ENV', 'local') !== 'production') {
+        if (env('APP_ENV', 'local') !== 'production' || static_demo()) {
             $lines = ['User-agent: *', 'Disallow: /'];
         }
         return Response::text(implode("\n", $lines) . "\n");

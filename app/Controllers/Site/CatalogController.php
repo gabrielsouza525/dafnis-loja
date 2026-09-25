@@ -93,7 +93,7 @@ final class CatalogController extends Controller
                     'items' => $html,
                     'has_more' => $result['has_more'],
                     'next' => $result['page'] + 1,
-                    'shown' => min($result['total'], $result['page'] * Catalog::PAGE_SIZE),
+                    'shown' => min($result['total'], $result['page'] * Catalog::pageSize()),
                     'total' => $result['total'],
                 ]);
             }
@@ -117,7 +117,7 @@ final class CatalogController extends Controller
                 Seo::breadcrumbs(array_map(static fn ($c) => [$c[0], $c[1] ?? $context['canonical']], $context['crumbs'])),
                 Seo::itemList($result['items']),
             ],
-            'scripts' => ['catalog.js'],
+            'scripts' => [static_demo() ? 'catalog-static.js' : 'catalog.js'],
         ]));
     }
 

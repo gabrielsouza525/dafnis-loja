@@ -99,6 +99,16 @@ function auth_user(): ?array
     return Auth::user();
 }
 
+/**
+ * Prévia estática (GitHub Pages): STATIC_DEMO=true no ambiente do servidor que gera
+ * as páginas. Filtros rodam no navegador e ações que precisam do servidor viram
+ * navegação entre telas de exemplo. Na loja publicada fica sempre desligado.
+ */
+function static_demo(): bool
+{
+    return (bool) env('STATIC_DEMO', false);
+}
+
 function setting(string $key, mixed $default = null): mixed
 {
     return Settings::get($key, $default);

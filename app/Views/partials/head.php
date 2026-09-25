@@ -14,7 +14,7 @@ $ogImage = is_file(BASE_PATH . '/public/assets/img/og.png') ? absolute_url('/ass
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title><?= e($pageTitle) ?></title>
 <meta name="description" content="<?= e($metaDescription) ?>">
-<?php if (!empty($noindex)): ?>
+<?php if (!empty($noindex) || static_demo()): ?>
 <meta name="robots" content="noindex, nofollow">
 <?php endif; ?>
 <?php if ($canonicalUrl): ?>
@@ -50,6 +50,10 @@ $ogImage = is_file(BASE_PATH . '/public/assets/img/og.png') ? absolute_url('/ass
 <?php endforeach; ?>
 <script src="<?= e(asset('js/boot.js')) ?>"></script>
 <script src="<?= e(asset('js/app.js')) ?>" defer></script>
+<?php if (static_demo()): ?>
+<script src="<?= e(url('/assets/js/demo-map.js')) ?>" defer></script>
+<script src="<?= e(asset('js/static-demo.js')) ?>" defer></script>
+<?php endif; ?>
 <?php foreach ($scripts ?? [] as $script): ?>
 <script src="<?= e(asset('js/' . $script)) ?>" defer></script>
 <?php endforeach; ?>

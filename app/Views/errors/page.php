@@ -35,6 +35,7 @@ $heading = $titles[$status] ?? 'Algo deu errado';
 <p class="kicker" style="margin-top:32px">Erro <?= (int) $status ?></p>
 <h1 style="font-size:40px;letter-spacing:-.03em;margin-top:10px"><?= e($heading) ?></h1>
 <p style="color:var(--muted);font-size:17px;margin-top:12px;max-width:520px"><?= e($message) ?></p>
+<?php if (static_demo() && $status === 404): ?><p style="color:var(--muted);font-size:15px;margin-top:8px;max-width:520px">Esta é uma prévia estática da loja: algumas telas (como filtros do painel e páginas secundárias) só existem na versão publicada.</p><?php endif; ?>
 <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:28px">
 <a class="btn btn-primary" href="<?= e(url('/')) ?>">Ir para o início</a>
 <?php if ($status !== 503): ?>

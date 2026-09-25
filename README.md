@@ -115,6 +115,22 @@ novos pedidos, pagamentos e contatos no `MAIL_ADMIN_ADDRESS` (ou no e-mail de co
 4. Em *Painel › Configurações*, preencha contatos, CNPJ, redes sociais, link da plataforma de ensino e
    os indicadores reais da empresa (campos vazios não aparecem na loja).
 
+## Prévia no GitHub Pages
+
+O GitHub Pages não roda PHP, então a prévia para o cliente é uma **cópia estática** gerada da loja
+real: todas as páginas públicas (com busca e filtros rodando no navegador) e "fotografias" do carrinho,
+checkout, confirmação, Minha conta e painel, feitas durante uma compra de exemplo. Os botões levam de
+uma tela à outra; nada é gravado. Fica no branch `gh-pages`, sem indexação no Google.
+
+```bash
+php bin/console db:fresh --demo
+STATIC_DEMO=true APP_URL=https://gabrielsouza525.github.io/dafnis-loja php -S localhost:8001 -t public public/index.php
+STATIC_DEMO=true APP_URL=https://gabrielsouza525.github.io/dafnis-loja php bin/static-export.php http://localhost:8001 ../dafnis-pages
+```
+
+Depois, publique o conteúdo de `../dafnis-pages` no branch `gh-pages`. Na loja publicada o modo
+prévia fica desligado (sem `STATIC_DEMO` no ambiente).
+
 ## Catálogo
 
 Os 119 cursos vêm da planilha de valores sugeridos (EAD 2025), com preço = "Valor do mercado".

@@ -7,8 +7,18 @@
  */
 $c = $course;
 $heading = $heading ?? 'h3';
+$demoAttrs = '';
+if (static_demo()) {
+    $haystack = normalize_text(implode(' ', [
+        $c['nr_number'] ? 'nr ' . $c['nr_number'] . ' nr' . $c['nr_number'] : '', $c['code_label'], $c['title'], $c['short_title'],
+        $c['keywords'], $c['category_name'], $c['modality_label'], $c['type_label'], $c['audience'], $c['summary'],
+    ]));
+    $demoAttrs = ' data-nr="' . e((string) $c['nr_number']) . '" data-cat="' . e($c['category_slug']) . '" data-mod="' . e($c['modality'])
+        . '" data-hours="' . (int) $c['hours'] . '" data-price="' . e($c['has_price'] ? number_format((float) $c['final_price'], 2, '.', '') : '')
+        . '" data-type="' . e($c['training_type']) . '" data-title="' . e(normalize_text($c['title'])) . '" data-search="' . e($haystack) . '"';
+}
 ?>
-<article class="card">
+<article class="card"<?= $demoAttrs ?>>
 <?= partial('cover', ['course' => $c, 'tag' => 'a', 'badge' => true]) ?>
 <div class="card-body">
 <div class="card-top"><span class="nr-tag"><?= e($c['code_label']) ?></span><span><?= e($c['category_name']) ?></span></div>

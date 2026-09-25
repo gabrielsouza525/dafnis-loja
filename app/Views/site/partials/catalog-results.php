@@ -2,7 +2,7 @@
 /** @var array $f @var array $result */
 use App\Services\Catalog;
 
-$shown = min($result['total'], $result['page'] * Catalog::PAGE_SIZE);
+$shown = min($result['total'], $result['page'] * Catalog::pageSize());
 ?>
 <div class="results-bar">
 <p class="results-count" aria-live="polite"><strong><?= (int) $result['total'] ?></strong> <?= $result['total'] === 1 ? 'curso encontrado' : 'cursos encontrados' ?></p>
