@@ -44,8 +44,9 @@ final class Router
             $groupMiddleware = array_merge($groupMiddleware, $group['middleware']);
         }
         $full = '/' . trim($prefix . $path, '/');
+        // Aceita quantificadores dentro do padrão do parâmetro: {nr:\d{1,2}}, {number:DF\d{6}}.
         $regex = preg_replace_callback(
-            '#\{(\w+)(?::([^}]+))?\}#',
+            '#\{(\w+)(?::((?:[^{}]|\{[^{}]*\})+))?\}#',
             static fn ($m) => '(?P<' . $m[1] . '>' . ($m[2] ?? '[^/]+') . ')',
             $full
         );
