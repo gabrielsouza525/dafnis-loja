@@ -71,7 +71,11 @@ $save = static function (string $path, string $body, bool $html = true) use ($ou
     if (!is_dir(dirname($target))) {
         mkdir(dirname($target), 0775, true);
     }
-    file_put_contents($target, $html ? $rewrite($body) : $body);
+    if ($html) {
+        // Avisos da sessão de exportação ("adicionado ao carrinho", "pagamento confirmado") não fazem sentido na foto.
+        $body = $rewrite((string) preg_replace('#<script type="application/json" id="flash-data">.*?</script>#s', '', $body));
+    }
+    file_put_contents($target, $body);
     $pages++;
 };
 
