@@ -26,6 +26,9 @@ final class Env
                 $quote = $value[0];
                 $end = strpos($value, $quote, 1);
                 $value = $end === false ? substr($value, 1) : substr($value, 1, $end - 1);
+            } elseif ($value !== '' && $value[0] === '#') {
+                // "CHAVE=   # comentário": valor vazio, não o comentário.
+                $value = '';
             } else {
                 $value = trim((string) preg_replace('/\s+#.*$/', '', $value));
             }
