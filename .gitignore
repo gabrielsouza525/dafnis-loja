@@ -1,0 +1,17 @@
+.env
+/storage/logs/*
+/storage/mail/*
+/storage/sessions/*
+/storage/cache/*
+/storage/uploads/*
+/public/uploads/*
+!/storage/**/.gitkeep
+!/public/uploads/.htaccess
+!/public/uploads/.gitkeep
+.DS_Store
+Thumbs.db
+/.idea
+/.vscode
+
+/.claude/
+/storage/installed.lock

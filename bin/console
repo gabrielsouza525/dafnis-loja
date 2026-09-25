@@ -1,0 +1,129 @@
+#!/usr/bin/env php
+<?php
+declare(strict_types=1);
+
+/**
+ * Dafnis Treinamentos — comandos de manutenção.
+ *
+ *   php bin/console db:create        cria o banco definido no .env (se não existir)
+ *   php bin/console migrate          aplica as migrations pendentes
+ *   php bin/console seed             categorias, catálogo da planilha e configurações (seguro em produção)
+ *   php bin/console seed:demo        usuários e pedidos fictícios para desenvolvimento (bloqueado em produção)
+ *   php bin/console admin:create     cria um administrador (--name= --email= --password=)
+ *   php bin/console db:fresh         APAGA o banco e recria tudo (bloqueado em produção; --demo inclui dados fictícios)
+ */
+
+if (PHP_SAPI !== 'cli') {
+    exit("Somente linha de comando.\n");
+}
+
+require dirname(__DIR__) . '/app/bootstrap.php';
+require BASE_PATH . '/database/seeders/BaseSeeder.php';
+
+use App\Core\Database;
+use App\Services\Migrator;
+use Database\Seeders\BaseSeeder;
+
+restore_exception_handler();
+
+$out = static fn (string $m) => fwrite(STDOUT, $m . PHP_EOL);
+$fail = static function (string $m): never {
+    fwrite(STDERR, "Erro: $m" . PHP_EOL);
+    exit(1);
+};
+
+$command = $argv[1] ?? 'help';
+$options = [];
+foreach (array_slice($argv, 2) as $arg) {
+    if (preg_match('/^--([a-z-]+)=(.*)$/', $arg, $m)) {
+        $options[$m[1]] = $m[2];
+    }
+}
+$isProduction = env('APP_ENV', 'local') === 'production';
+
+$createDatabase = static function () use ($out): void {
+    $name = (string) env('DB_DATABASE', 'dafnis');
+    if (!preg_match('/^[A-Za-z0-9_]+$/', $name)) {
+        throw new RuntimeException('Nome de banco inválido no .env');
+    }
+    $pdo = new PDO(
+        sprintf('mysql:host=%s;port=%s;charset=utf8mb4', env('DB_HOST', '127.0.0.1'), env('DB_PORT', '3306')),
+        (string) env('DB_USERNAME', 'root'),
+        (string) env('DB_PASSWORD', ''),
+        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+    );
+    $pdo->exec("CREATE DATABASE IF NOT EXISTS `$name` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+    $out("Banco `$name` pronto.");
+};
+
+try {
+    switch ($command) {
+        case 'db:create':
+            $createDatabase();
+            break;
+
+        case 'migrate':
+            $done = Migrator::run($out);
+            $out($done ? count($done) . ' migration(s) aplicada(s).' : 'Nada pendente.');
+            break;
+
+        case 'seed':
+            BaseSeeder::run($out);
+            break;
+
+        case 'seed:demo':
+            if ($isProduction) {
+                $fail('seed:demo é bloqueado com APP_ENV=production.');
+            }
+            require BASE_PATH . '/database/seeders/DemoSeeder.php';
+            \Database\Seeders\DemoSeeder::run($out);
+            break;
+
+        case 'admin:create':
+            $name = $options['name'] ?? null;
+            $email = $options['email'] ?? null;
+            $password = $options['password'] ?? null;
+            if (!$name || !$email || !$password) {
+                $fail('Use: php bin/console admin:create --name="Nome" --email=email@dominio --password=SenhaForte123');
+            }
+            $data = App\Core\Validator::validate(
+                ['name' => $name, 'email' => $email, 'password' => $password],
+                ['name' => 'required|max:120', 'email' => 'required|email|unique:users,email', 'password' => 'required|password']
+            );
+            Database::insert('users', [
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'role' => 'admin',
+                'password_hash' => password_hash($data['password'], PASSWORD_DEFAULT),
+                'password_changed_at' => date('Y-m-d H:i:s'),
+            ]);
+            $out("Administrador {$data['email']} criado.");
+            break;
+
+        case 'db:fresh':
+            if ($isProduction) {
+                $fail('db:fresh é bloqueado com APP_ENV=production.');
+            }
+            $name = (string) env('DB_DATABASE', 'dafnis');
+            $createDatabase();
+            $pdo = Database::pdo();
+            $pdo->exec("DROP DATABASE IF EXISTS `$name`");
+            $out("Banco `$name` removido.");
+            $createDatabase();
+            $pdo->exec("USE `$name`");
+            Migrator::run($out);
+            BaseSeeder::run($out);
+            if (in_array('--demo', $argv, true)) {
+                require BASE_PATH . '/database/seeders/DemoSeeder.php';
+                \Database\Seeders\DemoSeeder::run($out);
+            }
+            break;
+
+        default:
+            $out(file_get_contents(__FILE__, false, null, 0, 900) ?: '');
+    }
+} catch (App\Core\ValidationException $e) {
+    $fail(implode(' ', $e->errors));
+} catch (Throwable $e) {
+    $fail($e->getMessage());
+}

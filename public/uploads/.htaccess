@@ -1,0 +1,8 @@
+# Uploads nunca executam código: só imagens são servidas.
+<IfModule mod_php.c>
+  php_flag engine off
+</IfModule>
+<FilesMatch "(?i)\.(php|phtml|phar|pl|py|cgi|sh|html?|svg|js)$">
+  Require all denied
+</FilesMatch>
+Options -Indexes -ExecCGI

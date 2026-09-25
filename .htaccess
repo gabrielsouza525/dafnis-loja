@@ -1,0 +1,19 @@
+# Usado só quando a hospedagem não permite apontar o domínio para a pasta public/
+# (ex.: hospedagens gratuitas em que tudo fica em htdocs). O ideal é apontar para public/.
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Nada fora de public/ pode ser acessado pela web.
+  RewriteRule ^(\.env|\.git|\.gitignore|app|bin|config|database|docs|routes|storage|tests)(/|$) - [F,L]
+  RewriteRule ^(README\.md|.*\.sql|.*\.lock)$ - [F,L]
+
+  # Todo o resto é servido a partir de public/.
+  RewriteCond %{REQUEST_URI} !/public/
+  RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+<FilesMatch "^\.">
+  Require all denied
+</FilesMatch>
