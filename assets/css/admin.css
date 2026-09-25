@@ -1,0 +1,83 @@
+/* Painel da equipe — mesma identidade da loja (tokens em app.css) */
+body.admin{background:var(--gray)}
+.adm{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh}
+.adm-side{background:var(--navy-deep);color:#AFC0D8;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;padding:20px 14px;overflow-y:auto}
+.adm-side .logo{padding:4px 8px 20px;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:12px}
+.adm-nav{display:flex;flex-direction:column;gap:2px}
+.adm-nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:#C9D4E5;text-decoration:none;font-size:14.5px;font-weight:500;transition:background .15s,color .15s}
+.adm-nav a:hover{background:rgba(255,255,255,.07);color:#fff}
+.adm-nav a.on{background:rgba(255,255,255,.12);color:#fff;font-weight:600}
+.adm-nav .count{margin-left:auto;font-size:11.5px;font-family:var(--mono);font-weight:600;background:var(--orange);color:var(--orange-ink);border-radius:999px;min-width:20px;height:20px;display:grid;place-items:center;padding:0 6px}
+.adm-nav .sep{height:1px;background:rgba(255,255,255,.1);margin:10px 4px}
+.adm-side-foot{margin-top:auto;padding-top:16px;border-top:1px solid rgba(255,255,255,.1);font-size:13px}
+.adm-side-foot strong{display:block;color:#fff;font-size:14px}
+.adm-side-foot form{margin-top:10px}
+.adm-side-foot button{background:none;border:1px solid rgba(255,255,255,.2);color:#C9D4E5;border-radius:8px;height:34px;padding:0 12px;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.adm-side-foot button:hover{border-color:#fff;color:#fff}
+.adm-main{min-width:0;display:flex;flex-direction:column}
+.adm-top{height:64px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:0 28px;position:sticky;top:0;z-index:30}
+.adm-top .icon-btn{display:none}
+.adm-top-title{font-family:var(--display);font-weight:700;font-size:17px;color:var(--ink)}
+.adm-top-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.adm-content{padding:28px;max-width:1280px;width:100%}
+.adm-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:22px;flex-wrap:wrap}
+.adm-head h1{font-size:28px;letter-spacing:-.02em}
+.adm-head p{color:var(--muted);margin-top:4px}
+.adm-actions{display:flex;gap:8px;flex-wrap:wrap}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.toolbar .input,.toolbar .form-select{height:40px;width:auto;min-width:180px;font-size:14px}
+.toolbar .search{flex:1;min-width:220px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips a{height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:#fff;display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:500;color:var(--text);text-decoration:none}
+.chips a.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.chips a span{font-family:var(--mono);font-size:11.5px;opacity:.8}
+.table td .sub{display:block;font-size:12.5px;color:var(--muted);font-weight:400}
+.table tr.is-off td{color:var(--muted)}
+.table .actions{display:flex;gap:6px;justify-content:flex-end;flex-wrap:nowrap}
+.table .actions form{display:inline}
+.pager-admin{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px;border-top:1px solid var(--line);font-size:13.5px;color:var(--muted);flex-wrap:wrap}
+.pager-admin nav{display:flex;gap:4px}
+.pager-admin a,.pager-admin span.cur{min-width:34px;height:34px;padding:0 10px;border-radius:8px;border:1px solid var(--line);display:grid;place-items:center;font-weight:600;color:var(--navy);background:#fff;text-decoration:none}
+.pager-admin span.cur{background:var(--navy);border-color:var(--navy);color:#fff}
+.grid-2{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:22px;align-items:start}
+.grid-2 > aside{display:flex;flex-direction:column;gap:22px}
+.grid-2 > aside .panel + .panel{margin-top:0}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.form-grid .full{grid-column:1 / -1}
+.form-grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.switch{display:flex;gap:10px;align-items:flex-start;font-size:14.5px;color:var(--text);cursor:pointer;padding:6px 0}
+.switch input{width:18px;height:18px;margin:2px 0 0;accent-color:var(--navy);flex-shrink:0}
+.switch small{display:block;color:var(--muted);font-size:12.5px}
+.repeater-row{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--gray);display:grid;grid-template-columns:minmax(0,1fr) 120px auto;gap:10px;align-items:end}
+.repeater-row + .repeater-row{margin-top:10px}
+.repeater-row .full{grid-column:1 / -1}
+.repeater-row.faq{grid-template-columns:minmax(0,1fr) auto}
+.kpis-admin{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:22px}
+.kpis-admin .kpi a{font-size:13px;font-weight:600;margin-top:auto}
+.timeline{display:flex;flex-direction:column;gap:12px;font-size:13.5px}
+.timeline li{display:flex;gap:10px}
+.timeline li::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--blue);margin-top:7px;flex-shrink:0}
+.timeline small{display:block;color:var(--muted)}
+.img-preview{width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:12px;border:1px solid var(--line)}
+.inline-form{display:flex;gap:8px;align-items:end;flex-wrap:wrap}
+.inline-form .field{flex:1;min-width:140px}
+.code-box{font-family:var(--mono);font-size:12px;background:var(--gray);border:1px solid var(--line);border-radius:8px;padding:10px;white-space:pre-wrap;word-break:break-all;max-height:220px;overflow:auto}
+@media (max-width: 1180px){
+  .grid-2{grid-template-columns:1fr}
+  .kpis-admin{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width: 940px){
+  .adm{grid-template-columns:1fr}
+  .adm-side{position:fixed;left:0;top:0;bottom:0;width:min(280px,86%);z-index:80;transform:translateX(-100%);transition:transform .25s ease;height:auto}
+  .adm-side.open{transform:none;box-shadow:20px 0 40px rgba(7,26,51,.3)}
+  .adm-top .icon-btn{display:grid}
+  .adm-content{padding:20px 16px}
+  .adm-top{padding:0 12px}
+  .form-grid,.form-grid-3{grid-template-columns:1fr}
+  .repeater-row{grid-template-columns:1fr}
+}
+@media (max-width: 760px){
+  .kpis-admin{grid-template-columns:1fr 1fr;gap:10px}
+  .adm-head h1{font-size:23px}
+  .toolbar .input,.toolbar .form-select{min-width:0;width:100%}
+}

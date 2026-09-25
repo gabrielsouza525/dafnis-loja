@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cursos — Painel | Dafnis Treinamentos</title>
+<meta name="description" content="Treinamentos de Normas Regulamentadoras, segurança do trabalho, primeiros socorros e cursos complementares, com certificado de conclusão. Compre para você ou para sua equipe.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0B2545">
+<meta name="csrf-token" content="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:site_name" content="Dafnis Soluções em EPI">
+<meta property="og:title" content="Cursos — Painel | Dafnis Treinamentos">
+<meta property="og:description" content="Treinamentos de Normas Regulamentadoras, segurança do trabalho, primeiros socorros e cursos complementares, com certificado de conclusão. Compre para você ou para sua equipe.">
+<meta property="og:image" content="https://gabrielsouza525.github.io/dafnis-loja/assets/img/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/dafnis-loja/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/dafnis-loja/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;600;700;800&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap">
+<link rel="stylesheet" href="/dafnis-loja/assets/css/app.css?v=1790367125">
+<link rel="stylesheet" href="/dafnis-loja/assets/css/admin.css?v=1790352639">
+<script src="/dafnis-loja/assets/js/boot.js?v=1790353084"></script>
+<script src="/dafnis-loja/assets/js/app.js?v=1790367125" defer></script>
+<script src="/dafnis-loja/assets/js/demo-map.js" defer></script>
+<script src="/dafnis-loja/assets/js/static-demo.js?v=1790371017" defer></script>
+<script src="/dafnis-loja/assets/js/admin.js?v=1790353180" defer></script>
+</head>
+<body class="admin">
+<a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+<div class="demobar" role="note"><svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M21 12a9 9 0 1 1-18 0a9 9 0 1 1 18 0z M12 11v5 M12 7.5v.5"></path></svg><span><strong>Prévia do painel da equipe.</strong> Dados de exemplo; nesta demonstração os botões não salvam nada.</span></div><div class="adm">
+<aside class="adm-side" id="adm-side" aria-label="Menu do painel">
+<a class="logo inv" href="/dafnis-loja/admin/"><span class="logo-mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5h4.2a6.8 6.8 0 0 1 0 13.6H8z"></path></svg></span>
+<span class="logo-text"><span class="logo-name">Dafnis</span><span class="logo-sub">Painel da equipe</span></span>
+</a>
+<nav class="adm-nav">
+<a href="/dafnis-loja/admin/"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 4h7v7H4z M13 4h7v7h-7z M4 13h7v7H4z M13 13h7v7h-7z"></path></svg>Visão geral</a>
+<a href="/dafnis-loja/admin/pedidos/"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z M9 8h6 M9 12h6 M9 16h3"></path></svg>Pedidos<span class="count">2</span></a>
+<a href="/dafnis-loja/admin/matriculas/"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M17 9a5 5 0 1 1-10 0a5 5 0 1 1 10 0z M9 13.4L8 21l4-2 4 2-1-7.6"></path></svg>Matrículas e certificados<span class="count">2</span></a>
+<a href="/dafnis-loja/admin/cursos/" class="on" aria-current="page"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 5a2 2 0 0 1 2-2h14v16H6a2 2 0 0 0-2 2z M4 21V5 M8 7h8"></path></svg>Cursos</a>
+<a href="/dafnis-loja/admin/categorias/"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 12V4h8l10 10-8 8z M8 8.5v.5"></path></svg>Categorias</a>
+<a href="/dafnis-loja/admin/cupons/"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 6h18v12H3z M3 10h18 M7 15h3"></path></svg>Cupons</a>
+<a href="/dafnis-loja/admin/usuarios/"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12.5 7.5a3.5 3.5 0 1 1-7 0a3.5 3.5 0 1 1 7 0z M2.5 20a6.5 6.5 0 0 1 13 0 M16 4.3a3.5 3.5 0 0 1 0 6.4 M18 14.3a6.5 6.5 0 0 1 3.5 5.7"></path></svg>Usuários</a>
+<a href="/dafnis-loja/admin/contatos/"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 5h16v11H9l-5 4z"></path></svg>Contatos<span class="count">1</span></a>
+<a href="/dafnis-loja/admin/configuracoes/"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 7h10 M18 7h2 M4 17h2 M10 17h10 M16 7a2 2 0 1 1-4 0a2 2 0 1 1 4 0z M10 17a2 2 0 1 1-4 0a2 2 0 1 1 4 0z"></path></svg>Configurações</a>
+<span class="sep"></span>
+<a href="/dafnis-loja/" target="_blank"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14 4h6v6 M20 4l-9 9 M18 14v6H4V6h6"></path></svg>Ver a loja</a>
+<a href="/dafnis-loja/minha-conta/"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M16 8a4 4 0 1 1-8 0a4 4 0 1 1 8 0z M4 20.5a8 8 0 0 1 16 0"></path></svg>Minha conta</a>
+</nav>
+<div class="adm-side-foot">
+<strong>Equipe Dafnis</strong>admin@dafnis.test<form method="post" action="/dafnis-loja/sair/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><button type="submit"><svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15 4h4v16h-4 M10 8l-4 4 4 4 M6 12h10"></path></svg>Sair</button></form>
+</div>
+</aside>
+<div class="adm-main">
+<header class="adm-top">
+<button class="icon-btn" type="button" aria-label="Abrir menu" aria-controls="adm-side" aria-expanded="false" data-admin-menu><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 7h16 M4 12h16 M4 17h16"></path></svg></button>
+<span class="adm-top-title">Cursos</span>
+<div class="adm-top-actions"><a class="btn btn-outline btn-xs" href="/dafnis-loja/" target="_blank"><svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14 4h6v6 M20 4l-9 9 M18 14v6H4V6h6"></path></svg>Loja</a></div>
+</header>
+<main class="adm-content" id="conteudo" tabindex="-1">
+<div class="adm-head"><div><h1>Cursos</h1><p>Catálogo da loja: preços, cargas horárias, destaques e disponibilidade.</p></div>
+<div class="adm-actions"><a class="btn btn-navy btn-sm" href="/dafnis-loja/admin/cursos/novo/"><svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14 M5 12h14"></path></svg>Novo curso</a></div></div>
+
+<form class="toolbar" method="get" action="/dafnis-loja/admin/cursos/">
+<input class="input search" type="search" name="q" value="" placeholder="Buscar por título, NR ou slug" aria-label="Buscar cursos">
+<select class="form-select" name="categoria" aria-label="Categoria"><option value="">Todas as categorias</option><option value="1">Normas Regulamentadoras</option><option value="2">Segurança do Trabalho</option><option value="3">Primeiros Socorros</option><option value="4">Brigada de Incêndio</option><option value="5">Operação de Máquinas</option><option value="6">Saúde Ocupacional</option><option value="7">Simuladores e Jogos</option><option value="8">Treinamentos Corporativos</option></select>
+<input type="hidden" name="status" value="todos">
+<button class="btn btn-outline btn-sm" type="submit">Filtrar</button>
+</form>
+<div class="chips" style="margin-bottom:16px">
+<a href="/dafnis-loja/admin/cursos/?status=todos" class="on">Todos</a><a href="/dafnis-loja/admin/cursos/?status=ativos">Ativos</a><a href="/dafnis-loja/admin/cursos/?status=inativos">Inativos</a><a href="/dafnis-loja/admin/cursos/?status=sem-preco">Sob consulta</a><a href="/dafnis-loja/admin/cursos/?status=destaques">Destaques / mais vendidos</a></div>
+
+<div class="panel">
+<div class="table-wrap"><table class="table">
+<thead><tr><th>Curso</th><th>Categoria</th><th>Carga</th><th>Modalidade</th><th class="num">Preço</th><th class="num">Vendas</th><th>Situação</th><th class="num">Ações</th></tr></thead>
+<tbody>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/23/editar/">NR 1 — Disposições Gerais e Gerenciamento de Riscos Ocupacionais</a><span class="sub">/cursos/nr-1-disposicoes-gerais-e-gerenciamento-de-riscos-ocupacionais</span></td>
+<td>Normas Regulamentadoras</td>
+<td>4 h</td>
+<td>Online</td>
+<td class="num">R$ 132,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+ <span class="pill badge-novo" style="height:22px">Destaque 8</span></td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/23/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/23/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/87/editar/">NR 5 — CIPA — Grau de Risco 1</a><span class="sub">/cursos/nr-5-cipa-grau-de-risco-1</span></td>
+<td>Normas Regulamentadoras</td>
+<td>8 h</td>
+<td>Online</td>
+<td class="num">R$ 168,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+ <span class="pill badge-novo" style="height:22px">Destaque 3</span></td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/87/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/87/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/89/editar/">NR 5 — CIPA — Grau de Risco 2</a><span class="sub">/cursos/nr-5-cipa-grau-de-risco-2</span></td>
+<td>Normas Regulamentadoras</td>
+<td>12 h</td>
+<td>Semipresencial</td>
+<td class="num">R$ 180,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/89/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/89/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/91/editar/">NR 5 — CIPA — Grau de Risco 3</a><span class="sub">/cursos/nr-5-cipa-grau-de-risco-3</span></td>
+<td>Normas Regulamentadoras</td>
+<td>16 h</td>
+<td>Semipresencial</td>
+<td class="num">R$ 192,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/91/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/91/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/93/editar/">NR 5 — CIPA — Grau de Risco 4</a><span class="sub">/cursos/nr-5-cipa-grau-de-risco-4</span></td>
+<td>Normas Regulamentadoras</td>
+<td>20 h</td>
+<td>Semipresencial</td>
+<td class="num">R$ 204,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/93/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/93/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/88/editar/">NR 5 — CIPA — Representante Nomeado — Grau de Risco 1</a><span class="sub">/cursos/nr-5-cipa-representante-nomeado-grau-de-risco-1</span></td>
+<td>Normas Regulamentadoras</td>
+<td>8 h</td>
+<td>Online</td>
+<td class="num">R$ 168,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/88/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/88/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/90/editar/">NR 5 — CIPA — Representante Nomeado — Grau de Risco 2</a><span class="sub">/cursos/nr-5-cipa-representante-nomeado-grau-de-risco-2</span></td>
+<td>Normas Regulamentadoras</td>
+<td>12 h</td>
+<td>Semipresencial</td>
+<td class="num">R$ 180,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/90/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/90/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/92/editar/">NR 5 — CIPA — Representante Nomeado — Grau de Risco 3</a><span class="sub">/cursos/nr-5-cipa-representante-nomeado-grau-de-risco-3</span></td>
+<td>Normas Regulamentadoras</td>
+<td>16 h</td>
+<td>Semipresencial</td>
+<td class="num">R$ 192,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/92/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/92/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/94/editar/">NR 5 — CIPA — Representante Nomeado — Grau de Risco 4</a><span class="sub">/cursos/nr-5-cipa-representante-nomeado-grau-de-risco-4</span></td>
+<td>Normas Regulamentadoras</td>
+<td>20 h</td>
+<td>Semipresencial</td>
+<td class="num">R$ 204,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/94/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/94/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/95/editar/">NR 6 — EPI e EPC — Equipamentos de Proteção Individual e Coletiva</a><span class="sub">/cursos/nr-6-epi-e-epc-equipamentos-de-protecao-individual-e-coletiva</span></td>
+<td>Segurança do Trabalho</td>
+<td>2 h</td>
+<td>Online</td>
+<td class="num">R$ 132,00</td>
+<td class="num">1</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/95/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/95/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/24/editar/">NR 10 — Segurança em Instalações e Serviços com Eletricidade — Básico</a><span class="sub">/cursos/nr-10-seguranca-em-instalacoes-e-servicos-com-eletricidade-basico</span></td>
+<td>Normas Regulamentadoras</td>
+<td>40 h</td>
+<td>Semipresencial</td>
+<td class="num">R$ 251,00</td>
+<td class="num">2</td>
+<td><span class="status ok">Ativo</span>
+ <span class="pill badge-novo" style="height:22px">Destaque 1</span></td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/24/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/24/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/25/editar/">NR 10 — Segurança em Instalações e Serviços com Eletricidade — Reciclagem</a><span class="sub">/cursos/nr-10-seguranca-em-instalacoes-e-servicos-com-eletricidade-reciclagem</span></td>
+<td>Normas Regulamentadoras</td>
+<td>20 h</td>
+<td>Semipresencial</td>
+<td class="num">R$ 228,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/25/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/25/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/26/editar/">NR 10 — Segurança no Sistema Elétrico de Potência (SEP) — Complementar</a><span class="sub">/cursos/nr-10-seguranca-no-sistema-eletrico-de-potencia-sep-complementar</span></td>
+<td>Normas Regulamentadoras</td>
+<td>40 h</td>
+<td>Semipresencial</td>
+<td class="num">R$ 263,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/26/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/26/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/27/editar/">NR 10 — Segurança no Sistema Elétrico de Potência (SEP) — Reciclagem</a><span class="sub">/cursos/nr-10-seguranca-no-sistema-eletrico-de-potencia-sep-reciclagem</span></td>
+<td>Normas Regulamentadoras</td>
+<td>40 h</td>
+<td>Semipresencial</td>
+<td class="num">R$ 239,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/27/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/27/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/104/editar/">NR 10 — Simulador — Desafio dos EPIs (NR 10)</a><span class="sub">/cursos/simulador-desafio-dos-epis-nr-10</span></td>
+<td>Simuladores e Jogos</td>
+<td>2 h</td>
+<td>Online</td>
+<td class="num">R$ 240,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/104/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/104/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/34/editar/">NR 11 — Segurança no Trabalho com Empilhadeiras — Iniciação</a><span class="sub">/cursos/nr-11-seguranca-no-trabalho-com-empilhadeiras-iniciacao</span></td>
+<td>Operação de Máquinas</td>
+<td>8 h</td>
+<td>Semipresencial</td>
+<td class="num">R$ 144,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+ <span class="pill badge-novo" style="height:22px">Destaque 4</span></td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/34/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/34/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/35/editar/">NR 11 — Segurança no Trabalho com Empilhadeiras — Periódico</a><span class="sub">/cursos/nr-11-seguranca-no-trabalho-com-empilhadeiras-periodico</span></td>
+<td>Operação de Máquinas</td>
+<td>4 h</td>
+<td>Semipresencial</td>
+<td class="num">R$ 132,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/35/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/35/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/36/editar/">NR 11 — Segurança no Trabalho com Ponte Rolante — Iniciação</a><span class="sub">/cursos/nr-11-seguranca-no-trabalho-com-ponte-rolante-iniciacao</span></td>
+<td>Operação de Máquinas</td>
+<td>16 h</td>
+<td>Semipresencial</td>
+<td class="num">R$ 144,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/36/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/36/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/37/editar/">NR 11 — Segurança no Trabalho com Ponte Rolante — Periódico</a><span class="sub">/cursos/nr-11-seguranca-no-trabalho-com-ponte-rolante-periodico</span></td>
+<td>Operação de Máquinas</td>
+<td>8 h</td>
+<td>Semipresencial</td>
+<td class="num">R$ 132,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/37/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/37/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/38/editar/">NR 11 — Segurança no Trabalho com Transpaleteira — Iniciação</a><span class="sub">/cursos/nr-11-seguranca-no-trabalho-com-transpaleteira-iniciacao</span></td>
+<td>Operação de Máquinas</td>
+<td>8 h</td>
+<td>Semipresencial</td>
+<td class="num">R$ 144,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/38/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/38/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/39/editar/">NR 11 — Segurança no Trabalho com Transpaleteira — Periódico</a><span class="sub">/cursos/nr-11-seguranca-no-trabalho-com-transpaleteira-periodico</span></td>
+<td>Operação de Máquinas</td>
+<td>4 h</td>
+<td>Semipresencial</td>
+<td class="num">R$ 132,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/39/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/39/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/105/editar/">NR 11 — Simulador — Desafio dos EPIs (NR 11)</a><span class="sub">/cursos/simulador-desafio-dos-epis-nr-11</span></td>
+<td>Simuladores e Jogos</td>
+<td>1 h</td>
+<td>Online</td>
+<td class="num">R$ 156,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/105/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/105/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/111/editar/">NR 11 — Simulador — Empilhadeira</a><span class="sub">/cursos/simulador-empilhadeira</span></td>
+<td>Simuladores e Jogos</td>
+<td>2 h</td>
+<td>Online</td>
+<td class="num">R$ 156,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/111/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/111/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/112/editar/">NR 11 — Simulador — Ponte Rolante</a><span class="sub">/cursos/simulador-ponte-rolante</span></td>
+<td>Simuladores e Jogos</td>
+<td>2 h</td>
+<td>Online</td>
+<td class="num">R$ 156,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/112/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/112/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/113/editar/">NR 11 — Simulador — Transpaleteira</a><span class="sub">/cursos/simulador-transpaleteira</span></td>
+<td>Simuladores e Jogos</td>
+<td>1 h</td>
+<td>Online</td>
+<td class="num">R$ 156,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/113/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/113/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/41/editar/">NR 11 — Transporte, Movimentação, Armazenagem e Manuseio de Materiais — Formação</a><span class="sub">/cursos/nr-11-transporte-movimentacao-armazenagem-e-manuseio-de-materiais-formacao</span></td>
+<td>Operação de Máquinas</td>
+<td>8 h</td>
+<td>Semipresencial</td>
+<td class="num">R$ 132,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/41/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/41/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/40/editar/">NR 11 — Transporte, Movimentação, Armazenagem e Manuseio de Materiais — Reciclagem</a><span class="sub">/cursos/nr-11-transporte-movimentacao-armazenagem-e-manuseio-de-materiais-reciclagem</span></td>
+<td>Operação de Máquinas</td>
+<td>16 h</td>
+<td>Semipresencial</td>
+<td class="num">R$ 144,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/40/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/40/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/42/editar/">NR 12 — Segurança no Trabalho em Máquinas e Equipamentos — Geral</a><span class="sub">/cursos/nr-12-seguranca-no-trabalho-em-maquinas-e-equipamentos-geral</span></td>
+<td>Operação de Máquinas</td>
+<td>12 h</td>
+<td>Semipresencial</td>
+<td class="num">R$ 144,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+ <span class="pill badge-novo" style="height:22px">Destaque 7</span></td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/42/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/42/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/43/editar/">NR 12 — Segurança no Trabalho em Máquinas e Equipamentos — Reciclagem</a><span class="sub">/cursos/nr-12-seguranca-no-trabalho-em-maquinas-e-equipamentos-reciclagem</span></td>
+<td>Operação de Máquinas</td>
+<td>12 h</td>
+<td>Semipresencial</td>
+<td class="num">R$ 132,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/43/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/43/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/106/editar/">NR 12 — Simulador — Desafio dos EPIs (NR 12)</a><span class="sub">/cursos/simulador-desafio-dos-epis-nr-12</span></td>
+<td>Simuladores e Jogos</td>
+<td>1 h</td>
+<td>Online</td>
+<td class="num">R$ 156,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/106/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/106/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/46/editar/">NR 13 — Operação de Unidades de Processo 1 (Vasos de Pressão) — Iniciação</a><span class="sub">/cursos/nr-13-operacao-de-unidades-de-processo-1-vasos-de-pressao-iniciacao</span></td>
+<td>Operação de Máquinas</td>
+<td>340 h</td>
+<td>Semipresencial</td>
+<td class="num">R$ 263,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/46/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/46/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/47/editar/">NR 13 — Operação de Unidades de Processo 1 (Vasos de Pressão) — Periódico</a><span class="sub">/cursos/nr-13-operacao-de-unidades-de-processo-1-vasos-de-pressao-periodico</span></td>
+<td>Operação de Máquinas</td>
+<td>340 h</td>
+<td>Semipresencial</td>
+<td class="num">R$ 156,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/47/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/47/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/48/editar/">NR 13 — Operação de Unidades de Processo 2 (Vasos de Pressão) — Iniciação</a><span class="sub">/cursos/nr-13-operacao-de-unidades-de-processo-2-vasos-de-pressao-iniciacao</span></td>
+<td>Operação de Máquinas</td>
+<td>340 h</td>
+<td>Semipresencial</td>
+<td class="num">R$ 287,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/48/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/48/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/49/editar/">NR 13 — Operação de Unidades de Processo 2 (Vasos de Pressão) — Periódico</a><span class="sub">/cursos/nr-13-operacao-de-unidades-de-processo-2-vasos-de-pressao-periodico</span></td>
+<td>Operação de Máquinas</td>
+<td>340 h</td>
+<td>Semipresencial</td>
+<td class="num">R$ 156,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/49/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/49/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/50/editar/">NR 13 — Operação de Unidades de Processo 3 (Vasos de Pressão) — Iniciação</a><span class="sub">/cursos/nr-13-operacao-de-unidades-de-processo-3-vasos-de-pressao-iniciacao</span></td>
+<td>Operação de Máquinas</td>
+<td>340 h</td>
+<td>Semipresencial</td>
+<td class="num">R$ 287,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/50/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/50/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/51/editar/">NR 13 — Operação de Unidades de Processo 3 (Vasos de Pressão) — Periódico</a><span class="sub">/cursos/nr-13-operacao-de-unidades-de-processo-3-vasos-de-pressao-periodico</span></td>
+<td>Operação de Máquinas</td>
+<td>340 h</td>
+<td>Semipresencial</td>
+<td class="num">R$ 156,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/51/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/51/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/44/editar/">NR 13 — Segurança na Operação de Caldeiras — Iniciação</a><span class="sub">/cursos/nr-13-seguranca-na-operacao-de-caldeiras-iniciacao</span></td>
+<td>Operação de Máquinas</td>
+<td>40 h</td>
+<td>Semipresencial</td>
+<td class="num">R$ 263,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/44/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/44/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/45/editar/">NR 13 — Segurança na Operação de Caldeiras — Periódico</a><span class="sub">/cursos/nr-13-seguranca-na-operacao-de-caldeiras-periodico</span></td>
+<td>Operação de Máquinas</td>
+<td>40 h</td>
+<td>Semipresencial</td>
+<td class="num">R$ 144,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/45/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/45/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/107/editar/">NR 13 — Simulador — Desafio dos EPIs (NR 13)</a><span class="sub">/cursos/simulador-desafio-dos-epis-nr-13</span></td>
+<td>Simuladores e Jogos</td>
+<td>1 h</td>
+<td>Online</td>
+<td class="num">R$ 156,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/107/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/107/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+<tr>
+<td><a href="/dafnis-loja/admin/cursos/97/editar/">NR 15 — PPR — Programa de Proteção Respiratória</a><span class="sub">/cursos/nr-15-ppr-programa-de-protecao-respiratoria</span></td>
+<td>Saúde Ocupacional</td>
+<td>4 h</td>
+<td>Online</td>
+<td class="num">R$ 132,00</td>
+<td class="num">0</td>
+<td><span class="status ok">Ativo</span>
+</td>
+<td><div class="actions">
+<a class="btn btn-ghost btn-xs" href="/dafnis-loja/admin/cursos/97/editar/">Editar</a>
+<form method="post" action="/dafnis-loja/admin/cursos/97/alternar/"><input type="hidden" name="_token" value="6f8cff4cd644abaee73a4569ea04685fe17295d753d6e091475800846fbbdce5"><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit">Desativar</button></form>
+</div></td>
+</tr>
+</tbody></table></div>
+<div class="pager-admin">
+<span>1–40 de 119</span>
+<nav aria-label="Paginação">
+<span class="cur" aria-current="page">1</span><a href="/dafnis-loja/admin/cursos/?pagina=2">2</a><a href="/dafnis-loja/admin/cursos/?pagina=3">3</a></nav>
+</div>
+</div>
+</main>
+</div>
+</div>
+<div class="toasts" id="toasts" aria-live="polite" aria-atomic="false"></div>
+</body>
+</html>
