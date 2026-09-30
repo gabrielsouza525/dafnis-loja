@@ -204,14 +204,7 @@ await go('/cursos/nr-33-espacos-confinados-trabalhador-e-vigia', 390);
 r = await ev(`const cover = document.querySelector('.c-aside .cover'); return { coverHidden: cover.offsetParent === null, price: !!document.querySelector('.buy-card .buy-price') }`);
 check('curso no celular: placa gerada escondida, preço logo depois do topo', r.coverHidden && r.price, r);
 
-// Sai da conta: as telas de entrar, criar conta e recuperar senha só aparecem para visitantes
-await go('/minha-conta');
-await ev(`document.querySelector('form[action$="/sair"]').submit(); return 1`);
-await sleep(1500);
-// Nada passa da borda: nem rolagem lateral, nem conteúdo cortado por um contêiner com overflow
-// escondido (ex.: a busca do catálogo saindo pela direita do topo). Só faixas com rolagem própria
-// (carrosséis, abas) e desenhos decorativos (aria-hidden, svg) podem passar.
-const overflow = [];
+// Procura o que passa da borda da tela (regras na checagem "nada passa da borda" mais abaixo)
 const outside = `const vw = document.documentElement.clientWidth; const out = [];
   for (const el of document.querySelectorAll('body *')) {
     if (el.closest('[hidden], [aria-hidden="true"], .drawer-root, .toasts, .skip-link, template, svg')) continue;
@@ -226,6 +219,29 @@ const outside = `const vw = document.documentElement.clientWidth; const out = []
     if (limit !== null && r.right > limit + 1) out.push((typeof el.className === 'string' && el.className ? '.' + el.className.split(' ')[0] : el.tagName) + ' +' + Math.round(r.right - limit) + 'px');
   }
   return { scroll: document.documentElement.scrollWidth - vw, out: [...new Set(out)].slice(0, 3) };`;
+
+// Minha conta (logado como a aluna): topo com a saudação, abas com a atual marcada e nada passando da borda
+await go('/minha-conta/certificados');
+r = await ev(`return { tabs: document.querySelectorAll('.acc-tabs a').length, current: document.querySelector('.acc-tabs [aria-current]')?.textContent.trim(), hello: document.querySelector('.acc-hello')?.textContent.trim(), avatar: getComputedStyle(document.querySelector('.acc-avatar')).display };`);
+check('minha conta: saudação no topo e abas com a atual marcada', r.tabs === 5 && r.current === 'Certificados' && /^Olá, /.test(r.hello) && r.avatar === 'grid', r);
+const accOver = [];
+for (const width of [390, 1440]) {
+  for (const path of ['/minha-conta', '/minha-conta/cursos', '/minha-conta/certificados', '/minha-conta/pedidos', '/minha-conta/dados']) {
+    await go(path, width);
+    const o = await ev(outside);
+    if (o.scroll > 0 || o.out.length) accOver.push(`${path} @${width}px: ${o.scroll > 0 ? 'rola +' + o.scroll + 'px ' : ''}${o.out.join(', ')}`);
+  }
+}
+check('minha conta: nada passa da borda (390 e 1440 px)', accOver.length === 0, accOver);
+
+// Sai da conta: as telas de entrar, criar conta e recuperar senha só aparecem para visitantes
+await go('/minha-conta');
+await ev(`document.querySelector('form[action$="/sair"]').submit(); return 1`);
+await sleep(1500);
+// Nada passa da borda: nem rolagem lateral, nem conteúdo cortado por um contêiner com overflow
+// escondido (ex.: a busca do catálogo saindo pela direita do topo). Só faixas com rolagem própria
+// (carrosséis, abas) e desenhos decorativos (aria-hidden, svg) podem passar.
+const overflow = [];
 for (const width of [360, 768, 960, 1024, 1180, 1280, 1440]) {
   for (const path of ['/', '/cursos', '/cursos/nr-33-espacos-confinados-trabalhador-e-vigia', '/carrinho', '/login', '/cadastro', '/esqueci-senha']) {
     await go(path, width);

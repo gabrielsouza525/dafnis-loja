@@ -6,17 +6,17 @@ $crumbs = [['Início', '/'], ['Minha conta', null]];
 ?>
 <div class="screen">
 <?= partial('account-shell-open', get_defined_vars()) ?>
-<div class="acc-head"><div><h1>Olá, <?= e(first_name($user['name'])) ?></h1><p>Acompanhe seus cursos, certificados e compras.</p></div><a class="btn btn-navy btn-sm" href="<?= e(url('/cursos')) ?>">Explorar cursos</a></div>
+<div class="acc-head"><div><h1>Painel</h1><p>Acompanhe seus cursos, certificados e compras.</p></div><a class="btn btn-navy btn-sm" href="<?= e(url('/cursos')) ?>">Explorar cursos</a></div>
 
 <?php if ($awaiting > 0): ?>
 <div class="note-box" style="margin:0 0 22px"><?= icon('users') ?><span><strong><?= e(pluralize($awaiting, 'vaga aguarda', 'vagas aguardam')) ?> participante.</strong> Informe quem vai fazer o treinamento para liberarmos o acesso. <a href="<?= e(url('/minha-conta/pedidos')) ?>">Indicar participantes</a></span></div>
 <?php endif; ?>
 
 <div class="kpis">
-<div class="kpi"><span class="kpi-ic"><?= icon('book') ?></span><span class="kpi-n"><?= (int) $kpis['courses'] ?></span><span class="kpi-l">Cursos adquiridos</span></div>
-<div class="kpi"><span class="kpi-ic"><?= icon('pulse') ?></span><span class="kpi-n"><?= (int) $kpis['active'] ?></span><span class="kpi-l">Em andamento</span></div>
-<div class="kpi"><span class="kpi-ic g"><?= icon('check') ?></span><span class="kpi-n"><?= (int) $kpis['completed'] ?></span><span class="kpi-l">Concluídos</span></div>
-<div class="kpi"><span class="kpi-ic o"><?= icon('award') ?></span><span class="kpi-n"><?= (int) $kpis['certificates'] ?></span><span class="kpi-l">Certificados disponíveis</span></div>
+<a class="kpi kpi-link" href="<?= e(url('/minha-conta/cursos')) ?>"><span class="kpi-ic"><?= icon('book') ?></span><span class="kpi-n"><?= (int) $kpis['courses'] ?></span><span class="kpi-l">Cursos adquiridos</span></a>
+<a class="kpi kpi-link" href="<?= e(url('/minha-conta/cursos')) ?>"><span class="kpi-ic"><?= icon('pulse') ?></span><span class="kpi-n"><?= (int) $kpis['active'] ?></span><span class="kpi-l">Em andamento</span></a>
+<a class="kpi kpi-link" href="<?= e(url('/minha-conta/cursos')) ?>"><span class="kpi-ic g"><?= icon('check') ?></span><span class="kpi-n"><?= (int) $kpis['completed'] ?></span><span class="kpi-l">Concluídos</span></a>
+<a class="kpi kpi-link" href="<?= e(url('/minha-conta/certificados')) ?>"><span class="kpi-ic o"><?= icon('award') ?></span><span class="kpi-n"><?= (int) $kpis['certificates'] ?></span><span class="kpi-l">Certificados disponíveis</span></a>
 </div>
 
 <div class="panel">
