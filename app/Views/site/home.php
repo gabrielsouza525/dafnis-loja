@@ -138,7 +138,7 @@ $whys = [
 <div class="ent-feat"><span class="ent-feat-ic"><?= icon('briefcase') ?></span><div><h3>Soluções corporativas</h3><p>Condições e atendimento sob medida para sua empresa.</p></div></div>
 </div>
 <div class="ent-ctas">
-<a class="btn btn-orange btn-lg" href="<?= e(url('/contato', ['assunto' => 'empresas'])) ?>">Fale com nossa equipe<?= icon('arrowR') ?></a>
+<a class="btn btn-gold btn-lg" href="<?= e(url('/contato', ['assunto' => 'empresas'])) ?>">Fale com nossa equipe<?= icon('arrowR') ?></a>
 <a class="btn btn-line-w btn-lg" href="<?= e(url('/cursos')) ?>">Ver catálogo</a>
 </div>
 </div>
@@ -214,7 +214,7 @@ $whys = [
 <div class="wrap cta-in">
 <div><h2 id="cta-titulo">Pronto para capacitar você e sua equipe?</h2><p>Escolha o treinamento, defina os participantes e finalize em poucos passos.</p></div>
 <div class="cta-ctas">
-<a class="btn btn-orange btn-lg" href="<?= e(url('/cursos')) ?>">Explorar cursos<?= icon('arrowR') ?></a>
+<a class="btn btn-gold btn-lg" href="<?= e(url('/cursos')) ?>">Explorar cursos<?= icon('arrowR') ?></a>
 <a class="btn btn-line-w btn-lg" href="<?= e(url('/contato', ['assunto' => 'empresas'])) ?>">Atendimento para empresas</a>
 </div>
 </div>

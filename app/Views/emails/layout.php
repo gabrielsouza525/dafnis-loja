@@ -25,7 +25,7 @@ $contact = Settings::get('business.whatsapp') ?: Settings::get('business.phone')
 </td>
 </tr></table>
 </td></tr>
-<tr><td style="height:5px;background:#F47B2E"></td></tr>
+<tr><td style="height:5px;background:#D5A13B"></td></tr>
 <tr><td style="padding:28px;font-size:15px;line-height:1.6">
 <?= $content ?>
 </td></tr>

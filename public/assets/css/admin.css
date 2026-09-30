@@ -8,10 +8,10 @@ body.admin{background:var(--gray)}
 .adm-nav a{position:relative;display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;color:#C9D4E5;text-decoration:none;font-size:14.5px;font-weight:500;transition:background .15s,color .15s}
 .adm-nav a:hover{background:rgba(255,255,255,.07);color:#fff}
 .adm-nav a.on{background:rgba(255,255,255,.1);color:#fff;font-weight:600}
-.adm-nav a.on::before{content:'';position:absolute;left:-14px;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:var(--orange)}
+.adm-nav a.on::before{content:'';position:absolute;left:-14px;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:var(--gold)}
 .adm-nav a .ic{width:18px;height:18px;opacity:.85}
-.adm-nav a.on .ic{opacity:1;color:#F7A36B}
-.adm-nav .count{margin-left:auto;font-size:11.5px;font-family:var(--mono);font-weight:600;background:var(--orange);color:var(--orange-ink);border-radius:999px;min-width:20px;height:20px;display:grid;place-items:center;padding:0 6px}
+.adm-nav a.on .ic{opacity:1;color:#E6C567}
+.adm-nav .count{margin-left:auto;font-size:11.5px;font-family:var(--mono);font-weight:600;background:var(--gold);color:var(--gold-ink);border-radius:999px;min-width:20px;height:20px;display:grid;place-items:center;padding:0 6px}
 .adm-side-foot{margin-top:auto;padding-top:14px;border-top:1px solid rgba(255,255,255,.1);font-size:13px}
 .adm-user{display:flex;gap:10px;align-items:center;padding:4px 4px 12px}
 .adm-user strong{display:block;color:#fff;font-size:14px;line-height:1.2}
