@@ -109,6 +109,7 @@ final class CatalogController extends Controller
 
         return $this->view('site/catalog', array_merge($data, [
             'nav' => $nav,
+            'bodyClass' => 'is-wide', // área útil mais larga: 4 cursos por linha ao lado dos filtros
             'title' => $context['title'],
             'description' => $context['description'] ?? 'Catálogo completo de treinamentos: Normas Regulamentadoras, segurança do trabalho, primeiros socorros, brigada de incêndio, simuladores e cursos corporativos, com certificado.',
             'canonical' => $context['canonical'],

@@ -22,6 +22,7 @@ fieldset{margin:0;padding:0;border:0;min-width:0}
 .skip-link{position:absolute;left:-9999px;top:0;background:var(--navy);color:#fff;padding:10px 16px;border-radius:0 0 10px 0;z-index:200;font-weight:600;text-decoration:none}
 .skip-link:focus{left:0;color:#fff}
 .wrap{max-width:1240px;margin:0 auto;padding:0 40px}
+.is-wide .wrap{max-width:1440px} /* catálogo: 4 cursos por linha ao lado dos filtros */
 .ic{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 .ic-sm{width:16px;height:16px}
 .mono{font-family:var(--mono)}
@@ -222,7 +223,8 @@ fieldset{margin:0;padding:0;border:0;min-width:0}
 
 /* course cards */
 .grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px}
-.cgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.cgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
+@media (max-width: 1299px){.cgrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;transition:transform .22s ease,box-shadow .22s ease,border-color .22s}
 .card:hover{transform:translateY(-3px);box-shadow:var(--shadow-h);border-color:#D3DAE4}
 .cover{position:relative;display:block;width:100%;aspect-ratio:16/10;border:0;padding:0;background:var(--navy);overflow:hidden;text-align:left;color:#fff;border-radius:0}

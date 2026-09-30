@@ -45,7 +45,7 @@ use App\Services\Catalog;
 </div>
 <template id="skeleton-template">
 <div class="cgrid skel-grid" aria-hidden="true">
-<?php for ($i = 0; $i < 6; $i++): ?><div class="skel"><div class="skel-cover shim"></div><div class="skel-line shim w40"></div><div class="skel-line shim w90"></div><div class="skel-line shim w70"></div></div><?php endfor; ?>
+<?php for ($i = 0; $i < 8; $i++): ?><div class="skel"><div class="skel-cover shim"></div><div class="skel-line shim w40"></div><div class="skel-line shim w90"></div><div class="skel-line shim w70"></div></div><?php endfor; ?>
 </div>
 </template>
 </div>

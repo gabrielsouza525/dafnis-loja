@@ -45,7 +45,7 @@ $shown = min($result['total'], $result['page'] * Catalog::pageSize());
 <a class="btn btn-outline" href="<?= e(url('/contato', ['assunto' => 'curso', 'mensagem' => $f['q'] !== '' ? 'Procuro o treinamento: ' . $f['q'] : null])) ?>">Pedir um treinamento</a>
 </div>
 </div>
-<?php $sugg = Catalog::suggestions(3); if ($sugg): ?>
+<?php $sugg = Catalog::suggestions(4); if ($sugg): ?>
 <div class="empty-sugg">
 <h3>Treinamentos em destaque</h3>
 <div class="cgrid"><?php foreach ($sugg as $course): ?><?= partial('course-card', ['course' => $course]) ?><?php endforeach; ?></div>
