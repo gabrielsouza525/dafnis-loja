@@ -198,6 +198,10 @@ await go('/cursos/nr-33-espacos-confinados-trabalhador-e-vigia', 390);
 r = await ev(`const cover = document.querySelector('.c-aside .cover'); return { coverHidden: cover.offsetParent === null, price: !!document.querySelector('.buy-card .buy-price') }`);
 check('curso no celular: placa gerada escondida, preço logo depois do topo', r.coverHidden && r.price, r);
 
+// Sai da conta: as telas de entrar, criar conta e recuperar senha só aparecem para visitantes
+await go('/minha-conta');
+await ev(`document.querySelector('form[action$="/sair"]').submit(); return 1`);
+await sleep(1500);
 // Nada passa da borda: nem rolagem lateral, nem conteúdo cortado por um contêiner com overflow
 // escondido (ex.: a busca do catálogo saindo pela direita do topo). Só faixas com rolagem própria
 // (carrosséis, abas) e desenhos decorativos (aria-hidden, svg) podem passar.
@@ -220,6 +224,8 @@ for (const width of [360, 768, 960, 1024, 1180, 1280, 1440]) {
   for (const path of ['/', '/cursos', '/cursos/nr-33-espacos-confinados-trabalhador-e-vigia', '/carrinho', '/login']) {
     await go(path, width);
     const o = await ev(outside);
+    const at = await ev(`return location.pathname`);
+    if (!at.replace(/\/$/, '').endsWith(path.replace(/\/$/, ''))) { overflow.push(`${path} @${width}px: abriu ${at}`); continue; }
     if (o.scroll > 0 || o.out.length) overflow.push(`${path} @${width}px: ${o.scroll > 0 ? 'rola +' + o.scroll + 'px ' : ''}${o.out.join(', ')}`);
   }
 }
