@@ -1,5 +1,5 @@
 <?php /** @var string $token @var bool $valid */ ?>
-<div class="auth screen">
+<div class="auth auth-solo screen">
 <div class="wrap" style="max-width:520px">
 <div class="auth-card">
 <?php if (!$valid): ?>

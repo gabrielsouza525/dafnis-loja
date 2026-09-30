@@ -106,6 +106,12 @@ r = await ev(`${wait} const bar = document.querySelector('.cart-bar'); const bef
   return { before, after };`);
 check('carrinho no celular: barra fixa com o total, atualizada ao mudar participantes', r.before.visible && r.before.bar === r.before.sum && r.after.bar === r.after.sum && r.after.sum !== r.before.sum, r);
 
+// Entrar: tela dividida (painel escuro com a foto do topo à esquerda, formulário à direita)
+await go('/login');
+r = await ev(`const side = document.querySelector('.auth-side').getBoundingClientRect(); const card = document.querySelector('.auth-card').getBoundingClientRect();
+  return { sideW: Math.round(side.width), vw: document.documentElement.clientWidth, photo: getComputedStyle(document.querySelector('.auth-side'), '::before').backgroundImage.includes('hero-1600'), cardLeft: Math.round(card.left) };`);
+check('entrar: painel com foto à esquerda e formulário à direita', Math.abs(r.sideW - r.vw / 2) <= 2 && r.photo && r.cardLeft > r.sideW, r);
+
 // Máscaras e login (checkout exige conta)
 await go('/cadastro?volta=/checkout');
 r = await ev(`${wait} const t = document.querySelector('#f-phone'); t.value = '18999990000'; t.dispatchEvent(new Event('input', {bubbles:true})); return t.value;`);
@@ -221,7 +227,7 @@ const outside = `const vw = document.documentElement.clientWidth; const out = []
   }
   return { scroll: document.documentElement.scrollWidth - vw, out: [...new Set(out)].slice(0, 3) };`;
 for (const width of [360, 768, 960, 1024, 1180, 1280, 1440]) {
-  for (const path of ['/', '/cursos', '/cursos/nr-33-espacos-confinados-trabalhador-e-vigia', '/carrinho', '/login']) {
+  for (const path of ['/', '/cursos', '/cursos/nr-33-espacos-confinados-trabalhador-e-vigia', '/carrinho', '/login', '/cadastro', '/esqueci-senha']) {
     await go(path, width);
     const o = await ev(outside);
     const at = await ev(`return location.pathname`);

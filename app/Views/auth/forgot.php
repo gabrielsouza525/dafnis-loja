@@ -1,5 +1,5 @@
 <?php /** @var bool $sent */ ?>
-<div class="auth screen">
+<div class="auth auth-solo screen">
 <div class="wrap" style="max-width:520px">
 <div class="auth-card">
 <?php if ($sent): ?>

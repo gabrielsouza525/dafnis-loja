@@ -1,5 +1,5 @@
 <?php /** @var string|null $volta @var bool $fromCheckout */ ?>
-<div class="auth screen">
+<div class="auth auth-split screen">
 <div class="wrap">
 <div class="auth-grid">
 <div class="auth-side">

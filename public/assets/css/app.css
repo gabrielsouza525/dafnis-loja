@@ -745,6 +745,25 @@ body.lock{overflow:hidden}
 .auth-row{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:14px}
 .auth-alt{margin-top:22px;padding-top:20px;border-top:1px solid var(--line);font-size:14.5px;color:var(--muted);text-align:center}
 .auth-alt a{font-weight:600}
+/* Entrar / criar conta: tela dividida — painel escuro com a foto do topo da home à esquerda,
+   formulário à direita. Esqueci a senha / nova senha: cartão sobre a foto escura. */
+.auth-split{padding:0;background:var(--gray)}
+.auth-split > .wrap{max-width:none;padding:0}
+.auth-split .auth-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0;max-width:none;min-height:calc(100vh - 73px);align-items:stretch}
+.auth-side,.auth-solo{position:relative;isolation:isolate;overflow:hidden}
+.auth-split .auth-side{display:flex;flex-direction:column;justify-content:center;color:#fff;padding:64px 64px 64px max(40px,calc(50vw - 580px))}
+.auth-split .auth-side::before,.auth-solo::before{content:'';position:absolute;inset:0;z-index:-2;background:linear-gradient(180deg,rgba(7,26,51,.84),rgba(7,26,51,.9)),url('../img/hero-1600.jpg') center 35%/cover,var(--navy-deep)}
+.auth-split .auth-side::after,.auth-solo::after{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:32px 32px}
+.auth-split .auth-side .kicker{color:#F7A36B}
+.auth-split .auth-side h1{color:#fff;font-size:46px;max-width:520px}
+.auth-split .auth-side > p{color:#C9D4E5;max-width:480px}
+.auth-split .auth-side .checks{margin-top:32px;padding-top:28px;border-top:1px solid rgba(255,255,255,.16);max-width:480px}
+.auth-split .auth-side .check{color:#E3E9F2}
+.auth-split .auth-side .check .ic{color:#6EE7A0}
+.auth-split .auth-card{align-self:center;justify-self:center;width:min(460px,calc(100% - 64px));margin:48px 0}
+.auth-solo{display:grid;place-items:center;min-height:calc(100vh - 73px);padding:56px 0;background:var(--navy-deep)}
+.auth-solo > .wrap{width:100%}
+.auth-solo .auth-card{box-shadow:0 24px 60px rgba(0,0,0,.35)}
 .tabs{display:flex;gap:4px;background:var(--gray);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:20px}
 .tabs a{flex:1;height:40px;border-radius:8px;display:grid;place-items:center;font-weight:600;font-size:14px;color:var(--muted);text-decoration:none}
 .tabs a.on{background:var(--surface);color:var(--navy-ink);box-shadow:0 1px 3px rgba(11,37,69,.14)}
@@ -901,6 +920,11 @@ body.lock{overflow:hidden}
   .acc-nav form{border:0;margin:0;padding:0;border-left:1px solid var(--line-2);padding-left:4px}
   .auth-grid{grid-template-columns:1fr;max-width:520px}
   .auth-side{display:none}
+  .auth-split .auth-grid{grid-template-columns:minmax(0,1fr);max-width:none;min-height:0}
+  .auth-split .auth-side{display:flex;padding:32px 28px 88px}
+  .auth-split .auth-side h1{font-size:32px}
+  .auth-split .auth-side > p,.auth-split .auth-side .checks{display:none}
+  .auth-split .auth-card{width:min(520px,calc(100% - 56px));margin:-56px 0 56px;position:relative}
   .contact-grid{grid-template-columns:1fr}
 }
 /* ===== celular ===== */
@@ -1040,6 +1064,11 @@ body.lock{overflow:hidden}
   .toasts{left:16px;right:16px;bottom:16px;align-items:stretch}
   .toast{width:100%}
   .auth{padding:24px 0 56px}
+  .auth-split{padding:0}
+  .auth-split .auth-side{padding:24px 16px 80px}
+  .auth-split .auth-side h1{font-size:28px}
+  .auth-split .auth-card{width:calc(100% - 32px);margin-bottom:40px}
+  .auth-solo{padding:32px 0;min-height:0}
   .auth-card{padding:22px 18px}
   .kpis{gap:10px}
   .kpi{padding:14px}
