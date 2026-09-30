@@ -25,6 +25,7 @@ final class HomeController extends Controller
 
         return $this->view('site/home', [
             'nav' => 'inicio',
+            'headerOver' => true, // cabeçalho transparente sobre a foto do topo
             'canonical' => '/',
             'jsonLd' => $jsonLd,
             'total' => count($all),

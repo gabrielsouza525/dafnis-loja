@@ -134,6 +134,17 @@ r = await ev(`${wait} await w(300); const img = document.querySelector('.hero-bg
   return { img: !!img && img.complete && img.naturalWidth > 0, center: Math.round(h1.left + h1.width / 2 - document.documentElement.clientWidth / 2), gap: Math.round(cats[1].left - cats[0].right), rowGap: Math.round(cats[4].top - cats[0].bottom) };`);
 check('topo com foto de fundo e título centralizado', r.img && Math.abs(r.center) <= 2, r);
 check('cartões de categoria separados', r.gap >= 12 && r.rowGap >= 12, r);
+r = await ev(`${wait} const hdr = document.querySelector('.hdr'); const hero = document.querySelector('.hero').getBoundingClientRect();
+  const top = { clear: hdr.classList.contains('is-clear'), bg: getComputedStyle(hdr).backgroundColor, bar: !!document.querySelector('.demobar'), heroTop: Math.round(hero.top), heroH: Math.round(hero.height) };
+  scrollTo(0, 700); await w(400); const scrolled = { clear: hdr.classList.contains('is-clear'), shadow: hdr.classList.contains('is-scrolled') };
+  scrollTo(0, 0); await w(300); document.querySelector('[data-mega-toggle]').click(); await w(200); const megaClear = hdr.classList.contains('is-clear');
+  document.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape'})); await w(200);
+  return { top, scrolled, megaClear, back: hdr.classList.contains('is-clear'), vh: innerHeight };`);
+check('home sem barra de aviso e topo ocupando a tela, por trás do cabeçalho', !r.top.bar && r.top.heroTop === 0 && r.top.heroH >= r.vh, r.top);
+check('cabeçalho transparente sobre a foto; sólido com sombra ao rolar e com o menu de NRs aberto', r.top.clear && r.top.bg === 'rgba(0, 0, 0, 0)' && !r.scrolled.clear && r.scrolled.shadow && !r.megaClear && r.back, r);
+await go('/cursos');
+r = await ev(`return { clear: document.querySelector('.hdr').classList.contains('is-clear'), over: document.querySelector('.hdr').hasAttribute('data-over') }`);
+check('nas outras páginas o cabeçalho é sólido', !r.clear && !r.over, r);
 
 // Modo escuro: segue o sistema sem escolha salva; o botão alterna e a escolha fica salva
 r = await ev(`${wait} localStorage.removeItem('dafnis-theme'); const before = document.documentElement.dataset.theme; const btn = document.querySelector('.hdr [data-theme-toggle]');

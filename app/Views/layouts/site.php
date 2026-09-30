@@ -21,6 +21,7 @@ if (static_demo()) {
     $notice = '<strong>Prévia da loja para aprovação.</strong> Cursos e preços reais do catálogo; contas e pedidos são de exemplo e nenhuma compra é realizada.';
     $noticeHtml = true;
 }
+$headerOver = !empty($headerOver);
 $accountLabel = $user ? (Auth::isAdmin() ? 'Painel' : 'Minha conta') : 'Entrar';
 $accountUrl = $user ? url(Auth::homePath()) : url('/login');
 $whatsapp = Settings::get('business.whatsapp');
@@ -46,14 +47,14 @@ $catUrl = static function (string $slug) use ($categories): ?string {
 <head>
 <?= partial('head', get_defined_vars()) ?>
 </head>
-<body class="<?= e($bodyClass ?? '') ?>">
+<body class="<?= e(trim(($bodyClass ?? '') . ($headerOver ? ' has-hero' : ''))) ?>">
 <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
 
 <?php if ($notice): ?>
 <div class="demobar" role="note"><?= icon('info', 'ic-sm') ?><span><?= !empty($noticeHtml) ? $notice : e($notice) ?></span></div>
 <?php endif; ?>
 
-<header class="hdr" data-header>
+<header class="hdr" data-header<?= $headerOver ? ' data-over' : '' ?>>
 <div class="wrap hdr-in">
 <a class="logo" href="<?= e(url('/')) ?>" aria-label="Dafnis Treinamentos — página inicial"><?= partial('logo') ?></a>
 <nav class="nav" aria-label="Principal">
@@ -67,6 +68,7 @@ $catUrl = static function (string $slug) use ($categories): ?string {
 <div class="hdr-actions">
 <a class="icon-btn" href="<?= e(url('/cursos#busca')) ?>" aria-label="Pesquisar treinamentos" data-open-search><?= icon('search') ?></a>
 <button class="icon-btn theme-btn hide-c" type="button" aria-label="Modo escuro" aria-pressed="false" title="Alternar modo escuro" data-theme-toggle hidden><?= icon('moon', 'ic-moon') ?><?= icon('sun', 'ic-sun') ?></button>
+<span class="hdr-sep hide-t" aria-hidden="true"></span>
 <a class="link-btn hide-t" href="<?= e($accountUrl) ?>"><?= icon('user') ?><?= e($accountLabel) ?></a>
 <a class="icon-btn" href="<?= e(url('/carrinho')) ?>" data-cart-link aria-label="<?= e('Carrinho, ' . pluralize($cartCount, 'item', 'itens')) ?>"><?= icon('cart') ?><span class="cart-count" data-cart-count<?= $cartCount ? '' : ' hidden' ?>><?= $cartCount ?></span></a>
 <a class="btn btn-navy btn-sm hdr-cta" href="<?= e(url('/cursos')) ?>">Ver cursos</a>

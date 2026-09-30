@@ -229,6 +229,26 @@
     }
   }
 
+  /* ---------- cabeçalho: sombra ao rolar; na home, transparente sobre a foto até rolar ---------- */
+  var header = $('[data-header]');
+  function updateHeader() {
+    if (!header) return;
+    var scrolled = window.scrollY > 8;
+    header.classList.toggle('is-scrolled', scrolled);
+    if (header.hasAttribute('data-over')) {
+      header.classList.toggle('is-clear', !scrolled && !(mega && !mega.hidden));
+    }
+  }
+  if (header) {
+    var headerTick = false;
+    window.addEventListener('scroll', function () {
+      if (headerTick) return;
+      headerTick = true;
+      requestAnimationFrame(function () { headerTick = false; updateHeader(); });
+    }, { passive: true });
+    updateHeader();
+  }
+
   /* ---------- menu de NRs ---------- */
   var megaToggle = $('[data-mega-toggle]');
   var mega = $('#mega-nr');
@@ -236,6 +256,7 @@
     if (!mega || mega.hidden) return;
     mega.hidden = true;
     megaToggle.setAttribute('aria-expanded', 'false');
+    updateHeader();
   }
   if (megaToggle && mega) {
     megaToggle.addEventListener('click', function (e) {
@@ -244,6 +265,7 @@
       var open = mega.hidden;
       mega.hidden = !open;
       megaToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      updateHeader();
       if (open) {
         var first = mega.querySelector('a');
         if (first && e.detail === 0) first.focus();

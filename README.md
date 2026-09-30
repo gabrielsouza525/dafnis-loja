@@ -135,6 +135,10 @@ novos pedidos, pagamentos e contatos no `MAIL_ADMIN_ADDRESS` (ou no e-mail de co
   foto em três larguras). Para trocar, substitua os três arquivos mantendo os nomes; sem eles, o topo fica
   com o fundo azul e a grade. A foto atual é de Rafael Juárez no Unsplash (licença Unsplash, uso comercial
   livre).
+- **Topo da home:** ocupa a tela inteira e o cabeçalho fica transparente sobre a foto até o visitante
+  rolar a página (nas outras páginas ele é sempre sólido). A barra de aviso acima do cabeçalho só aparece
+  quando a equipe escreve um aviso em *Painel › Configurações*; o aviso de pagamento em ativação fica no
+  carrinho, no checkout e no pedido.
 - **Modo escuro:** botão de sol/lua no cabeçalho (no celular, dentro do menu). Sem escolha, a loja segue o
   tema do sistema do visitante; a escolha fica salva no navegador. O painel da equipe fica sempre claro.
   As cores ficam em tokens no início de `app.css`, e a versão escura no bloco "Modo escuro" no fim.
