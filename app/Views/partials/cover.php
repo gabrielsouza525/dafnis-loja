@@ -8,7 +8,7 @@
  */
 $variant = $variant ?? 'card';
 $tag = $tag ?? 'div';
-$classes = 'cover tone-' . e($course['tone']) . ($variant === 'lg' ? ' lg' : '') . ($variant === 'thumb' ? ' thumb' : '');
+$classes = 'cover tone-' . e($course['tone']) . ($variant === 'lg' ? ' lg' : '') . ($variant === 'thumb' ? ' thumb' : '') . ($course['image_url'] ? ' has-img' : '');
 // A capa repete o link do título: fica fora do Tab e dos leitores de tela.
 $attrs = $tag === 'a'
     ? ' href="' . e($course['url']) . '" tabindex="-1" aria-hidden="true"'

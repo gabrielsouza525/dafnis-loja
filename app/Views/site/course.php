@@ -45,28 +45,59 @@ if ($c['certificate']) {
 }
 ?>
 <div class="screen">
-<section class="c-hero">
-<div class="wrap">
+<div class="c-page">
+<div class="c-hero-bg" aria-hidden="true"><div class="grid-bg"></div></div>
+<header class="c-head">
 <?= partial('crumbs', ['items' => $crumbItems]) ?>
-<div class="c-hero-grid">
-<div>
-<div class="c-badges"><span class="c-code"><?= e($c['code_label']) ?></span><?php if ($c['badge']): ?><span class="pill badge-<?= e($c['badge']) ?>"><?= e($c['badge_label']) ?></span><?php endif; ?><span class="pill pill-plain"><?= e($c['category_name']) ?></span></div>
+<div class="c-badges"><span class="c-code"><?= e($c['code_label']) ?></span><?php if ($c['badge']): ?><span class="pill badge-<?= e($c['badge']) ?>"><?= e($c['badge_label']) ?></span><?php endif; ?><span class="c-cat"><?= e($c['category_name']) ?></span></div>
 <h1><?= e($c['title']) ?></h1>
 <p class="c-desc"><?= e($summary) ?></p>
-<div class="c-facts">
-<div class="c-fact"><?= icon('clock') ?><div><small>Carga horária</small><strong><?= e($c['hours_long']) ?></strong></div></div>
-<div class="c-fact"><?= icon('monitor') ?><div><small>Modalidade</small><strong><?= e($c['modality_label']) ?></strong></div></div>
-<div class="c-fact"><?= icon('briefcase') ?><div><small>Tipo</small><strong><?= e($c['training_type'] === 'periodico' ? 'Periódico / Reciclagem' : 'Formação') ?></strong></div></div>
-<div class="c-fact"><?= icon('award') ?><div><small>Conclusão</small><strong><?= $c['certificate'] ? 'Certificado' : 'Sem certificado' ?></strong></div></div>
-</div>
-</div>
+<ul class="c-facts">
+<li class="c-fact"><?= icon('clock') ?><div><small>Carga horária</small><strong><?= e($c['hours_long']) ?></strong></div></li>
+<li class="c-fact"><?= icon('monitor') ?><div><small>Modalidade</small><strong><?= e($c['modality_label']) ?></strong></div></li>
+<li class="c-fact"><?= icon('briefcase') ?><div><small>Tipo</small><strong><?= e($c['training_type'] === 'periodico' ? 'Periódico / Reciclagem' : 'Formação') ?></strong></div></li>
+<li class="c-fact"><?= icon('award') ?><div><small>Conclusão</small><strong><?= $c['certificate'] ? 'Certificado' : 'Sem certificado' ?></strong></div></li>
+</ul>
+</header>
+<aside class="c-aside" aria-label="Compra">
 <?= partial('cover', ['course' => $c, 'variant' => 'lg']) ?>
+<div class="buy-card">
+<div class="buy-body">
+<?php if ($c['has_price']): ?>
+<div class="buy-top"><?php if ($c['old_price']): ?><span class="price-old"><?= money($c['old_price']) ?></span><span class="pct">-<?= (int) $c['discount_pct'] ?>%</span><?php endif; ?></div>
+<div class="buy-price"><?= money($c['final_price']) ?></div>
+<p class="buy-note">Valor por participante<?= $c['practical_required'] ? ' · parte teórica online' : '' ?></p>
+<form id="buy-form" method="post" action="<?= e(url('/carrinho/adicionar')) ?>" data-add-to-cart data-buy-form data-unit="<?= e((string) $c['final_price']) ?>">
+<?= csrf_field() ?>
+<input type="hidden" name="course_id" value="<?= (int) $c['id'] ?>">
+<div class="qty-row">
+<label class="qty-label" for="qty">Participantes<small>Compre para você ou sua equipe</small></label>
+<div class="stepper" data-stepper><button type="button" aria-label="Diminuir participantes" data-step="-1" disabled><?= icon('minus', 'ic-sm') ?></button><input id="qty" name="qty" type="number" inputmode="numeric" min="1" max="200" value="1" aria-live="polite"><button type="button" aria-label="Aumentar participantes" data-step="1"><?= icon('plus', 'ic-sm') ?></button></div>
+</div>
+<div class="sum-row" style="padding-top:0;margin-top:-6px;margin-bottom:10px" data-qty-total hidden><span>Total para <span data-qty-n>1</span> participantes</span><strong data-qty-sum><?= money($c['final_price']) ?></strong></div>
+<div class="buy-actions has-bar">
+<button class="btn btn-buy btn-lg btn-block" type="submit" name="buy_now" value="1">Comprar agora</button>
+<button class="btn btn-outline btn-block" type="submit"><?= icon('cart') ?>Adicionar ao carrinho</button>
+</div>
+</form>
+<?php else: ?>
+<div class="buy-price is-consult">Sob consulta</div>
+<p class="buy-note">O valor deste treinamento depende da turma e da legislação aplicável. Envie sua necessidade e retornamos com uma proposta.</p>
+<div class="buy-actions" style="margin-top:22px">
+<a class="btn btn-buy btn-lg btn-block" href="<?= e(url('/contato', ['assunto' => 'curso', 'curso' => $c['slug']])) ?>">Solicitar proposta</a>
+</div>
+<?php endif; ?>
+<div class="buy-incl">
+<div class="check"><?= icon('check') ?><?= e($c['hours_long']) ?> de carga horária</div>
+<div class="check"><?= icon('check') ?>Modalidade <?= e(mb_strtolower($c['modality_label'])) ?></div>
+<?php if ($c['certificate']): ?><div class="check"><?= icon('check') ?>Certificado de conclusão</div><?php endif; ?>
+<div class="check"><?= icon('check') ?>Compra para múltiplos participantes</div>
 </div>
 </div>
-</section>
-<div class="wrap">
-<div class="c-layout">
-<div>
+<div class="buy-foot"><?= icon('building') ?><span>Vai treinar uma equipe grande? <a href="<?= e(url('/contato', ['assunto' => 'empresas', 'curso' => $c['slug']])) ?>">Fale com nossa equipe</a></span></div>
+</div>
+</aside>
+<div class="c-main">
 <nav class="c-subnav" aria-label="Seções do curso" data-subnav>
 <?php foreach ($sections as [$id, $label]): ?><a href="#<?= e($id) ?>"><?= e($label) ?></a><?php endforeach; ?>
 </nav>
@@ -76,7 +107,7 @@ if ($c['certificate']) {
 <?php if ($c['description']): ?><?= nl2br(e($c['description'])) ?><?php else: ?><p><?= e(Course::factualSummary($c)) ?></p><?php endif; ?>
 </div>
 <?php if ($c['practical_required']): ?>
-<div class="note-box info"><?= icon('info') ?><span><strong>Parte prática obrigatória<?= $c['practical_hours'] ? ': ' . e($c['practical_hours']) : '' ?>.</strong> <?= $c['practical_note'] ? e($c['practical_note']) . ' ' : '' ?><?= e($practicalNote) ?> <a href="<?= e(url('/contato', ['assunto' => 'curso', 'curso' => $c['slug']])) ?>">Falar com a equipe</a></span></div>
+<div class="callout"><span class="callout-ic"><?= icon('hardhat') ?></span><div><strong>Parte prática presencial obrigatória</strong><p><?= $c['practical_hours'] ? e((ctype_digit($c['practical_hours'][0]) ? 'Carga prática: ' : '') . rtrim($c['practical_hours'], '.')) . '. ' : '' ?><?= $c['practical_note'] ? e($c['practical_note']) . ' ' : '' ?><?= e($practicalNote) ?></p><a class="text-link" href="<?= e(url('/contato', ['assunto' => 'curso', 'curso' => $c['slug']])) ?>">Combinar a parte prática com a equipe<?= icon('arrowR', 'ic-sm') ?></a></div></div>
 <?php endif; ?>
 </section>
 <section class="c-sec" id="c-publico">
@@ -134,44 +165,6 @@ if ($c['certificate']) {
 <?php endforeach; ?>
 </div>
 </section>
-</div>
-<aside class="c-aside" aria-label="Compra">
-<div class="buy-card">
-<div class="buy-body">
-<?php if ($c['has_price']): ?>
-<div class="buy-top"><?php if ($c['old_price']): ?><span class="price-old"><?= money($c['old_price']) ?></span><span class="pct">-<?= (int) $c['discount_pct'] ?>%</span><?php endif; ?></div>
-<div class="buy-price"><?= money($c['final_price']) ?></div>
-<p class="buy-note">Valor por participante<?= $c['practical_required'] ? ' · parte teórica online' : '' ?></p>
-<form id="buy-form" method="post" action="<?= e(url('/carrinho/adicionar')) ?>" data-add-to-cart data-buy-form data-unit="<?= e((string) $c['final_price']) ?>">
-<?= csrf_field() ?>
-<input type="hidden" name="course_id" value="<?= (int) $c['id'] ?>">
-<div class="qty-row">
-<label class="qty-label" for="qty">Participantes<small>Compre para você ou sua equipe</small></label>
-<div class="stepper" data-stepper><button type="button" aria-label="Diminuir participantes" data-step="-1" disabled><?= icon('minus', 'ic-sm') ?></button><input id="qty" name="qty" type="number" inputmode="numeric" min="1" max="200" value="1" aria-live="polite"><button type="button" aria-label="Aumentar participantes" data-step="1"><?= icon('plus', 'ic-sm') ?></button></div>
-</div>
-<div class="sum-row" style="padding-top:0;margin-top:-6px;margin-bottom:10px" data-qty-total hidden><span>Total para <span data-qty-n>1</span> participantes</span><strong data-qty-sum><?= money($c['final_price']) ?></strong></div>
-<div class="buy-actions has-bar">
-<button class="btn btn-buy btn-lg btn-block" type="submit" name="buy_now" value="1">Comprar agora</button>
-<button class="btn btn-outline btn-block" type="submit"><?= icon('cart') ?>Adicionar ao carrinho</button>
-</div>
-</form>
-<?php else: ?>
-<div class="buy-price is-consult">Sob consulta</div>
-<p class="buy-note">O valor deste treinamento depende da turma e da legislação aplicável. Envie sua necessidade e retornamos com uma proposta.</p>
-<div class="buy-actions" style="margin-top:22px">
-<a class="btn btn-buy btn-lg btn-block" href="<?= e(url('/contato', ['assunto' => 'curso', 'curso' => $c['slug']])) ?>">Solicitar proposta</a>
-</div>
-<?php endif; ?>
-<div class="buy-incl">
-<div class="check"><?= icon('check') ?><?= e($c['hours_long']) ?> de carga horária</div>
-<div class="check"><?= icon('check') ?>Modalidade <?= e(mb_strtolower($c['modality_label'])) ?></div>
-<?php if ($c['certificate']): ?><div class="check"><?= icon('check') ?>Certificado de conclusão</div><?php endif; ?>
-<div class="check"><?= icon('check') ?>Compra para múltiplos participantes</div>
-</div>
-</div>
-<div class="buy-foot"><?= icon('building') ?><span>Vai treinar uma equipe grande? <a href="<?= e(url('/contato', ['assunto' => 'empresas', 'curso' => $c['slug']])) ?>">Fale com nossa equipe</a></span></div>
-</div>
-</aside>
 </div>
 </div>
 <?php if ($related): ?>

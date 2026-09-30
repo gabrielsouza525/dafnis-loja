@@ -166,6 +166,16 @@ r = await ev(`${wait} const hdrBtn = document.querySelector('.hdr [data-theme-to
 check('celular: botão de tema dentro do menu', r.hdrHidden && r.visible && r.theme === 'dark', r);
 await ev(`localStorage.removeItem('dafnis-theme'); return 1`);
 
+// Página do curso: compra visível sem rolar, cartão fixo ao rolar; no celular a placa gerada some
+await go('/cursos/nr-33-espacos-confinados-trabalhador-e-vigia');
+r = await ev(`${wait} const btn = document.querySelector('.buy-card [name=buy_now]'); const before = Math.round(btn.getBoundingClientRect().bottom);
+  scrollTo(0, 1500); await w(300); const card = Math.round(document.querySelector('.buy-card').getBoundingClientRect().top); scrollTo(0, 0);
+  return { before, vh: innerHeight, card, heroDark: getComputedStyle(document.querySelector('.c-hero-bg')).backgroundColor };`);
+check('curso: "Comprar agora" visível sem rolar e cartão fixo ao rolar', r.before < r.vh && r.card === 96, r);
+await go('/cursos/nr-33-espacos-confinados-trabalhador-e-vigia', 390);
+r = await ev(`const cover = document.querySelector('.c-aside .cover'); return { coverHidden: cover.offsetParent === null, price: !!document.querySelector('.buy-card .buy-price') }`);
+check('curso no celular: placa gerada escondida, preço logo depois do topo', r.coverHidden && r.price, r);
+
 // Sem rolagem lateral em nenhuma largura
 const overflow = [];
 for (const width of [360, 768, 960, 1180, 1440]) {
