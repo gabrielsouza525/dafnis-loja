@@ -3,6 +3,14 @@
  * @var int $total @var array $categories @var array $featured @var array $bestsellers @var array $nrIndex
  * @var array|null $heroCourse @var array|null $certCourse @var array $stats @var ?string $about @var array $faq
  */
+// Foto de fundo do topo: public/assets/img/hero-{largura}.jpg (sem arquivo, fica o fundo azul com grade).
+// Foto atual: Rafael Juárez, Unsplash (hTUdXgbhd3o), licença Unsplash. Para trocar, substitua os 3 arquivos.
+$heroImages = [];
+foreach ([960, 1600, 2400] as $w) {
+    if (is_file(BASE_PATH . '/public/assets/img/hero-' . $w . '.jpg')) {
+        $heroImages[$w] = asset('img/hero-' . $w . '.jpg');
+    }
+}
 $whys = [
     ['title' => 'Conteúdo profissional', 'text' => 'Conteúdos organizados de forma clara, objetiva e aplicada à rotina de trabalho.', 'icon' => 'clipcheck'],
     ['title' => 'Plataforma online', 'text' => 'Estude pelo computador ou celular, no seu ritmo.', 'icon' => 'monitor'],
@@ -14,58 +22,24 @@ $whys = [
 ?>
 <div class="screen">
 <section class="hero">
+<?php if ($heroImages): ?>
+<img class="hero-bg" src="<?= e($heroImages[1600] ?? reset($heroImages)) ?>" srcset="<?= e(implode(', ', array_map(static fn ($w, $src) => $src . ' ' . $w . 'w', array_keys($heroImages), $heroImages))) ?>" sizes="100vw" alt="" fetchpriority="high" decoding="async">
+<?php endif; ?>
+<div class="hero-shade" aria-hidden="true"></div>
+<div class="grid-bg" aria-hidden="true"></div>
 <div class="wrap hero-in">
-<div>
 <div class="kicker">Educação corporativa · Segurança do trabalho</div>
 <h1>Treinamentos profissionais para preparar <span>você e sua empresa.</span></h1>
 <p class="hero-sub">Capacite sua equipe com treinamentos online, conteúdos especializados e certificação.</p>
 <div class="hero-ctas">
 <a class="btn btn-primary btn-lg" href="<?= e(url('/cursos')) ?>">Explorar cursos<?= icon('arrowR') ?></a>
-<a class="btn btn-outline btn-lg" href="#categorias">Conhecer treinamentos</a>
+<a class="btn btn-line-w btn-lg" href="#categorias">Conhecer treinamentos</a>
 </div>
 <ul class="hero-points">
 <li class="hero-point"><?= icon('check') ?>NRs e cursos complementares</li>
 <li class="hero-point"><?= icon('check') ?>Certificado de conclusão</li>
 <li class="hero-point"><?= icon('check') ?>Soluções para empresas</li>
 </ul>
-</div>
-<div class="hero-visual">
-<div class="hv-panel" aria-hidden="true">
-<div class="grid-bg"></div>
-<div class="hv-tag"><span>EPI · Capacete de segurança</span><span>Vista frontal</span></div>
-<svg class="hv-drawing" viewBox="0 0 320 230">
-<path class="ln2" d="M160 30 V200"></path>
-<path class="ln" d="M52 168 A108 104 0 0 1 268 168"></path>
-<path class="ln" d="M30 168 H290 Q296 168 296 174 V178 Q296 184 290 184 H30 Q24 184 24 178 V174 Q24 168 30 168 Z"></path>
-<path class="ln" d="M138 66 Q160 58 182 66"></path>
-<path class="ln" d="M132 168 C132 118 140 86 150 68"></path>
-<path class="ln" d="M188 168 C188 118 180 86 170 68"></path>
-<path class="ln2" d="M78 168 C82 132 100 104 124 86"></path>
-<path class="ln2" d="M242 168 C238 132 220 104 196 86"></path>
-<path class="ln2" d="M60 150 H260"></path>
-<path class="dim" d="M24 206 H296 M24 200 V212 M296 200 V212"></path>
-<path class="dim" d="M308 64 V184 M302 64 H314 M302 184 H314"></path>
-<circle class="dot" cx="226" cy="104" r="3.5"></circle>
-<path class="dim" d="M226 104 L262 80 H290"></path>
-<circle class="dot" cx="100" cy="176" r="3.5"></circle>
-<path class="dim" d="M100 176 L70 140 H36"></path>
-<text x="266" y="75">01 CASCO</text>
-<text x="36" y="134">02 ABA</text>
-<text x="140" y="224">LARGURA</text>
-</svg>
-<div class="hv-stripe"></div>
-</div>
-<?php if ($heroCourse): ?>
-<a class="hv-card hv-course" href="<?= e($heroCourse['url']) ?>" aria-label="<?= e('Ver curso ' . $heroCourse['display_title']) ?>">
-<div class="hv-row"><span class="hv-plate"><?= e($heroCourse['code_label']) ?></span><div><div class="hv-title">Espaços Confinados</div><div class="hv-sub">Trabalhador e Vigia</div></div></div>
-<div class="hv-chips"><span class="mini-chip"><?= e($heroCourse['modality_label']) ?></span><span class="mini-chip"><?= e($heroCourse['hours_label']) ?></span></div>
-</a>
-<?php endif; ?>
-<div class="hv-card hv-cert" aria-hidden="true">
-<div class="hv-row"><span class="hv-badge"><?= icon('award') ?></span><div><div class="hv-title">Certificado de conclusão</div><div class="hv-sub">[Nome do participante]</div></div></div>
-<div class="hv-foot"><span><strong><?= e($certCourse['code_label'] ?? 'NR 10') ?></strong> · <?= e($certCourse['hours_label'] ?? '40 h') ?></span><span>Emitido em [data]</span></div>
-</div>
-</div>
 </div>
 </section>
 
