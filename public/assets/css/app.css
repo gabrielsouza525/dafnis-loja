@@ -713,7 +713,7 @@ body.lock{overflow:hidden}
   .hdr-in{gap:18px}
   .nav-link{padding:8px 9px;font-size:14px}
   .nav-link.on::after{left:9px;right:9px}
-  .hide-t{display:none}
+  .hide-t,.hdr-cta{display:none}
   .hero h1{font-size:52px}
   .grid4{grid-template-columns:repeat(3,minmax(0,1fr))}
   .grid4 > .card:nth-child(n+7){display:none}
@@ -929,6 +929,12 @@ body.lock{overflow:hidden}
   .table th,.table td{padding:12px}
   .dl{grid-template-columns:1fr;gap:2px}
   .dl dd{margin-bottom:10px}
+}
+
+/* ===== celulares pequenos (até 400 px): cabe logo + 3 ícones sem rolagem lateral ===== */
+@media (max-width: 400px){
+  .logo-sub{letter-spacing:.03em}
+  .icon-btn{width:40px}
 }
 
 /* ==========================================================================
