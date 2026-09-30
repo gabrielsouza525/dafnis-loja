@@ -183,16 +183,32 @@ await go('/cursos/nr-33-espacos-confinados-trabalhador-e-vigia', 390);
 r = await ev(`const cover = document.querySelector('.c-aside .cover'); return { coverHidden: cover.offsetParent === null, price: !!document.querySelector('.buy-card .buy-price') }`);
 check('curso no celular: placa gerada escondida, preço logo depois do topo', r.coverHidden && r.price, r);
 
-// Sem rolagem lateral em nenhuma largura
+// Nada passa da borda: nem rolagem lateral, nem conteúdo cortado por um contêiner com overflow
+// escondido (ex.: a busca do catálogo saindo pela direita do topo). Só faixas com rolagem própria
+// (carrosséis, abas) e desenhos decorativos (aria-hidden, svg) podem passar.
 const overflow = [];
-for (const width of [360, 768, 960, 1180, 1440]) {
+const outside = `const vw = document.documentElement.clientWidth; const out = [];
+  for (const el of document.querySelectorAll('body *')) {
+    if (el.closest('[hidden], [aria-hidden="true"], .drawer-root, .toasts, .skip-link, template, svg')) continue;
+    const r = el.getBoundingClientRect(); if (!r.width || !r.height || getComputedStyle(el).position === 'fixed') continue;
+    let limit = vw, clip = null;
+    for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) {
+      const ox = getComputedStyle(a).overflowX;
+      if (ox === 'auto' || ox === 'scroll') { limit = null; break; }
+      if (!clip && (ox === 'hidden' || ox === 'clip')) clip = a;
+    }
+    if (limit !== null && clip) limit = Math.min(vw, clip.getBoundingClientRect().right);
+    if (limit !== null && r.right > limit + 1) out.push((typeof el.className === 'string' && el.className ? '.' + el.className.split(' ')[0] : el.tagName) + ' +' + Math.round(r.right - limit) + 'px');
+  }
+  return { scroll: document.documentElement.scrollWidth - vw, out: [...new Set(out)].slice(0, 3) };`;
+for (const width of [360, 768, 960, 1024, 1180, 1280, 1440]) {
   for (const path of ['/', '/cursos', '/cursos/nr-33-espacos-confinados-trabalhador-e-vigia', '/carrinho', '/login']) {
     await go(path, width);
-    const o = await ev(`return document.documentElement.scrollWidth - document.documentElement.clientWidth`);
-    if (o > 0) overflow.push(`${path} @${width}px: +${o}px`);
+    const o = await ev(outside);
+    if (o.scroll > 0 || o.out.length) overflow.push(`${path} @${width}px: ${o.scroll > 0 ? 'rola +' + o.scroll + 'px ' : ''}${o.out.join(', ')}`);
   }
 }
-check('sem rolagem lateral de 360 a 1440 px', overflow.length === 0, overflow);
+check('nada passa da borda da tela de 360 a 1440 px', overflow.length === 0, overflow);
 
 check('nenhum erro de JavaScript', errors.length === 0, errors);
 console.log(fails ? `\n${fails} falha(s)` : '\nTudo certo');
