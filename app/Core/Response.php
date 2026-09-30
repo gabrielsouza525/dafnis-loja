@@ -5,6 +5,9 @@ namespace App\Core;
 
 class Response
 {
+    /** Códigos fora do padrão HTTP que a loja usa, com a frase enviada na linha de status. */
+    private const NONSTANDARD = [419 => 'Page Expired'];
+
     private ?string $filePath = null;
 
     public function __construct(
@@ -79,7 +82,14 @@ class Response
     public function send(): void
     {
         if (!headers_sent()) {
-            http_response_code($this->status);
+            if (isset(self::NONSTANDARD[$this->status])) {
+                // O Apache (mod_php) troca por 500 os códigos que não conhece, como o 419,
+                // quando a linha de status vem sem a frase. Com a frase, ele respeita o código.
+                $protocol = $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.1';
+                header(sprintf('%s %d %s', $protocol, $this->status, self::NONSTANDARD[$this->status]), true, $this->status);
+            } else {
+                http_response_code($this->status);
+            }
             foreach ($this->headers as $name => $value) {
                 header("$name: $value");
             }
