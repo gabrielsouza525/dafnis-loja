@@ -40,6 +40,7 @@ body.admin{background:var(--gray)}
 .pager-admin a,.pager-admin span.cur{min-width:34px;height:34px;padding:0 10px;border-radius:8px;border:1px solid var(--line);display:grid;place-items:center;font-weight:600;color:var(--navy);background:#fff;text-decoration:none}
 .pager-admin span.cur{background:var(--navy);border-color:var(--navy);color:#fff}
 .grid-2{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:22px;align-items:start}
+.grid-2 > *{min-width:0}
 .grid-2 > aside{display:flex;flex-direction:column;gap:22px}
 .grid-2 > aside .panel + .panel{margin-top:0}
 .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
@@ -63,7 +64,7 @@ body.admin{background:var(--gray)}
 .inline-form .field{flex:1;min-width:140px}
 .code-box{font-family:var(--mono);font-size:12px;background:var(--gray);border:1px solid var(--line);border-radius:8px;padding:10px;white-space:pre-wrap;word-break:break-all;max-height:220px;overflow:auto}
 @media (max-width: 1180px){
-  .grid-2{grid-template-columns:1fr}
+  .grid-2{grid-template-columns:minmax(0,1fr)}
   .kpis-admin{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media (max-width: 940px){

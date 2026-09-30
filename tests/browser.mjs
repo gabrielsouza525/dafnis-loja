@@ -237,6 +237,22 @@ for (const width of [360, 768, 960, 1024, 1180, 1280, 1440]) {
 }
 check('nada passa da borda da tela de 360 a 1440 px', overflow.length === 0, overflow);
 
+// Painel da equipe: entra como admin de demonstração e confere as telas com colunas laterais
+await go('/login');
+await ev(`document.querySelector('#f-email').value = 'admin@dafnis.test'; document.querySelector('#f-password').value = 'dafnis123'; document.querySelector('.auth-form').submit(); return 1`);
+await sleep(1500);
+const admOver = [];
+for (const width of [390, 1024, 1440]) {
+  for (const path of ['/admin', '/admin/pedidos', '/admin/pedidos/1', '/admin/matriculas', '/admin/matriculas/1', '/admin/cursos', '/admin/configuracoes']) {
+    await go(path, width);
+    const at = await ev(`return location.pathname`);
+    if (!at.replace(/\/$/, '').endsWith(path)) { admOver.push(`${path} @${width}px: abriu ${at}`); continue; }
+    const o = await ev(outside);
+    if (o.scroll > 0 || o.out.length) admOver.push(`${path} @${width}px: ${o.scroll > 0 ? 'rola +' + o.scroll + 'px ' : ''}${o.out.join(', ')}`);
+  }
+}
+check('painel: nada passa da borda (390, 1024 e 1440 px)', admOver.length === 0, admOver);
+
 check('nenhum erro de JavaScript', errors.length === 0, errors);
 console.log(fails ? `\n${fails} falha(s)` : '\nTudo certo');
 ws.close(); chrome.kill(); process.exit(fails ? 1 : 0);
