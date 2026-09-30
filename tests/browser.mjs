@@ -166,6 +166,13 @@ r = await ev(`${wait} const hdrBtn = document.querySelector('.hdr [data-theme-to
 check('celular: botão de tema dentro do menu', r.hdrHidden && r.visible && r.theme === 'dark', r);
 await ev(`localStorage.removeItem('dafnis-theme'); return 1`);
 
+// Catálogo: topo escuro e NRs como botões (clicar no botão filtra e ele fica marcado)
+await go('/cursos');
+r = await ev(`${wait} const chip = document.querySelector('label[for="f-nr-33"]'); const bgBefore = getComputedStyle(chip).backgroundColor;
+  chip.click(); await w(1200); return { checked: document.querySelector('#f-nr-33').checked, bgBefore, bgAfter: getComputedStyle(document.querySelector('label[for="f-nr-33"]').closest('.f-opt')).backgroundColor,
+  count: document.querySelector('.results-count strong').textContent, heroBg: getComputedStyle(document.querySelector('.phead-dark')).backgroundColor };`);
+check('catálogo: botão de NR filtra e fica marcado', r.checked && r.count === '5' && r.bgAfter !== r.bgBefore, r);
+
 // Página do curso: compra visível sem rolar, cartão fixo ao rolar; no celular a placa gerada some
 await go('/cursos/nr-33-espacos-confinados-trabalhador-e-vigia');
 r = await ev(`${wait} const btn = document.querySelector('.buy-card [name=buy_now]'); const before = Math.round(btn.getBoundingClientRect().bottom);

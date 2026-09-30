@@ -4,7 +4,8 @@ use App\Core\View;
 use App\Services\Catalog;
 ?>
 <div class="screen">
-<section class="phead">
+<section class="phead phead-dark">
+<div class="grid-bg" aria-hidden="true"></div>
 <div class="wrap">
 <?= partial('crumbs', ['items' => $context['crumbs']]) ?>
 <div class="phead-row">
