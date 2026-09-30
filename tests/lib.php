@@ -11,6 +11,9 @@ final class Client
     /** Subpasta da loja (ex.: "/dafnis-loja" no Apache do XAMPP); vazio quando roda na raiz. */
     private string $prefix;
 
+    /** A exportação da prévia (bin/static-export.php) precisa das páginas como vieram, com o prefixo. */
+    public static bool $keepPrefix = false;
+
     public function __construct(private string $base)
     {
         $this->prefix = rtrim((string) parse_url($base, PHP_URL_PATH), '/');
@@ -43,7 +46,7 @@ final class Client
         curl_close($ch);
         $head = substr($raw, 0, $headerSize);
         $body = substr($raw, $headerSize);
-        if ($this->prefix !== '') {
+        if ($this->prefix !== '' && !self::$keepPrefix) {
             // Os testes procuram links como href="/cursos/..."; com a loja numa subpasta eles vêm
             // como href="/dafnis-loja/cursos/...". Tira o prefixo para os mesmos testes valerem nos dois casos.
             $body = str_replace(['="' . $this->prefix . '/', '="' . $this->prefix . '"'], ['="/', '="/"'], $body);

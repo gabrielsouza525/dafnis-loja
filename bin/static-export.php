@@ -27,6 +27,7 @@ use App\Models\Category;
 use App\Models\Course;
 
 restore_exception_handler();
+Client::$keepPrefix = true; // as páginas saem com os links do jeito que a loja gerou
 
 [$server, $out] = [rtrim($argv[1] ?? '', '/'), rtrim($argv[2] ?? '', '/\\')];
 if ($server === '' || $out === '' || !static_demo()) {
