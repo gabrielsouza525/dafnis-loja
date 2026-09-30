@@ -21,6 +21,7 @@ final class CartController extends Controller
         return $this->view('site/cart', array_merge($this->cartData(), [
             'title' => 'Carrinho',
             'noindex' => true,
+            'bodyClass' => 'has-bar-page', // barra fixa com o total no celular
         ]));
     }
 

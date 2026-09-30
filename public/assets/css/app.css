@@ -46,7 +46,7 @@ fieldset{margin:0;padding:0;border:0;min-width:0}
 @media (prefers-reduced-motion: reduce){*,*::before{animation:none !important;transition:none !important}html{scroll-behavior:auto}}
 
 /* Componentes que o protótipo fazia com <button> e aqui são links */
-.btn,.nav-link,.logo,.cat,.mega-item,.chip,.crumb,.ftr-link,.d-link,.text-link,.cover,.social,.achip,.link-btn,.icon-btn,.card-title a,.cart-prod h3 a,.f-clear,.acc-nav a,.mod-q,.pager a{text-decoration:none}
+.btn,.nav-link,.logo,.cat,.mega-item,.chip,.crumb,.ftr-link,.d-link,.text-link,.cover,.social,.achip,.link-btn,.icon-btn,.card-title a,.cart-info h3 a,.f-clear,.acc-nav a,.mod-q,.pager a{text-decoration:none}
 
 /* demo bar → aviso da loja */
 .demobar{background:var(--navy-deep);color:#C9D4E5;font-size:12.5px;line-height:1.4;padding:8px 16px;display:flex;justify-content:center;align-items:center;gap:8px;text-align:center}
@@ -551,31 +551,44 @@ fieldset{margin:0;padding:0;border:0;min-width:0}
 .step.done{color:var(--ink)}
 .step.done .step-n{background:var(--green);border-color:var(--green);color:#fff}
 .step.done .step-n .ic{width:14px;height:14px;stroke-width:2.4}
+.phead-dark .steps{margin-top:22px}
+.phead-dark .step{color:#9FB3CF}
+.phead-dark .step:not(:first-child)::before{background:rgba(255,255,255,.22)}
+.phead-dark .step-n{background:transparent;border-color:rgba(255,255,255,.3);color:#C9D4E5}
+.phead-dark .step.on,.phead-dark .step.done{color:#fff}
+.phead-dark .step.on .step-n{background:#fff;border-color:#fff;color:#0B2545}
 .cart-layout{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:40px;padding:36px 0 100px;align-items:start}
 .cart-list{border:1px solid var(--line);border-radius:16px;background:var(--surface);overflow:hidden}
-.cart-head,.cart-row{display:grid;grid-template-columns:minmax(0,1fr) 150px 150px 44px;gap:20px;align-items:center;padding:0 24px}
-.cart-head{height:48px;background:var(--gray);font-size:12px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;border-bottom:1px solid var(--line)}
-.cart-head span:nth-child(3){text-align:right}
-.cart-row{padding:20px 24px;animation:fadeUp .3s ease}
+.cart-list-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:18px 24px;border-bottom:1px solid var(--line)}
+.cart-list-head h2{font-size:18px}
+.cart-list-head span{font-size:13.5px;color:var(--muted)}
+.cart-row{display:grid;grid-template-columns:120px minmax(0,1fr) auto;gap:20px;align-items:start;padding:22px 24px;animation:fadeUp .3s ease}
 .cart-row + .cart-row{border-top:1px solid var(--line)}
 .cart-row.is-leaving{opacity:0;transform:translateX(-8px);transition:opacity .2s,transform .2s}
-.cart-prod{display:flex;gap:16px;align-items:center;min-width:0}
-.thumb{width:96px;height:66px;border-radius:10px;flex-shrink:0;aspect-ratio:auto}
-.thumb .plate{padding:10px 12px 12px}
-.thumb .plate-code{font-size:20px}
-.thumb .plate-code.is-text{font-size:12px;max-width:100%}
+.cart-thumb{display:block}
+.thumb{width:120px;height:84px;border-radius:10px;flex-shrink:0;aspect-ratio:auto}
+.thumb .plate{padding:10px 12px 14px}
+.thumb .plate-code{font-size:24px}
+.thumb .plate-code.is-text{font-size:13px;max-width:100%}
 .thumb .plate-kicker,.thumb .plate-icon{display:none}
-.thumb .plate-stripe{width:36px;height:4px}
-.cart-prod h3{font-size:15.5px;line-height:1.3}
-.cart-prod h3 a{color:inherit}
-.cart-prod h3 a:hover{color:var(--blue-dk)}
-.cart-meta{font-size:13px;color:var(--muted);margin-top:4px}
+.thumb .plate-stripe{width:40px;height:4px}
+.cart-info{min-width:0;display:flex;flex-direction:column;gap:8px}
+.cart-info h3{font-size:16.5px;line-height:1.3}
+.cart-info h3 a{color:inherit}
+.cart-info h3 a:hover{color:var(--blue-dk)}
+.cart-unit{font-size:13px;color:var(--muted)}
+.cart-side{display:flex;flex-direction:column;align-items:flex-end;gap:10px;min-width:150px}
 .line-total{text-align:right}
-.line-total strong{display:block;font-family:var(--display);font-weight:700;font-size:18px;color:var(--ink)}
-.line-total small{font-size:12.5px;color:var(--muted);display:block}
+.line-total strong{display:block;font-family:var(--display);font-weight:700;font-size:20px;letter-spacing:-.01em;color:var(--ink);line-height:1.2}
 .line-total s{font-size:12.5px;color:var(--muted)}
+.cart-qty{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.cart-qty-label{font-size:11.5px;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.remove{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 8px;margin-right:-8px;border:0;border-radius:8px;background:none;font-size:13px;font-weight:500;color:var(--muted);transition:background .15s,color .15s}
 .remove:hover{background:var(--red-tint);color:var(--red)}
-.cart-under{display:flex;justify-content:space-between;align-items:center;margin-top:16px;gap:16px;flex-wrap:wrap}
+.cart-note{margin-top:16px}
+.cart-back{margin-top:12px}
+.cart-empty{padding:40px 0 100px}
+.cart-empty .empty-sugg .grid4 .card-actions{grid-template-columns:1fr 1fr}
 .summary{border:1px solid var(--line);border-radius:16px;background:var(--surface);padding:26px;position:sticky;top:96px;box-shadow:var(--shadow)}
 .summary h2{font-size:20px;margin-bottom:12px}
 .sum-row{display:flex;justify-content:space-between;gap:12px;font-size:15px;padding:7px 0;color:var(--text)}
@@ -587,7 +600,15 @@ fieldset{margin:0;padding:0;border:0;min-width:0}
 .sum-total span{font-weight:600;color:var(--ink)}
 .sum-total strong{font-family:var(--display);font-size:30px;letter-spacing:-.02em;color:var(--ink)}
 .saving{font-size:13px;color:var(--green-dk);text-align:right;margin-top:2px}
-.coupon{display:flex;gap:8px;margin:18px 0 6px}
+.coupon{display:flex;gap:8px;margin:12px 0 6px}
+.coupon-box{margin:12px 0 4px;border-top:1px solid var(--line-2);padding-top:12px}
+.coupon-box summary{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;font-weight:600;color:var(--blue-dk);list-style:none}
+.coupon-box summary::-webkit-details-marker{display:none}
+.coupon-box summary:hover{color:var(--navy-ink)}
+.sum-perks{display:flex;flex-direction:column;gap:10px;margin-top:20px;padding-top:18px;border-top:1px solid var(--line-2)}
+.sum-perks li{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;color:var(--text)}
+.sum-perks .ic{color:var(--green);margin-top:1px}
+.m-buybar.cart-bar .mb-price small{text-decoration:none}
 .input,.textarea,.form-select{width:100%;height:46px;border:1px solid var(--line-strong);border-radius:10px;padding:0 14px;font:inherit;font-size:15px;color:var(--ink);background:var(--surface);transition:border-color .15s,box-shadow .15s}
 .textarea{height:auto;min-height:120px;padding:12px 14px;resize:vertical;line-height:1.5}
 .form-select{appearance:none;-webkit-appearance:none;padding-right:40px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23566074' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:16px}
@@ -977,14 +998,15 @@ body.lock{overflow:hidden}
   .step.on span:last-child{display:inline}
   .step:not(:first-child)::before{width:20px;margin:0 8px}
   .cart-layout{padding:20px 0 64px;gap:20px}
-  .cart-head{display:none}
-  .cart-row{grid-template-columns:minmax(0,1fr) auto 40px;gap:14px 12px;padding:16px}
-  .cart-prod{grid-column:1 / span 2;grid-row:1}
-  .remove{grid-column:3;grid-row:1;align-self:start}
-  .cart-qty{grid-column:1;grid-row:2}
-  .line-total{grid-column:2 / span 2;grid-row:2}
-  .thumb{width:72px;height:56px}
-  .thumb .plate-code{font-size:16px}
+  .cart-list-head{padding:14px 16px;flex-direction:column;align-items:flex-start;gap:2px}
+  .cart-row{grid-template-columns:76px minmax(0,1fr);gap:12px 14px;padding:16px}
+  .thumb{width:76px;height:60px}
+  .thumb .plate-code{font-size:17px}
+  .cart-info h3{font-size:15.5px}
+  .cart-side{grid-column:1 / -1;flex-direction:row;align-items:center;justify-content:space-between;flex-wrap:wrap;min-width:0;gap:10px 14px;padding-top:12px;border-top:1px dashed var(--line)}
+  .cart-side .line-total{order:2;margin-left:auto}
+  .cart-side .cart-qty{order:1;flex-direction:row;align-items:center;gap:10px}
+  .cart-side form[data-remove]{order:3}
   .summary{padding:20px}
   .form-card{padding:20px}
   .fields{grid-template-columns:1fr}

@@ -99,6 +99,12 @@ check('remover item do carrinho sem recarregar', r.rows === 1 && r.toast.some((t
 r = await ev(`${wait} const i = document.querySelector('#cupom'); i.value = 'BEMVINDO10'; i.form.requestSubmit(); await w(1500);
   return { ok: document.querySelector('.msg-ok')?.textContent || '', total: document.querySelector('.sum-total strong').textContent };`);
 check('aplicar cupom sem recarregar', /BEMVINDO10/.test(r.ok), r);
+await go('/carrinho', 390);
+r = await ev(`${wait} const bar = document.querySelector('.cart-bar'); const before = { visible: bar.getBoundingClientRect().height > 0 && bar.getBoundingClientRect().bottom <= innerHeight + 1, bar: bar.querySelector('strong').textContent, sum: document.querySelector('.sum-total strong').textContent };
+  document.querySelector('[data-cart-row] [data-step="1"]').click(); await w(1500);
+  const after = { bar: document.querySelector('.cart-bar strong').textContent, sum: document.querySelector('.sum-total strong').textContent };
+  return { before, after };`);
+check('carrinho no celular: barra fixa com o total, atualizada ao mudar participantes', r.before.visible && r.before.bar === r.before.sum && r.after.bar === r.after.sum && r.after.sum !== r.before.sum, r);
 
 // Máscaras e login (checkout exige conta)
 await go('/cadastro?volta=/checkout');

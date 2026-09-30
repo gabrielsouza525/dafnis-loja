@@ -1,6 +1,7 @@
 <?php /** @var array $lines @var array $totals */ ?>
 <div class="screen">
-<section class="phead">
+<section class="phead phead-dark">
+<div class="grid-bg" aria-hidden="true"></div>
 <div class="wrap">
 <?= partial('crumbs', ['items' => [['Início', '/'], ['Carrinho', null]]]) ?>
 <div class="phead-row"><div><h1>Seu carrinho</h1>
