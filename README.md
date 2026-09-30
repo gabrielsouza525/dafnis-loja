@@ -156,7 +156,8 @@ STATIC_DEMO=true APP_URL=https://gabrielsouza525.github.io/dafnis-loja php -S lo
 STATIC_DEMO=true APP_URL=https://gabrielsouza525.github.io/dafnis-loja php bin/static-export.php http://localhost:8001 ../dafnis-pages
 ```
 
-Depois, publique o conteúdo de `../dafnis-pages` no branch `gh-pages`. Na loja publicada o modo
+Depois, publique o conteúdo de `../dafnis-pages` no branch `gh-pages` e ative o Pages no repositório
+(Settings › Pages › branch `gh-pages`). **Em 30/09/2026 a prévia foi tirada do ar** (branch `gh-pages` apagado). Na loja publicada o modo
 prévia fica desligado (sem `STATIC_DEMO` no ambiente).
 
 ## Catálogo
