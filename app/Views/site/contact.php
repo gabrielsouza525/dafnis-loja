@@ -7,9 +7,17 @@ use App\Controllers\Site\PageController;
 
 $sent = App\Core\App::request()?->query('enviado') === '1';
 $current = has_old() ? old('subject', $subject) : $subject;
+// Um cartão por assunto (os rótulos vêm de PageController::SUBJECTS)
+$topics = [
+    'empresas' => ['building', 'Vagas para equipes e proposta'],
+    'curso' => ['book', 'Carga horária, modalidade, parte prática'],
+    'conteudo' => ['file', 'Ementa oficial do treinamento'],
+    'duvida' => ['message', 'Compra, acesso ou certificado'],
+];
 ?>
 <div class="screen">
-<section class="phead">
+<section class="phead phead-dark">
+<div class="grid-bg" aria-hidden="true"></div>
 <div class="wrap">
 <?= partial('crumbs', ['items' => [['Início', '/'], ['Contato', null]]]) ?>
 <div class="phead-row"><div><h1>Fale com a nossa equipe</h1><p>Dúvidas sobre treinamentos, conteúdo programático ou uma proposta para a sua empresa.</p></div></div>
@@ -19,19 +27,27 @@ $current = has_old() ? old('subject', $subject) : $subject;
 <div class="contact-grid">
 <div>
 <?php if ($sent): ?>
-<div class="empty" style="border-style:solid">
-<span class="empty-ic" style="background:var(--green-tint);color:var(--green-dk)"><?= icon('check') ?></span>
-<h2 style="font-size:22px">Mensagem enviada</h2>
+<div class="form-card contact-sent">
+<span class="success-ic"><?= icon('check') ?></span>
+<h2>Mensagem enviada</h2>
 <p>Recebemos o seu contato. A nossa equipe responde pelo e-mail ou telefone informado.</p>
-<a class="btn btn-primary" href="<?= e(url('/cursos')) ?>">Voltar ao catálogo</a>
+<div class="contact-sent-actions"><a class="btn btn-primary" href="<?= e(url('/cursos')) ?>">Voltar ao catálogo<?= icon('arrowR') ?></a><a class="btn btn-outline" href="<?= e(url('/')) ?>">Ir para o início</a></div>
 </div>
 <?php else: ?>
 <form class="form-card" method="post" action="<?= e(url('/contato')) ?>" data-loading-form>
 <?= csrf_field() ?>
 <div class="form-sec">
-<h2><span><?= icon('message', 'ic-sm') ?></span>Sua mensagem</h2>
+<h2><span>1</span>Sobre o que você quer falar?</h2>
+<div class="topics" role="radiogroup" aria-label="Assunto">
+<?php foreach (PageController::SUBJECTS as $key => $label): [$ic, $sub] = $topics[$key] ?? ['message', '']; ?>
+<label class="pay topic"><input type="radio" name="subject" value="<?= e($key) ?>"<?= checked($current === $key) ?>><span class="pay-top"><?= icon($ic) ?><span class="radio"></span></span><span><strong><?= e($label) ?></strong><small><?= e($sub) ?></small></span></label>
+<?php endforeach; ?>
+</div>
+<?php if ($err = field_error('subject')): ?><p class="field-error"><?= icon('alert') ?><?= e($err) ?></p><?php endif; ?>
+</div>
+<div class="form-sec">
+<h2><span>2</span>Seus dados e a mensagem</h2>
 <div class="fields" style="margin-top:20px">
-<div class="full"><?= partial('field', ['name' => 'subject', 'label' => 'Assunto', 'type' => 'select', 'value' => $current, 'options' => PageController::SUBJECTS]) ?></div>
 <?php if ($course): ?>
 <input type="hidden" name="course_slug" value="<?= e($course['slug']) ?>">
 <div class="full"><div class="note-box info" style="margin-top:0"><?= icon('book') ?><span>Treinamento: <strong><?= e($course['display_title']) ?></strong></span></div></div>
@@ -51,13 +67,16 @@ $current = has_old() ? old('subject', $subject) : $subject;
 <?php endif; ?>
 </div>
 <aside class="contact-aside">
-<div class="help" style="margin-top:0">
-<h3>Atendimento para empresas</h3>
-<p>Compra de vagas para equipes, condições corporativas e organização das turmas.</p>
-<a class="text-link" href="<?= e(url('/cursos')) ?>">Ver catálogo<?= icon('arrowR', 'ic-sm') ?></a>
+<div class="help contact-steps">
+<h3>Como funciona</h3>
+<ol>
+<li><span>1</span><div><strong>Você envia a mensagem</strong><small>Conte o que precisa: treinamentos, número de participantes, prazos.</small></div></li>
+<li><span>2</span><div><strong>A equipe responde</strong><small>Pelo e-mail ou telefone que você informar.</small></div></li>
+<li><span>3</span><div><strong>Para empresas, a proposta</strong><small>Com as vagas, os valores e a organização das turmas.</small></div></li>
+</ol>
 </div>
 <?php if ($whatsapp || $phone || $email): ?>
-<div class="help" style="margin-top:0">
+<div class="help">
 <h3>Outros canais</h3>
 <div class="checks" style="margin-top:12px">
 <?php if ($whatsapp): ?><a class="check" href="<?= e(wa_link($whatsapp, 'Olá! Vim pelo site da Dafnis Treinamentos.')) ?>" target="_blank" rel="noopener"><?= icon('whatsapp') ?><?= e(phone_display($whatsapp)) ?></a><?php endif; ?>
@@ -66,6 +85,11 @@ $current = has_old() ? old('subject', $subject) : $subject;
 </div>
 </div>
 <?php endif; ?>
+<div class="help contact-links">
+<a href="<?= e(url('/#faq')) ?>"><?= icon('info', 'ic-sm') ?>Perguntas frequentes<?= icon('arrowR', 'ic-sm') ?></a>
+<a href="<?= e(url('/cursos')) ?>"><?= icon('book', 'ic-sm') ?>Catálogo de treinamentos<?= icon('arrowR', 'ic-sm') ?></a>
+<a href="<?= e(url('/nrs')) ?>"><?= icon('clipboard', 'ic-sm') ?>Treinamentos por NR<?= icon('arrowR', 'ic-sm') ?></a>
+</div>
 </aside>
 </div>
 </div>

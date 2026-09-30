@@ -33,6 +33,6 @@
 
   // Contato aberto a partir de um botão ("Fale com nossa equipe", "Solicitar proposta"...).
   var subject = new URLSearchParams(location.search).get('assunto');
-  var select = doc.querySelector('select[name="subject"]');
-  if (subject && select && select.querySelector('option[value="' + subject + '"]')) select.value = subject;
+  var topic = subject && doc.querySelector('input[name="subject"][value="' + subject + '"]');
+  if (topic) topic.checked = true;
 })();

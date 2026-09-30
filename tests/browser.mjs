@@ -194,6 +194,11 @@ r = await ev(`${wait} const chip = document.querySelector('label[for="f-nr-33"]'
   count: document.querySelector('.results-count strong').textContent, heroBg: getComputedStyle(document.querySelector('.phead-dark')).backgroundColor };`);
 check('catálogo: botão de NR filtra e fica marcado', r.checked && r.count === '5' && r.bgAfter !== r.bgBefore, r);
 
+// Contato: assunto em cartões, com o assunto do link já marcado
+await go('/contato?assunto=empresas');
+r = await ev(`return { topics: document.querySelectorAll('.topics input[name=subject]').length, checked: document.querySelector('.topics input[name=subject]:checked')?.value, select: !!document.querySelector('select[name=subject]') }`);
+check('contato: assunto em 4 cartões, o do link já marcado', r.topics === 4 && r.checked === 'empresas' && !r.select, r);
+
 // Página do curso: compra visível sem rolar, cartão fixo ao rolar; no celular a placa gerada some
 await go('/cursos/nr-33-espacos-confinados-trabalhador-e-vigia');
 r = await ev(`${wait} const btn = document.querySelector('.buy-card [name=buy_now]'); const before = Math.round(btn.getBoundingClientRect().bottom);
@@ -243,7 +248,7 @@ await sleep(1500);
 // (carrosséis, abas) e desenhos decorativos (aria-hidden, svg) podem passar.
 const overflow = [];
 for (const width of [360, 768, 960, 1024, 1180, 1280, 1440]) {
-  for (const path of ['/', '/cursos', '/cursos/nr-33-espacos-confinados-trabalhador-e-vigia', '/carrinho', '/login', '/cadastro', '/esqueci-senha']) {
+  for (const path of ['/', '/cursos', '/cursos/nr-33-espacos-confinados-trabalhador-e-vigia', '/carrinho', '/login', '/cadastro', '/esqueci-senha', '/contato']) {
     await go(path, width);
     const o = await ev(outside);
     const at = await ev(`return location.pathname`);
