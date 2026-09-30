@@ -630,6 +630,25 @@ fieldset{margin:0;padding:0;border:0;min-width:0}
 .sum-item span{color:var(--text)}
 .sum-item small{color:var(--muted);font-family:var(--mono);font-size:12px}
 .sum-item strong{color:var(--ink);font-weight:600;white-space:nowrap}
+/* resumo do checkout: miniaturas, "Editar" e aceite dos termos junto do botão */
+.sum-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:14px}
+.summary .sum-head h2{margin-bottom:0}
+.sum-head .text-link{font-size:13.5px;padding:0}
+.sum-lines{display:flex;flex-direction:column;gap:14px;padding-bottom:16px;margin-bottom:8px;border-bottom:1px solid var(--line)}
+.sum-line{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:12px;align-items:center}
+.sum-line .thumb{width:64px;height:46px;border-radius:8px}
+.sum-line .thumb .plate{padding:6px 8px 9px}
+.sum-line .thumb .plate-code{font-size:14px}
+.sum-line .thumb .plate-code.is-text{font-size:9.5px}
+.sum-line .thumb .plate-stripe{width:24px;height:3px}
+.sum-line-t{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:13.5px;line-height:1.35;color:var(--ink);font-weight:500}
+.sum-line small{display:block;font-size:12px;color:var(--muted);margin-top:3px}
+.sum-line strong{font-size:14px;color:var(--ink);white-space:nowrap}
+.sum-terms{margin-top:18px;padding:14px;border-radius:12px;background:var(--gray);border:1px solid var(--line)}
+.sum-terms:has(input[aria-invalid="true"]){border-color:var(--red);background:var(--red-tint)}
+.sum-terms .check-row{font-size:13.5px;line-height:1.45}
+.sum-terms .field-error{margin-top:8px}
+.sum-terms + .sum-actions{margin-top:14px}
 .form-card{border:1px solid var(--line);border-radius:16px;background:var(--surface);padding:30px}
 .form-sec + .form-sec{margin-top:32px;padding-top:32px;border-top:1px solid var(--line)}
 .form-sec h2{font-size:20px;display:flex;gap:12px;align-items:center}
@@ -997,7 +1016,7 @@ body.lock{overflow:hidden}
   .buy-price{font-size:34px}
   .related{padding:56px 0 64px}
   .steps .step span:last-child{display:none}
-  .step.on span:last-child{display:inline}
+  .step[aria-current] span:last-child{display:inline}
   .step:not(:first-child)::before{width:20px;margin:0 8px}
   .cart-layout{padding:20px 0 64px;gap:20px}
   .cart-list-head{padding:14px 16px;flex-direction:column;align-items:flex-start;gap:2px}

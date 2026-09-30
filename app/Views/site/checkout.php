@@ -4,7 +4,8 @@ $type = has_old() ? (old('buyer_type', $buyer['buyer_type']) === 'pj' ? 'pj' : '
 $method = has_old() ? old('payment_method', $buyer['payment_method']) : $buyer['payment_method'];
 ?>
 <div class="screen">
-<section class="phead">
+<section class="phead phead-dark">
+<div class="grid-bg" aria-hidden="true"></div>
 <div class="wrap">
 <?= partial('crumbs', ['items' => [['Início', '/'], ['Carrinho', '/carrinho'], ['Finalizar compra', null]]]) ?>
 <div class="phead-row"><div><h1>Finalizar compra</h1>
@@ -52,25 +53,24 @@ $method = has_old() ? old('payment_method', $buyer['payment_method']) : $buyer['
 <div class="note-box"><?= icon('info') ?><span>O pagamento online está em ativação. Ao confirmar, seu pedido fica registrado como <strong>aguardando pagamento</strong> e a nossa equipe envia as instruções pela forma escolhida. Nenhuma cobrança é feita automaticamente.</span></div>
 <?php endif; ?>
 </div>
-<div class="form-sec">
-<label class="check-row"><input type="checkbox" name="accept_terms" value="1" required<?= checked(has_old() && old('accept_terms')) ?>><span>Li e aceito os <a href="<?= e(url('/termos-de-uso')) ?>" target="_blank">termos de uso</a> e a <a href="<?= e(url('/politica-de-privacidade')) ?>" target="_blank">política de privacidade</a>.</span></label>
-<?php if ($err = field_error('accept_terms')): ?><p class="field-error"><?= icon('alert') ?><?= e($err) ?></p><?php endif; ?>
-<?php if ($err = field_error('coupon') ?: field_error('cart')): ?><div class="note-box err"><?= icon('alert') ?><span><?= e($err) ?> <a href="<?= e(url('/carrinho')) ?>">Voltar ao carrinho</a></span></div><?php endif; ?>
-</div>
 </div>
 <aside class="summary" aria-labelledby="pedido-titulo">
-<h2 id="pedido-titulo">Seu pedido</h2>
-<div class="sum-items">
+<div class="sum-head"><h2 id="pedido-titulo">Seu pedido</h2><a class="text-link" href="<?= e(url('/carrinho')) ?>"><?= icon('edit', 'ic-sm') ?>Editar</a></div>
+<?php if ($err = field_error('coupon') ?: field_error('cart')): ?><div class="note-box err" style="margin:0 0 14px"><?= icon('alert') ?><span><?= e($err) ?> <a href="<?= e(url('/carrinho')) ?>">Voltar ao carrinho</a></span></div><?php endif; ?>
+<ul class="sum-lines">
 <?php foreach ($lines as $line): $c = $line['course']; ?>
-<div class="sum-item"><span><?= e($c['nr_number'] && !$c['is_simulator'] ? $c['code_label'] . ' — ' : '') ?><?= e($c['title']) ?><br><small><?= (int) $line['qty'] ?> × <?= money($line['unit_price']) ?></small></span><strong><?= money($line['line_total']) ?></strong></div>
+<li class="sum-line"><?= partial('cover', ['course' => $c, 'variant' => 'thumb']) ?><div><span class="sum-line-t"><?= e($c['title']) ?></span><small><?= e(pluralize((int) $line['qty'], 'participante', 'participantes')) ?> × <?= money($line['unit_price']) ?></small></div><strong><?= money($line['line_total']) ?></strong></li>
 <?php endforeach; ?>
-</div>
+</ul>
 <div class="sum-row"><span>Subtotal</span><span><?= money($totals['subtotal']) ?></span></div>
-<div class="sum-row disc"><span>Desconto<?= $totals['coupon'] ? ' (cupom ' . e($totals['coupon']['code']) . ')' : '' ?></span><span><?= $totals['discount'] > 0 ? '− ' . money($totals['discount']) : 'R$ 0,00' ?></span></div>
+<?php if ($totals['discount'] > 0): ?><div class="sum-row disc"><span>Desconto<?= $totals['coupon'] ? ' (cupom ' . e($totals['coupon']['code']) . ')' : '' ?></span><span>− <?= money($totals['discount']) ?></span></div><?php endif; ?>
 <div class="sum-total"><span>Total</span><strong><?= money($totals['total']) ?></strong></div>
+<div class="sum-terms">
+<label class="check-row"><input type="checkbox" name="accept_terms" value="1" required<?= checked(has_old() && old('accept_terms')) ?><?= field_error('accept_terms') ? ' aria-invalid="true" aria-describedby="erro-termos"' : '' ?>><span>Li e aceito os <a href="<?= e(url('/termos-de-uso')) ?>" target="_blank">termos de uso</a> e a <a href="<?= e(url('/politica-de-privacidade')) ?>" target="_blank">política de privacidade</a>.</span></label>
+<?php if ($err = field_error('accept_terms')): ?><p class="field-error" id="erro-termos"><?= icon('alert') ?><?= e($err) ?></p><?php endif; ?>
+</div>
 <div class="sum-actions">
 <button class="btn btn-buy btn-lg btn-block" type="submit" data-submit><?= $online ? 'Ir para o pagamento' : 'Confirmar pedido' ?><?= icon('arrowR') ?></button>
-<a class="btn btn-outline btn-block" href="<?= e(url('/carrinho')) ?>">Voltar ao carrinho</a>
 </div>
 <p class="secure"><?= icon('shield') ?>Seus dados são usados só para emitir o pedido, liberar o acesso e os certificados.</p>
 </aside>
