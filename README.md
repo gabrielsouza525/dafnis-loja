@@ -39,6 +39,20 @@ php -S localhost:8000 -t public public/index.php
 No Windows, use `C:\xampp\php\php.exe` no lugar de `php` se ele não estiver no PATH, e deixe o MySQL
 do XAMPP ligado. Loja: `http://localhost:8000` · Painel: `http://localhost:8000/admin`.
 
+### No Apache do XAMPP (`http://localhost/dafnis-loja`)
+
+Em vez do `php -S`, a loja pode rodar no Apache do XAMPP, numa subpasta do `htdocs`. O `.htaccess` da raiz
+manda tudo para `public/` e bloqueia o resto (`.env`, código, banco), como numa hospedagem compartilhada.
+
+1. Ligue a pasta do projeto no `htdocs` sem copiar (uma junção, no PowerShell):
+   `New-Item -ItemType Junction -Path C:\xampp\htdocs\dafnis-loja -Target C:\caminho\do\projeto`
+2. No `.env`: `APP_URL=http://localhost/dafnis-loja` (a loja usa esse caminho em todos os links).
+3. No XAMPP Control Panel, dê **Start** em **Apache** e **MySQL**.
+
+Loja: `http://localhost/dafnis-loja` · Painel: `http://localhost/dafnis-loja/admin`. Os testes abaixo
+também rodam nesse endereço (ex.: `php tests/flow.php http://localhost/dafnis-loja`). Para voltar ao
+`php -S`, devolva o `APP_URL` para `http://localhost:8000`.
+
 ### Dados de demonstração (só desenvolvimento)
 
 ```bash

@@ -108,7 +108,7 @@ await go('/login?volta=/checkout');
 r = await ev(`${wait} document.querySelector('#f-email').value = 'ana@example.com'; document.querySelector('#f-password').value = 'dafnis123'; document.querySelector('.auth-form').submit(); return true;`);
 await sleep(1500);
 r = await ev(`return { path: location.pathname, pj: document.querySelector('[data-pj]')?.hidden };`);
-check('login volta para o checkout', r.path === '/checkout', r);
+check('login volta para o checkout', r.path.endsWith('/checkout'), r);
 r = await ev(`${wait} document.querySelector('[data-buyer-type][value=pj]').click(); await w(50);
   const cnpj = document.querySelector('#f-company-document'); cnpj.value = '11222333000181'; cnpj.dispatchEvent(new Event('input', {bubbles:true}));
   return { pjVisible: !document.querySelector('[data-pj]').hidden, pfHidden: document.querySelector('[data-pf]').hidden, label: document.querySelector('label[for="f-buyer-name"]').textContent, cnpj: cnpj.value, cpfRequired: document.querySelector('#f-buyer-document').required };`);

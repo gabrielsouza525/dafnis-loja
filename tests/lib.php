@@ -8,8 +8,12 @@ final class Client
     public string $csrf = '';
     private string $lastPage = '';
 
+    /** Subpasta da loja (ex.: "/dafnis-loja" no Apache do XAMPP); vazio quando roda na raiz. */
+    private string $prefix;
+
     public function __construct(private string $base)
     {
+        $this->prefix = rtrim((string) parse_url($base, PHP_URL_PATH), '/');
     }
 
     public function request(string $method, string $path, array $data = [], array $headers = []): array
@@ -39,6 +43,11 @@ final class Client
         curl_close($ch);
         $head = substr($raw, 0, $headerSize);
         $body = substr($raw, $headerSize);
+        if ($this->prefix !== '') {
+            // Os testes procuram links como href="/cursos/..."; com a loja numa subpasta eles vêm
+            // como href="/dafnis-loja/cursos/...". Tira o prefixo para os mesmos testes valerem nos dois casos.
+            $body = str_replace(['="' . $this->prefix . '/', '="' . $this->prefix . '"'], ['="/', '="/"'], $body);
+        }
         foreach (preg_split('/\r\n/', $head) as $line) {
             if (preg_match('/^Set-Cookie:\s*([^=]+)=([^;]*)/i', $line, $m)) {
                 $this->cookies[$m[1]] = $m[2];
