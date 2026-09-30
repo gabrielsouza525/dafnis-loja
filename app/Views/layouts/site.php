@@ -8,19 +8,17 @@ use App\Models\Category;
 use App\Models\Course;
 use App\Services\Auth;
 use App\Services\Cart;
-use App\Services\Payments\Payments;
 use App\Services\Settings;
 
 $user = Auth::user();
 $cartCount = Cart::count();
 $nrIndex = Course::nrIndex();
 $nav = $nav ?? null;
+// Aviso no topo só quando a equipe escreve um em Painel › Configurações. O aviso de pagamento em
+// ativação fica onde importa: carrinho, checkout e página do pedido.
 $notice = Settings::get('notice.text');
 if (static_demo()) {
     $notice = '<strong>Prévia da loja para aprovação.</strong> Cursos e preços reais do catálogo; contas e pedidos são de exemplo e nenhuma compra é realizada.';
-    $noticeHtml = true;
-} elseif ($notice === null && !Payments::isOnline()) {
-    $notice = '<strong>Pagamento online em ativação.</strong> Seu pedido é registrado e a nossa equipe envia as instruções de pagamento.';
     $noticeHtml = true;
 }
 $accountLabel = $user ? (Auth::isAdmin() ? 'Painel' : 'Minha conta') : 'Entrar';
