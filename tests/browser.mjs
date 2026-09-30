@@ -126,6 +126,46 @@ r = await ev(`${wait} document.querySelector('[data-filters-open]').click(); awa
   document.querySelector('.sheet-foot [data-filters-close]').click(); await w(200); return { open, n, badge, closed: !document.querySelector('[data-filters]').classList.contains('open') };`);
 check('painel de filtros no celular: filtra, conta e fecha', r.open && r.n === '5' && r.badge === '1' && r.closed, r);
 
+// Topo da home: foto de fundo e texto centralizado; categorias em cartões separados
+await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'light' }] });
+await go('/');
+r = await ev(`${wait} await w(300); const img = document.querySelector('.hero-bg'); const h1 = document.querySelector('.hero h1').getBoundingClientRect();
+  const cats = [...document.querySelectorAll('.cats .cat')].map(c => c.getBoundingClientRect());
+  return { img: !!img && img.complete && img.naturalWidth > 0, center: Math.round(h1.left + h1.width / 2 - document.documentElement.clientWidth / 2), gap: Math.round(cats[1].left - cats[0].right), rowGap: Math.round(cats[4].top - cats[0].bottom) };`);
+check('topo com foto de fundo e título centralizado', r.img && Math.abs(r.center) <= 2, r);
+check('cartões de categoria separados', r.gap >= 12 && r.rowGap >= 12, r);
+
+// Modo escuro: segue o sistema sem escolha salva; o botão alterna e a escolha fica salva
+r = await ev(`${wait} localStorage.removeItem('dafnis-theme'); const before = document.documentElement.dataset.theme; const btn = document.querySelector('.hdr [data-theme-toggle]');
+  btn.click(); await w(50); return { before, after: document.documentElement.dataset.theme, pressed: btn.getAttribute('aria-pressed'), saved: localStorage.getItem('dafnis-theme'), bg: getComputedStyle(document.body).backgroundColor };`);
+check('botão alterna para o modo escuro', r.before === 'light' && r.after === 'dark' && r.pressed === 'true' && r.saved === 'dark' && r.bg !== 'rgb(255, 255, 255)', r);
+await go('/cursos');
+r = await ev(`return document.documentElement.dataset.theme`);
+check('modo escuro continua na próxima página', r === 'dark', r);
+await ev(`localStorage.removeItem('dafnis-theme'); return 1`);
+await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'dark' }] });
+await go('/');
+r = await ev(`return document.documentElement.dataset.theme`);
+check('sem escolha salva, segue o tema escuro do sistema', r === 'dark', r);
+await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'light' }] });
+await go('/', 390);
+r = await ev(`${wait} const hdrBtn = document.querySelector('.hdr [data-theme-toggle]'); document.querySelector('[data-drawer-open]').click(); await w(200);
+  const btn = document.querySelector('#menu-drawer [data-theme-toggle]'); const visible = btn.offsetParent !== null; btn.click(); await w(50);
+  return { hdrHidden: hdrBtn.offsetParent === null, visible, theme: document.documentElement.dataset.theme };`);
+check('celular: botão de tema dentro do menu', r.hdrHidden && r.visible && r.theme === 'dark', r);
+await ev(`localStorage.removeItem('dafnis-theme'); return 1`);
+
+// Sem rolagem lateral em nenhuma largura
+const overflow = [];
+for (const width of [360, 768, 960, 1180, 1440]) {
+  for (const path of ['/', '/cursos', '/cursos/nr-33-espacos-confinados-trabalhador-e-vigia', '/carrinho', '/login']) {
+    await go(path, width);
+    const o = await ev(`return document.documentElement.scrollWidth - document.documentElement.clientWidth`);
+    if (o > 0) overflow.push(`${path} @${width}px: +${o}px`);
+  }
+}
+check('sem rolagem lateral de 360 a 1440 px', overflow.length === 0, overflow);
+
 check('nenhum erro de JavaScript', errors.length === 0, errors);
 console.log(fails ? `\n${fails} falha(s)` : '\nTudo certo');
 ws.close(); chrome.kill(); process.exit(fails ? 1 : 0);
