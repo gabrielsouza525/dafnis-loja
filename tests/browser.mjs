@@ -120,6 +120,15 @@ r = await ev(`${wait} document.querySelector('[data-buyer-type][value=pj]').clic
   return { pjVisible: !document.querySelector('[data-pj]').hidden, pfHidden: document.querySelector('[data-pf]').hidden, label: document.querySelector('label[for="f-buyer-name"]').textContent, cnpj: cnpj.value, cpfRequired: document.querySelector('#f-buyer-document').required };`);
 check('checkout alterna pessoa física / empresa', r.pjVisible && r.pfHidden && r.label === 'Responsável pela compra' && !r.cpfRequired, r);
 check('máscara de CNPJ', r.cnpj === '11.222.333/0001-81', r.cnpj);
+// Logado, o cabeçalho mostra "Minha conta" (mais longo que "Entrar"): tudo precisa caber na largura
+const hdrOver = [];
+for (const width of [1181, 1280, 1366, 1440]) {
+  await go('/carrinho', width);
+  const o = await ev(`const h = document.querySelector('.hdr-in'); const edge = h.getBoundingClientRect().right - parseFloat(getComputedStyle(h).paddingRight);
+    const right = Math.max(...[...h.children].map((k) => k.getBoundingClientRect().right)); return { over: Math.round(right - edge), label: document.querySelector('.hdr .link-btn')?.textContent.trim() };`);
+  if (o.over > 0) hdrOver.push(`${width}px: +${o.over}px (${o.label})`);
+}
+check('cabeçalho logado cabe na largura de 1181 a 1440 px', hdrOver.length === 0, hdrOver);
 
 // Celular: gaveta do menu e painel de filtros
 await go('/', 390);

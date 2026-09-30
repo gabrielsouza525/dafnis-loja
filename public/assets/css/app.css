@@ -56,7 +56,7 @@ fieldset{margin:0;padding:0;border:0;min-width:0}
 /* header */
 .hdr{position:sticky;top:0;z-index:40;background:var(--hdr-bg);backdrop-filter:saturate(1.4) blur(8px);-webkit-backdrop-filter:saturate(1.4) blur(8px);border-bottom:1px solid var(--line);transition:background-color .25s ease,border-color .25s ease,box-shadow .25s ease}
 .hdr.is-scrolled{border-bottom-color:transparent;box-shadow:0 1px 0 var(--line),0 10px 28px rgba(11,37,69,.08)}
-.hdr-in{height:72px;display:flex;align-items:center;gap:28px}
+.hdr-in{height:72px;display:flex;align-items:center;gap:20px}
 .logo{display:flex;align-items:center;gap:10px;background:none;border:0;padding:0;text-align:left;flex-shrink:0;color:inherit}
 .logo-mark{width:38px;height:38px;border-radius:9px;background:var(--navy);display:grid;place-items:center;position:relative;overflow:hidden;flex-shrink:0}
 .logo-mark svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;margin-top:-3px}
@@ -70,10 +70,10 @@ fieldset{margin:0;padding:0;border:0;min-width:0}
 .inv .logo-name{color:#fff}
 .inv .logo-sub{color:#8FA3C0}
 .nav{display:flex;gap:2px;flex:1;justify-content:center}
-.nav-link{background:none;border:0;padding:8px 12px;border-radius:8px;font-size:14.5px;font-weight:500;color:var(--text);display:inline-flex;align-items:center;gap:4px;position:relative;transition:color .15s,background .15s;white-space:nowrap}
+.nav-link{background:none;border:0;padding:8px 10px;border-radius:8px;font-size:14.5px;font-weight:500;color:var(--text);display:inline-flex;align-items:center;gap:4px;position:relative;transition:color .15s,background .15s;white-space:nowrap}
 .nav-link:hover{color:var(--navy-ink);background:var(--gray)}
 .nav-link.on{color:var(--navy-ink);font-weight:600}
-.nav-link.on::after{content:'';position:absolute;left:12px;right:12px;bottom:-17px;height:2px;background:var(--blue);border-radius:2px}
+.nav-link.on::after{content:'';position:absolute;left:10px;right:10px;bottom:-17px;height:2px;background:var(--blue);border-radius:2px}
 .nav-link .ic{transition:transform .2s}
 .nav-link[aria-expanded="true"] .ic{transform:rotate(180deg)}
 .hdr-actions{display:flex;align-items:center;gap:4px;margin-left:auto}
@@ -85,6 +85,8 @@ fieldset{margin:0;padding:0;border:0;min-width:0}
 .link-btn{display:inline-flex;align-items:center;gap:6px;height:44px;padding:0 12px;border:0;border-radius:10px;background:none;font-size:14.5px;font-weight:500;color:var(--ink);transition:background .15s;white-space:nowrap}
 .link-btn:hover{background:var(--gray);color:var(--ink)}
 .show-c{display:none}
+/* Até 1320 px o "Ver cursos" (repete o link "Cursos") sai para caber "Minha conta" ao lado */
+@media (max-width: 1320px){.hdr .hdr-cta{display:none}}
 
 /* Home: cabeçalho transparente sobre a foto do topo até o visitante rolar (ou abrir o menu de NRs).
    Sem JavaScript ele fica sólido, como nas outras páginas. */
