@@ -36,7 +36,7 @@ $ogImage = is_file(BASE_PATH . '/public/assets/img/og.png') ? absolute_url('/ass
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <?php endif; ?>
-<link rel="icon" href="<?= e(url('/favicon.svg')) ?>" type="image/svg+xml">
+<link rel="icon" href="<?= e(url('/favicon.png')) ?>" type="image/png">
 <link rel="apple-touch-icon" href="<?= e(url('/apple-touch-icon.png')) ?>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

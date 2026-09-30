@@ -155,6 +155,10 @@ r = await ev(`${wait} await w(300); const img = document.querySelector('.hero-bg
   return { img: !!img && img.complete && img.naturalWidth > 0, center: Math.round(h1.left + h1.width / 2 - document.documentElement.clientWidth / 2), gap: Math.round(cats[1].left - cats[0].right), rowGap: Math.round(cats[4].top - cats[0].bottom) };`);
 check('topo com foto de fundo e título centralizado', r.img && Math.abs(r.center) <= 2, r);
 check('cartões de categoria separados', r.gap >= 12 && r.rowGap >= 12, r);
+r = await ev(`const imgs = [...document.querySelectorAll('.logo-mark img')];
+  const fav = await fetch(document.querySelector('link[rel="icon"]').href);
+  return { n: imgs.length, loaded: imgs.every(i => i.complete && i.naturalWidth > 0), h: Math.round(imgs[0].getBoundingClientRect().height), fav: fav.ok && fav.headers.get('content-type') };`);
+check('símbolo da Dafnis no cabeçalho, no menu e no rodapé; ícone da aba carrega', r.n === 3 && r.loaded && r.h === 40 && /image\/png/.test(r.fav), r);
 r = await ev(`${wait} const hdr = document.querySelector('.hdr'); const hero = document.querySelector('.hero').getBoundingClientRect();
   const top = { clear: hdr.classList.contains('is-clear'), bg: getComputedStyle(hdr).backgroundColor, bar: !!document.querySelector('.demobar'), heroTop: Math.round(hero.top), heroH: Math.round(hero.height) };
   scrollTo(0, 700); await w(400); const scrolled = { clear: hdr.classList.contains('is-clear'), shadow: hdr.classList.contains('is-scrolled') };

@@ -58,15 +58,11 @@ fieldset{margin:0;padding:0;border:0;min-width:0}
 .hdr.is-scrolled{border-bottom-color:transparent;box-shadow:0 1px 0 var(--line),0 10px 28px rgba(11,37,69,.08)}
 .hdr-in{height:72px;display:flex;align-items:center;gap:20px}
 .logo{display:flex;align-items:center;gap:10px;background:none;border:0;padding:0;text-align:left;flex-shrink:0;color:inherit}
-.logo-mark{width:38px;height:38px;border-radius:9px;background:var(--navy);display:grid;place-items:center;position:relative;overflow:hidden;flex-shrink:0}
-.logo-mark svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;margin-top:-3px}
-.logo-mark::after{content:'';position:absolute;left:0;bottom:0;width:100%;height:5px;background:repeating-linear-gradient(-45deg,var(--orange) 0 4px,var(--navy) 4px 8px)}
+.logo-mark{display:block;height:40px;flex-shrink:0}
+.logo-mark img{display:block;width:auto;height:100%}
 .logo-text{display:flex;flex-direction:column}
 .logo-name{font-family:var(--display);font-weight:800;font-size:21px;color:var(--navy-ink);letter-spacing:-.02em;line-height:1}
 .logo-sub{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:5px;line-height:1;white-space:nowrap}
-.inv .logo-mark{background:#fff}
-.inv .logo-mark svg{stroke:var(--navy)}
-.inv .logo-mark::after{background:repeating-linear-gradient(-45deg,var(--orange) 0 4px,#fff 4px 8px)}
 .inv .logo-name{color:#fff}
 .inv .logo-sub{color:#8FA3C0}
 .nav{display:flex;gap:2px;flex:1;justify-content:center}
@@ -91,9 +87,6 @@ fieldset{margin:0;padding:0;border:0;min-width:0}
 /* Home: cabeçalho transparente sobre a foto do topo até o visitante rolar (ou abrir o menu de NRs).
    Sem JavaScript ele fica sólido, como nas outras páginas. */
 .hdr.is-clear{background:transparent;border-bottom-color:rgba(255,255,255,.14);box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
-.hdr.is-clear .logo-mark{background:#fff}
-.hdr.is-clear .logo-mark svg{stroke:var(--navy)}
-.hdr.is-clear .logo-mark::after{background:repeating-linear-gradient(-45deg,var(--orange) 0 4px,#fff 4px 8px)}
 .hdr.is-clear .logo-name{color:#fff}
 .hdr.is-clear .logo-sub{color:#A9BBD6}
 .hdr.is-clear .nav-link{color:rgba(255,255,255,.84)}

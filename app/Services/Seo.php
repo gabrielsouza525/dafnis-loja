@@ -15,7 +15,7 @@ final class Seo
             'name' => Settings::businessName(),
             'url' => absolute_url('/'),
             'description' => 'Treinamentos de Normas Regulamentadoras, segurança do trabalho e cursos complementares para profissionais e empresas.',
-            'logo' => absolute_url('/favicon.svg'),
+            'logo' => absolute_url('/apple-touch-icon.png'),
         ];
         if ($phone = Settings::get('business.phone') ?: Settings::get('business.whatsapp')) {
             $data['telephone'] = '+55' . preg_replace('/\D/', '', (string) $phone);

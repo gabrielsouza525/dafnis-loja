@@ -185,7 +185,7 @@ $copy = static function (string $from, string $to) use (&$copy): void {
     copy($from, $to);
 };
 $copy(BASE_PATH . '/public/assets', $out . '/assets');
-copy(BASE_PATH . '/public/favicon.svg', $out . '/favicon.svg');
+copy(BASE_PATH . '/public/favicon.png', $out . '/favicon.png');
 copy(BASE_PATH . '/public/apple-touch-icon.png', $out . '/apple-touch-icon.png');
 file_put_contents($out . '/assets/js/demo-map.js', '// Gerado por bin/static-export.php: destino dos botões na prévia.' . "\n" . 'window.DAFNIS_DEMO = ' . json_encode([
     'cart' => $prefix . '/carrinho/',

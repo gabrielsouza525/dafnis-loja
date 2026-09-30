@@ -23,7 +23,7 @@ $heading = $titles[$status] ?? 'Algo deu errado';
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title><?= e($heading) ?> | Dafnis Treinamentos</title>
-<link rel="icon" href="<?= e(url('/favicon.svg')) ?>" type="image/svg+xml">
+<link rel="icon" href="<?= e(url('/favicon.png')) ?>" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@700;800&amp;family=IBM+Plex+Sans:wght@400;600&amp;family=IBM+Plex+Mono:wght@600&amp;display=swap">

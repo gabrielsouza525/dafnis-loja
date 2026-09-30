@@ -17,8 +17,13 @@ $contact = Settings::get('business.whatsapp') ?: Settings::get('business.phone')
 <tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:14px;overflow:hidden;border:1px solid #E2E7EE">
 <tr><td style="background:#0B2545;padding:20px 28px">
+<table role="presentation" cellpadding="0" cellspacing="0"><tr>
+<td style="padding-right:12px;vertical-align:middle"><img src="<?= e(absolute_url('/assets/img/logo-mark.png')) ?>" width="36" height="40" alt="" style="display:block;border:0"></td>
+<td style="vertical-align:middle">
 <span style="font-size:22px;font-weight:bold;color:#ffffff;letter-spacing:-0.5px">Dafnis</span><br>
 <span style="font-size:10px;letter-spacing:2px;color:#8FA3C0;font-family:Courier New,monospace">SOLUÇÕES EM EPI · TREINAMENTOS</span>
+</td>
+</tr></table>
 </td></tr>
 <tr><td style="height:5px;background:#F47B2E"></td></tr>
 <tr><td style="padding:28px;font-size:15px;line-height:1.6">
