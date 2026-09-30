@@ -44,7 +44,7 @@ $catUrl = static function (string $slug) use ($categories): ?string {
 };
 ?>
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-themeable>
 <head>
 <?= partial('head', get_defined_vars()) ?>
 </head>
@@ -68,6 +68,7 @@ $catUrl = static function (string $slug) use ($categories): ?string {
 </nav>
 <div class="hdr-actions">
 <a class="icon-btn" href="<?= e(url('/cursos#busca')) ?>" aria-label="Pesquisar treinamentos" data-open-search><?= icon('search') ?></a>
+<button class="icon-btn theme-btn hide-c" type="button" aria-label="Modo escuro" aria-pressed="false" title="Alternar modo escuro" data-theme-toggle hidden><?= icon('moon', 'ic-moon') ?><?= icon('sun', 'ic-sun') ?></button>
 <a class="link-btn hide-t" href="<?= e($accountUrl) ?>"><?= icon('user') ?><?= e($accountLabel) ?></a>
 <a class="icon-btn" href="<?= e(url('/carrinho')) ?>" data-cart-link aria-label="<?= e('Carrinho, ' . pluralize($cartCount, 'item', 'itens')) ?>"><?= icon('cart') ?><span class="cart-count" data-cart-count<?= $cartCount ? '' : ' hidden' ?>><?= $cartCount ?></span></a>
 <a class="btn btn-navy btn-sm hdr-cta" href="<?= e(url('/cursos')) ?>">Ver cursos</a>
@@ -162,6 +163,7 @@ echo e(implode(' · ', $bits));
 <a class="d-link" href="<?= e(url('/#empresas')) ?>" data-drawer-close-on-click>Empresas<?= icon('chevR') ?></a>
 <a class="d-link" href="<?= e(url('/#sobre')) ?>" data-drawer-close-on-click>Sobre nós<?= icon('chevR') ?></a>
 <a class="d-link" href="<?= e(url('/contato')) ?>">Contato<?= icon('chevR') ?></a>
+<button class="d-link theme-btn" type="button" aria-pressed="false" data-theme-toggle hidden>Modo escuro<?= icon('moon', 'ic-moon') ?><?= icon('sun', 'ic-sun') ?></button>
 <div class="d-sub">
 <div class="kicker">Acesso rápido por NR</div>
 <div class="quick">

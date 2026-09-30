@@ -192,6 +192,8 @@ const ICONS = [
     'instagram' => 'M4 8a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z M16 12a4 4 0 1 1-8 0a4 4 0 1 1 8 0z M17 7v.5',
     'linkedin' => 'M4 4h16v16H4z M8 10v6 M8 7.5v.5 M12 16v-6 M12 12.5a2.5 2.5 0 0 1 5 0V16',
     'youtube' => 'M3 8a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z M10 9v6l5-3z',
+    'moon' => 'M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z',
+    'sun' => 'M16 12a4 4 0 1 1-8 0a4 4 0 1 1 8 0z M12 2.5v2 M12 19.5v2 M4.6 4.6L6 6 M18 18l1.4 1.4 M2.5 12h2 M19.5 12h2 M4.6 19.4L6 18 M18 6l1.4-1.4',
 ];
 
 function icon(string $name, string $class = ''): string

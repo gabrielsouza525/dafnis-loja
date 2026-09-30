@@ -199,6 +199,36 @@
   });
   $all('[data-stepper] input').forEach(clampInput);
 
+  /* ---------- modo escuro (o tema inicial é aplicado por boot.js, antes da pintura) ---------- */
+  var htmlEl = doc.documentElement;
+  var themeBtns = $all('[data-theme-toggle]');
+  var themeMeta = $('meta[name="theme-color"]');
+  function applyTheme(dark) {
+    htmlEl.setAttribute('data-theme', dark ? 'dark' : 'light');
+    themeBtns.forEach(function (b) { b.setAttribute('aria-pressed', dark ? 'true' : 'false'); });
+    if (themeMeta) themeMeta.setAttribute('content', dark ? '#0A1322' : '#0B2545');
+  }
+  if (themeBtns.length && htmlEl.hasAttribute('data-themeable')) {
+    applyTheme(htmlEl.getAttribute('data-theme') === 'dark');
+    themeBtns.forEach(function (b) {
+      b.hidden = false;
+      b.addEventListener('click', function () {
+        var dark = htmlEl.getAttribute('data-theme') !== 'dark';
+        applyTheme(dark);
+        try { localStorage.setItem('dafnis-theme', dark ? 'dark' : 'light'); } catch (e) {}
+      });
+    });
+    // Sem escolha salva, acompanha a troca de tema do sistema.
+    var systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+    if (systemDark && systemDark.addEventListener) {
+      systemDark.addEventListener('change', function (e) {
+        var saved = null;
+        try { saved = localStorage.getItem('dafnis-theme'); } catch (err) {}
+        if (!saved) applyTheme(e.matches);
+      });
+    }
+  }
+
   /* ---------- menu de NRs ---------- */
   var megaToggle = $('[data-mega-toggle]');
   var mega = $('#mega-nr');

@@ -115,6 +115,16 @@ novos pedidos, pagamentos e contatos no `MAIL_ADMIN_ADDRESS` (ou no e-mail de co
 4. Em *Painel › Configurações*, preencha contatos, CNPJ, redes sociais, link da plataforma de ensino e
    os indicadores reais da empresa (campos vazios não aparecem na loja).
 
+## Aparência
+
+- **Foto do topo da home:** `public/assets/img/hero-960.jpg`, `hero-1600.jpg` e `hero-2400.jpg` (a mesma
+  foto em três larguras). Para trocar, substitua os três arquivos mantendo os nomes; sem eles, o topo fica
+  com o fundo azul e a grade. A foto atual é de Rafael Juárez no Unsplash (licença Unsplash, uso comercial
+  livre).
+- **Modo escuro:** botão de sol/lua no cabeçalho (no celular, dentro do menu). Sem escolha, a loja segue o
+  tema do sistema do visitante; a escolha fica salva no navegador. O painel da equipe fica sempre claro.
+  As cores ficam em tokens no início de `app.css`, e a versão escura no bloco "Modo escuro" no fim.
+
 ## Prévia no GitHub Pages
 
 O GitHub Pages não roda PHP, então a prévia para o cliente é uma **cópia estática** gerada da loja
