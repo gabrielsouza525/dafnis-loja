@@ -11,6 +11,7 @@ use App\Models\Course;
 use App\Services\Auth;
 use App\Services\Notify;
 use App\Services\RateLimiter;
+use App\Services\Seo;
 use App\Services\Settings;
 
 final class PageController extends Controller
@@ -21,6 +22,30 @@ final class PageController extends Controller
         'conteudo' => 'Conteúdo programático',
         'duvida' => 'Outra dúvida',
     ];
+
+    /** Sobre nós: números do catálogo e o que foi preenchido em Configurações (o resto não aparece). */
+    public function about(): Response
+    {
+        return $this->view('site/about', [
+            'title' => 'Sobre nós',
+            'description' => 'Conheça a Dafnis: treinamentos de Normas Regulamentadoras, segurança do trabalho e cursos complementares para profissionais e empresas.',
+            'canonical' => '/sobre',
+            'nav' => 'sobre',
+            'jsonLd' => [Seo::organization()],
+            'total' => count(Course::allActive()),
+            'nrCount' => count(Course::nrIndex()),
+            'categories' => array_values(array_filter(Category::active(), static fn ($c) => $c['course_count'] > 0)),
+            'stats' => Settings::stats(),
+            'about' => Settings::get('content.about'),
+            'business' => Settings::businessName(),
+            'city' => Settings::cityLine(),
+            'address' => Settings::get('business.address'),
+            'cnpj' => Settings::get('business.cnpj'),
+            'whatsapp' => Settings::get('business.whatsapp'),
+            'phone' => Settings::get('business.phone'),
+            'email' => Settings::get('business.email'),
+        ]);
+    }
 
     public function contact(): Response
     {
@@ -90,7 +115,7 @@ final class PageController extends Controller
 
     public function sitemap(): Response
     {
-        $urls = [['/', '1.0'], ['/cursos', '0.9'], ['/nrs', '0.8'], ['/contato', '0.5'], ['/termos-de-uso', '0.2'], ['/politica-de-privacidade', '0.2']];
+        $urls = [['/', '1.0'], ['/cursos', '0.9'], ['/nrs', '0.8'], ['/sobre', '0.5'], ['/contato', '0.5'], ['/termos-de-uso', '0.2'], ['/politica-de-privacidade', '0.2']];
         foreach (Category::active() as $cat) {
             if ($cat['course_count'] > 0) {
                 $urls[] = ['/categorias/' . $cat['slug'], '0.8'];

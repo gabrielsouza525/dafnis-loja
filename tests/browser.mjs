@@ -203,6 +203,12 @@ await go('/contato?assunto=empresas');
 r = await ev(`return { topics: document.querySelectorAll('.topics input[name=subject]').length, checked: document.querySelector('.topics input[name=subject]:checked')?.value, select: !!document.querySelector('select[name=subject]') }`);
 check('contato: assunto em 4 cartões, o do link já marcado', r.topics === 4 && r.checked === 'empresas' && !r.select, r);
 
+// Sobre nós: página própria (antes era um trecho da home)
+await go('/sobre');
+r = await ev(`const n = [...document.querySelectorAll('.about-stats .stat-n')].map(e => e.textContent);
+  return { n, nav: document.querySelector('.nav-link[aria-current="page"]')?.textContent, steps: document.querySelectorAll('.how-step').length, areas: document.querySelectorAll('.area').length, whys: document.querySelectorAll('.why-item').length, link: document.querySelector('.ftr-link[href$="/sobre"]') !== null };`);
+check('sobre nós: números do catálogo no topo, menu marcado, passos, áreas e diferenciais', r.n[0] === '119' && r.nav === 'Sobre nós' && r.steps === 4 && r.areas > 0 && r.whys === 6 && r.link, r);
+
 // Página do curso: compra visível sem rolar, cartão fixo ao rolar; no celular a placa gerada some
 await go('/cursos/nr-33-espacos-confinados-trabalhador-e-vigia');
 r = await ev(`${wait} const btn = document.querySelector('.buy-card [name=buy_now]'); const before = Math.round(btn.getBoundingClientRect().bottom);
@@ -252,7 +258,7 @@ await sleep(1500);
 // (carrosséis, abas) e desenhos decorativos (aria-hidden, svg) podem passar.
 const overflow = [];
 for (const width of [360, 768, 960, 1024, 1180, 1280, 1440]) {
-  for (const path of ['/', '/cursos', '/cursos/nr-33-espacos-confinados-trabalhador-e-vigia', '/carrinho', '/login', '/cadastro', '/esqueci-senha', '/contato']) {
+  for (const path of ['/', '/cursos', '/cursos/nr-33-espacos-confinados-trabalhador-e-vigia', '/carrinho', '/login', '/cadastro', '/esqueci-senha', '/contato', '/sobre']) {
     await go(path, width);
     const o = await ev(outside);
     const at = await ev(`return location.pathname`);

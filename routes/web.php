@@ -40,6 +40,7 @@ return static function (Router $r): void {
     $r->get('/pedido/{number:DF\d{6}}/retorno', [OrderController::class, 'returned'], ['auth']);
     $r->post('/webhooks/mercadopago', [WebhookController::class, 'mercadoPago']);
 
+    $r->get('/sobre', [PageController::class, 'about']);
     $r->get('/contato', [PageController::class, 'contact']);
     $r->post('/contato', [PageController::class, 'sendContact']);
     $r->get('/termos-de-uso', [PageController::class, 'terms']);
