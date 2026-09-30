@@ -252,6 +252,15 @@ for (const width of [390, 1024, 1440]) {
   }
 }
 check('painel: nada passa da borda (390, 1024 e 1440 px)', admOver.length === 0, admOver);
+await go('/admin/pedidos');
+r = await ev(`return { groups: [...document.querySelectorAll('.adm-nav-label')].map((l) => l.textContent), current: document.querySelector('.adm-nav [aria-current]')?.textContent.trim(), crumb: document.querySelector('.adm-crumbs [aria-current]')?.textContent }`);
+check('painel: menu em grupos, item atual marcado e caminho no topo', r.groups.join() === 'Vendas,Catálogo,Pessoas,Sistema' && /^Pedidos/.test(r.current) && r.crumb === 'Pedidos', r);
+await go('/admin', 390);
+r = await ev(`${wait} document.querySelector('[data-admin-menu]').click(); await w(300); const open = document.querySelector('#adm-side').classList.contains('open');
+  const backdrop = getComputedStyle(document.querySelector('.adm'), '::after').content !== 'none';
+  document.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape'})); await w(300);
+  return { open, backdrop, closed: !document.querySelector('#adm-side').classList.contains('open') };`);
+check('painel no celular: menu abre com fundo escurecido e fecha com Esc', r.open && r.backdrop && r.closed, r);
 
 check('nenhum erro de JavaScript', errors.length === 0, errors);
 console.log(fails ? `\n${fails} falha(s)` : '\nTudo certo');

@@ -18,6 +18,13 @@
         menuBtn.setAttribute('aria-expanded', 'false');
       }
     });
+    doc.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && side.classList.contains('open')) {
+        side.classList.remove('open');
+        menuBtn.setAttribute('aria-expanded', 'false');
+        menuBtn.focus();
+      }
+    });
   }
 
   doc.addEventListener('click', function (e) {

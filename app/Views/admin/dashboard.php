@@ -11,7 +11,7 @@ use App\Models\Order;
 <?php endif; ?>
 
 <div class="kpis-admin">
-<div class="kpi"><span class="kpi-ic o"><?= icon('clock') ?></span><span class="kpi-n"><?= (int) $kpis['pending'] ?></span><span class="kpi-l">Pedidos aguardando pagamento · <?= money($kpis['pending_total']) ?></span><a href="<?= e(url('/admin/pedidos', ['status' => 'pending'])) ?>">Ver pedidos</a></div>
+<div class="kpi"><span class="kpi-ic o"><?= icon('clock') ?></span><span class="kpi-n"><?= (int) $kpis['pending'] ?></span><span class="kpi-l">Pedidos aguardando pagamento · <span class="nowrap"><?= money($kpis['pending_total']) ?></span></span><a href="<?= e(url('/admin/pedidos', ['status' => 'pending'])) ?>">Ver pedidos</a></div>
 <div class="kpi"><span class="kpi-ic g"><?= icon('chart') ?></span><span class="kpi-n"><?= money($kpis['revenue_month']) ?></span><span class="kpi-l">Recebido no mês · <?= e(pluralize((int) $kpis['paid_month'], 'pedido', 'pedidos')) ?></span><a href="<?= e(url('/admin/pedidos', ['status' => 'paid'])) ?>">Ver pagos</a></div>
 <div class="kpi"><span class="kpi-ic"><?= icon('users') ?></span><span class="kpi-n"><?= (int) $kpis['to_release'] ?></span><span class="kpi-l">Acessos a liberar · <?= e(pluralize((int) $kpis['awaiting'], 'vaga sem participante', 'vagas sem participante')) ?></span><a href="<?= e(url('/admin/matriculas', ['status' => 'processing'])) ?>">Liberar acessos</a></div>
 <div class="kpi"><span class="kpi-ic"><?= icon('book') ?></span><span class="kpi-n"><?= (int) $kpis['courses'] ?></span><span class="kpi-l">Cursos ativos · <?= e(pluralize((int) $kpis['students'], 'aluno', 'alunos')) ?></span><a href="<?= e(url('/admin/cursos')) ?>">Gerenciar cursos</a></div>

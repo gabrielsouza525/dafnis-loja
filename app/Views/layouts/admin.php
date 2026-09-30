@@ -16,7 +16,7 @@ $counts = Database::first(
 $items = [
     'painel' => ['/admin', 'Visão geral', 'grid', 0],
     'pedidos' => ['/admin/pedidos', 'Pedidos', 'receipt', (int) ($counts['pending'] ?? 0)],
-    'matriculas' => ['/admin/matriculas', 'Matrículas e certificados', 'award', (int) ($counts['processing'] ?? 0)],
+    'matriculas' => ['/admin/matriculas', 'Matrículas', 'award', (int) ($counts['processing'] ?? 0)],
     'cursos' => ['/admin/cursos', 'Cursos', 'book', 0],
     'categorias' => ['/admin/categorias', 'Categorias', 'tag', 0],
     'cupons' => ['/admin/cupons', 'Cupons', 'card', 0],
@@ -24,6 +24,15 @@ $items = [
     'contatos' => ['/admin/contatos', 'Contatos', 'message', (int) ($counts['contacts'] ?? 0)],
     'configuracoes' => ['/admin/configuracoes', 'Configurações', 'settings', 0],
 ];
+// Menu em grupos (o primeiro não tem título)
+$groups = [
+    '' => ['painel'],
+    'Vendas' => ['pedidos', 'matriculas', 'cupons'],
+    'Catálogo' => ['cursos', 'categorias'],
+    'Pessoas' => ['usuarios', 'contatos'],
+    'Sistema' => ['configuracoes'],
+];
+$initials = mb_strtoupper(implode('', array_map(static fn ($w) => mb_substr($w, 0, 1), array_slice(preg_split('/\s+/', trim((string) $user['name'])) ?: [], 0, 2))));
 $title = ($title ?? 'Painel') . ' — Painel';
 $noindex = true;
 $css = ['admin.css'];
@@ -41,23 +50,30 @@ $scripts = array_merge(['admin.js'], $scripts ?? []);
 <aside class="adm-side" id="adm-side" aria-label="Menu do painel">
 <a class="logo inv" href="<?= e(url('/admin')) ?>"><?= partial('logo', ['sub' => 'Painel da equipe']) ?></a>
 <nav class="adm-nav">
-<?php foreach ($items as $key => [$href, $label, $ic, $count]): ?>
-<a href="<?= e(url($href)) ?>"<?= $section === $key ? ' class="on" aria-current="page"' : '' ?>><?= icon($ic) ?><?= e($label) ?><?php if ($count > 0): ?><span class="count"><?= $count ?></span><?php endif; ?></a>
+<?php foreach ($groups as $group => $keys): ?>
+<?php if ($group !== ''): ?><span class="adm-nav-label"><?= e($group) ?></span><?php endif; ?>
+<?php foreach ($keys as $key): [$href, $label, $ic, $count] = $items[$key]; ?>
+<a href="<?= e(url($href)) ?>"<?= $section === $key ? ' class="on" aria-current="page"' : '' ?>><?= icon($ic) ?><?= e($label) ?><?php if ($count > 0): ?><span class="count" aria-label="<?= e(pluralize($count, 'pendente', 'pendentes')) ?>"><?= $count ?></span><?php endif; ?></a>
 <?php endforeach; ?>
-<span class="sep"></span>
-<a href="<?= e(url('/')) ?>" target="_blank"><?= icon('external') ?>Ver a loja</a>
-<a href="<?= e(url('/minha-conta')) ?>"><?= icon('user') ?>Minha conta</a>
+<?php endforeach; ?>
 </nav>
 <div class="adm-side-foot">
-<strong><?= e($user['name']) ?></strong><?= e($user['email']) ?>
+<div class="adm-user"><span class="avatar"><?= e($initials) ?></span><div><strong><?= e($user['name']) ?></strong><small><?= e($user['email']) ?></small></div></div>
+<div class="adm-side-links">
+<a href="<?= e(url('/')) ?>" target="_blank"><?= icon('external', 'ic-sm') ?>Ver a loja</a>
+<a href="<?= e(url('/minha-conta')) ?>"><?= icon('user', 'ic-sm') ?>Minha conta</a>
 <form method="post" action="<?= e(url('/sair')) ?>"><?= csrf_field() ?><button type="submit"><?= icon('logout', 'ic-sm') ?>Sair</button></form>
+</div>
 </div>
 </aside>
 <div class="adm-main">
 <header class="adm-top">
 <button class="icon-btn" type="button" aria-label="Abrir menu" aria-controls="adm-side" aria-expanded="false" data-admin-menu><?= icon('menu') ?></button>
-<span class="adm-top-title"><?= e($items[$section][1] ?? 'Painel') ?></span>
-<div class="adm-top-actions"><a class="btn btn-outline btn-xs" href="<?= e(url('/')) ?>" target="_blank"><?= icon('external', 'ic-sm') ?>Loja</a></div>
+<nav class="adm-crumbs" aria-label="Você está em"><a href="<?= e(url('/admin')) ?>">Painel</a><?= icon('chevR', 'ic-sm') ?><span aria-current="page"><?= e($items[$section][1] ?? 'Painel') ?></span></nav>
+<div class="adm-top-actions">
+<a class="btn btn-outline btn-xs" href="<?= e(url('/')) ?>" target="_blank"><?= icon('external', 'ic-sm') ?>Ver a loja</a>
+<a class="adm-me" href="<?= e(url('/minha-conta')) ?>" title="<?= e($user['name'] . ' — minha conta') ?>" aria-label="<?= e('Minha conta (' . $user['name'] . ')') ?>"><span class="avatar"><?= e($initials) ?></span></a>
+</div>
 </header>
 <main class="adm-content" id="conteudo" tabindex="-1">
 <?= $content ?>
