@@ -62,7 +62,7 @@ $catUrl = static function (string $slug) use ($categories): ?string {
 <a class="nav-link<?= $nav === 'cursos' ? ' on" aria-current="page' : '' ?>" href="<?= e(url('/cursos')) ?>">Cursos</a>
 <a class="nav-link<?= $nav === 'nrs' ? ' on' : '' ?>" href="<?= e(url('/nrs')) ?>" data-mega-toggle aria-controls="mega-nr" aria-expanded="false">NRs<?= icon('chevD', 'ic-sm') ?></a>
 <a class="nav-link" href="<?= e(url('/#categorias')) ?>">Categorias</a>
-<a class="nav-link" href="<?= e(url('/#empresas')) ?>">Empresas</a>
+<a class="nav-link<?= $nav === 'empresas' ? ' on" aria-current="page' : '' ?>" href="<?= e(url('/empresas')) ?>">Empresas</a>
 <a class="nav-link<?= $nav === 'sobre' ? ' on" aria-current="page' : '' ?>" href="<?= e(url('/sobre')) ?>">Sobre nós</a>
 </nav>
 <div class="hdr-actions">
@@ -112,7 +112,7 @@ $catUrl = static function (string $slug) use ($categories): ?string {
 </div></div>
 <div><h2>Empresa</h2><div class="ftr-links">
 <a class="ftr-link" href="<?= e(url('/sobre')) ?>">Sobre nós</a>
-<a class="ftr-link" href="<?= e(url('/#empresas')) ?>">Empresas</a>
+<a class="ftr-link" href="<?= e(url('/empresas')) ?>">Empresas</a>
 <a class="ftr-link" href="<?= e(url('/contato')) ?>">Contato</a>
 </div></div>
 <div><h2>Suporte</h2><div class="ftr-links">
@@ -160,7 +160,7 @@ echo e(implode(' · ', $bits));
 <a class="d-link<?= $nav === 'cursos' ? ' on' : '' ?>" href="<?= e(url('/cursos')) ?>">Cursos<?= icon('chevR') ?></a>
 <a class="d-link<?= $nav === 'nrs' ? ' on' : '' ?>" href="<?= e(url('/nrs')) ?>">NRs<?= icon('chevR') ?></a>
 <a class="d-link" href="<?= e(url('/#categorias')) ?>" data-drawer-close-on-click>Categorias<?= icon('chevR') ?></a>
-<a class="d-link" href="<?= e(url('/#empresas')) ?>" data-drawer-close-on-click>Empresas<?= icon('chevR') ?></a>
+<a class="d-link<?= $nav === 'empresas' ? ' on' : '' ?>" href="<?= e(url('/empresas')) ?>">Empresas<?= icon('chevR') ?></a>
 <a class="d-link<?= $nav === 'sobre' ? ' on' : '' ?>" href="<?= e(url('/sobre')) ?>">Sobre nós<?= icon('chevR') ?></a>
 <a class="d-link" href="<?= e(url('/contato')) ?>">Contato<?= icon('chevR') ?></a>
 <button class="d-link theme-btn" type="button" aria-pressed="false" data-theme-toggle hidden>Modo escuro<?= icon('moon', 'ic-moon') ?><?= icon('sun', 'ic-sun') ?></button>

@@ -131,7 +131,7 @@ foreach ([960, 1600, 2400] as $w) {
 </div>
 <div class="ent-ctas">
 <a class="btn btn-gold btn-lg" href="<?= e(url('/contato', ['assunto' => 'empresas'])) ?>">Fale com nossa equipe<?= icon('arrowR') ?></a>
-<a class="btn btn-line-w btn-lg" href="<?= e(url('/cursos')) ?>">Ver catálogo</a>
+<a class="btn btn-line-w btn-lg" href="<?= e(url('/empresas')) ?>">Como funciona</a>
 </div>
 </div>
 <div class="reveal">

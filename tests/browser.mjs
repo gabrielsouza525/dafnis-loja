@@ -209,6 +209,12 @@ r = await ev(`const n = [...document.querySelectorAll('.about-stats .stat-n')].m
   return { n, nav: document.querySelector('.nav-link[aria-current="page"]')?.textContent, steps: document.querySelectorAll('.how-step').length, areas: document.querySelectorAll('.area').length, whys: document.querySelectorAll('.why-item').length, link: document.querySelector('.ftr-link[href$="/sobre"]') !== null };`);
 check('sobre nós: números do catálogo no topo, menu marcado, passos, áreas e diferenciais', r.n[0] === '119' && r.nav === 'Sobre nós' && r.steps === 4 && r.areas > 0 && r.whys === 6 && r.link, r);
 
+// Empresas: página própria com a prévia do pedido e o formulário de proposta
+await go('/empresas');
+r = await ev(`const f = document.querySelector('#proposta form');
+  return { nav: document.querySelector('.nav-link[aria-current="page"]')?.textContent, seats: document.querySelectorAll('.seat-demo .sd-row').length, perks: document.querySelectorAll('.pillar').length, steps: document.querySelectorAll('.how-step').length, subject: f?.querySelector('[name=subject]')?.value, from: f?.querySelector('[name=_from]')?.value, cta: document.querySelector('.intro-ctas a')?.getAttribute('href') };`);
+check('empresas: menu marcado, prévia do pedido, vantagens, passos e proposta na página', r.nav === 'Empresas' && r.seats === 4 && r.perks === 6 && r.steps === 4 && r.subject === 'empresas' && r.from === 'empresas' && r.cta === '#proposta', r);
+
 // Página do curso: compra visível sem rolar, cartão fixo ao rolar; no celular a placa gerada some
 await go('/cursos/nr-33-espacos-confinados-trabalhador-e-vigia');
 r = await ev(`${wait} const btn = document.querySelector('.buy-card [name=buy_now]'); const before = Math.round(btn.getBoundingClientRect().bottom);
@@ -258,7 +264,7 @@ await sleep(1500);
 // (carrosséis, abas) e desenhos decorativos (aria-hidden, svg) podem passar.
 const overflow = [];
 for (const width of [360, 768, 960, 1024, 1180, 1280, 1440]) {
-  for (const path of ['/', '/cursos', '/cursos/nr-33-espacos-confinados-trabalhador-e-vigia', '/carrinho', '/login', '/cadastro', '/esqueci-senha', '/contato', '/sobre']) {
+  for (const path of ['/', '/cursos', '/cursos/nr-33-espacos-confinados-trabalhador-e-vigia', '/carrinho', '/login', '/cadastro', '/esqueci-senha', '/contato', '/sobre', '/empresas']) {
     await go(path, width);
     const o = await ev(outside);
     const at = await ev(`return location.pathname`);

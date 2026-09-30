@@ -47,6 +47,25 @@ final class PageController extends Controller
         ]);
     }
 
+    /** Empresas: como funciona a compra de vagas para a equipe, com o pedido de proposta na própria página. */
+    public function companies(): Response
+    {
+        return $this->view('site/companies', [
+            'title' => 'Treinamentos para empresas',
+            'description' => 'Compre vagas de treinamentos para toda a equipe com o CNPJ da empresa, indique os participantes e reúna os certificados na sua conta. Peça uma proposta.',
+            'canonical' => '/empresas',
+            'nav' => 'empresas',
+            'total' => count(Course::allActive()),
+            'nrIndex' => Course::nrIndex(),
+            'sample' => Course::findActiveBySlug('nr-33-espacos-confinados-trabalhador-e-vigia'),
+            'stats' => Settings::stats(),
+            'user' => Auth::user(),
+            'whatsapp' => Settings::get('business.whatsapp'),
+            'phone' => Settings::get('business.phone'),
+            'email' => Settings::get('business.email'),
+        ]);
+    }
+
     public function contact(): Response
     {
         $subject = (string) $this->request->query('assunto', 'duvida');
@@ -68,9 +87,11 @@ final class PageController extends Controller
 
     public function sendContact(): Response
     {
+        // O formulário de proposta da página Empresas volta para lá depois de enviado
+        $sentUrl = $this->request->input('_from') === 'empresas' ? '/empresas?enviado=1#proposta' : '/contato?enviado=1';
         // Campo invisível: robôs preenchem, pessoas não.
         if (trim((string) $this->request->input('website', '')) !== '') {
-            return $this->redirect('/contato?enviado=1');
+            return $this->redirect($sentUrl);
         }
         RateLimiter::check('contact', $this->request->ip(), $this->request->ip(), 5, 5, 30);
         $data = $this->validate([
@@ -100,7 +121,7 @@ final class PageController extends Controller
         RateLimiter::hit('contact', $this->request->ip(), $this->request->ip());
         Notify::contactReceived($row, $course);
 
-        return $this->success('Mensagem enviada! Nossa equipe responde pelo e-mail ou telefone informado.', '/contato?enviado=1');
+        return $this->success('Mensagem enviada! Nossa equipe responde pelo e-mail ou telefone informado.', $sentUrl);
     }
 
     public function terms(): Response
@@ -115,7 +136,7 @@ final class PageController extends Controller
 
     public function sitemap(): Response
     {
-        $urls = [['/', '1.0'], ['/cursos', '0.9'], ['/nrs', '0.8'], ['/sobre', '0.5'], ['/contato', '0.5'], ['/termos-de-uso', '0.2'], ['/politica-de-privacidade', '0.2']];
+        $urls = [['/', '1.0'], ['/cursos', '0.9'], ['/nrs', '0.8'], ['/empresas', '0.6'], ['/sobre', '0.5'], ['/contato', '0.5'], ['/termos-de-uso', '0.2'], ['/politica-de-privacidade', '0.2']];
         foreach (Category::active() as $cat) {
             if ($cat['course_count'] > 0) {
                 $urls[] = ['/categorias/' . $cat['slug'], '0.8'];

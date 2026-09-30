@@ -19,21 +19,21 @@ $steps = [
 ];
 ?>
 <div class="screen">
-<section class="phead phead-dark about-hero">
+<section class="phead phead-dark intro-hero">
 <div class="grid-bg" aria-hidden="true"></div>
 <div class="wrap">
 <?= partial('crumbs', ['items' => [['Início', '/'], ['Sobre nós', null]]]) ?>
-<div class="about-hero-in">
+<div class="intro-in">
 <div>
 <div class="kicker">Sobre nós</div>
 <h1>Treinamentos que preparam pessoas e empresas para trabalhar com segurança</h1>
 <?php if ($about): ?>
-<p class="about-lead"><?= nl2br(e($about)) ?></p>
+<p class="intro-lead"><?= nl2br(e($about)) ?></p>
 <?php else: ?>
-<p class="about-lead">A <?= e($business) ?> reúne treinamentos de Normas Regulamentadoras, segurança do trabalho e cursos complementares, com compra online, acesso pela plataforma de ensino e certificado de conclusão.</p>
+<p class="intro-lead">A <?= e($business) ?> reúne treinamentos de Normas Regulamentadoras, segurança do trabalho e cursos complementares, com compra online, acesso pela plataforma de ensino e certificado de conclusão.</p>
 <?php endif; ?>
-<?php if ($city): ?><p class="about-place"><?= icon('pin', 'ic-sm') ?><?= e($city) ?></p><?php endif; ?>
-<div class="about-ctas">
+<?php if ($city): ?><p class="intro-place"><?= icon('pin', 'ic-sm') ?><?= e($city) ?></p><?php endif; ?>
+<div class="intro-ctas">
 <a class="btn btn-gold btn-lg" href="<?= e(url('/cursos')) ?>">Ver treinamentos<?= icon('arrowR') ?></a>
 <a class="btn btn-line-w btn-lg" href="<?= e(url('/contato')) ?>">Fale com a nossa equipe</a>
 </div>
@@ -61,7 +61,7 @@ $steps = [
 <span class="pillar-ic"><?= icon('building') ?></span>
 <h3>Atendimento para empresas</h3>
 <p>Vagas para equipes inteiras, indicação dos participantes pela sua conta e uma proposta sob medida para o que a empresa precisa.</p>
-<a class="text-link" href="<?= e(url('/contato', ['assunto' => 'empresas'])) ?>">Solicitar proposta<?= icon('arrowR', 'ic-sm') ?></a>
+<a class="text-link" href="<?= e(url('/empresas')) ?>">Soluções para empresas<?= icon('arrowR', 'ic-sm') ?></a>
 </article>
 <article class="pillar">
 <span class="pillar-ic"><?= icon('award') ?></span>
@@ -124,7 +124,7 @@ $steps = [
 <?php endif; ?>
 </div>
 <div class="about-cta-side">
-<a class="btn btn-gold btn-lg" href="<?= e(url('/contato', ['assunto' => 'empresas'])) ?>">Solicitar proposta<?= icon('arrowR') ?></a>
+<a class="btn btn-gold btn-lg" href="<?= e(url('/empresas')) ?>#proposta">Solicitar proposta<?= icon('arrowR') ?></a>
 <a class="btn btn-line-w btn-lg" href="<?= e(url('/contato')) ?>">Enviar uma mensagem</a>
 <?php if ($whatsapp || $phone || $email): ?>
 <div class="about-channels">

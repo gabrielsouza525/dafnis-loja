@@ -41,6 +41,7 @@ return static function (Router $r): void {
     $r->post('/webhooks/mercadopago', [WebhookController::class, 'mercadoPago']);
 
     $r->get('/sobre', [PageController::class, 'about']);
+    $r->get('/empresas', [PageController::class, 'companies']);
     $r->get('/contato', [PageController::class, 'contact']);
     $r->post('/contato', [PageController::class, 'sendContact']);
     $r->get('/termos-de-uso', [PageController::class, 'terms']);

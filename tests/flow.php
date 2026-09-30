@@ -199,6 +199,10 @@ $c->request('GET', '/contato?assunto=empresas');
 $r = $c->request('POST', '/contato', ['subject' => 'empresas', 'name' => 'Contato Teste', 'email' => 'contato.teste@example.com', 'participants' => 12, 'message' => 'Teste automatizado']);
 check('formulário de contato', $r['status'] === 302 && str_contains($r['location'], 'enviado=1'));
 check('contato aparece no painel', str_contains($admin->request('GET', '/admin/contatos')['body'], 'Contato Teste'));
+$c->request('GET', '/empresas');
+$r = $c->request('POST', '/contato', ['subject' => 'empresas', '_from' => 'empresas', 'name' => 'Proposta Teste', 'email' => 'proposta.teste@example.com', 'company' => 'Empresa Teste', 'participants' => 30]);
+check('proposta da página Empresas volta para ela', $r['status'] === 302 && str_contains($r['location'], '/empresas?enviado=1'), $r['location']);
+check('proposta aparece no painel', str_contains($admin->request('GET', '/admin/contatos')['body'], 'Proposta Teste'));
 
 $edit = $admin->request('GET', "/admin/cursos/$courseId/editar")['body'];
 check('formulário de edição do curso', str_contains($edit, 'Espaços Confinados'));
