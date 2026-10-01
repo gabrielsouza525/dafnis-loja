@@ -56,6 +56,8 @@ return static function (Router $r): void {
     // Conta -----------------------------------------------------------------
     $r->get('/login', [AuthController::class, 'loginForm'], ['guest']);
     $r->post('/login', [AuthController::class, 'login'], ['guest']);
+    $r->get('/login/verificacao', [AuthController::class, 'twoFactorForm'], ['guest']);
+    $r->post('/login/verificacao', [AuthController::class, 'twoFactor'], ['guest']);
     $r->get('/entrar', [AuthController::class, 'legacyLogin']);
     $r->get('/cadastro', [AuthController::class, 'registerForm'], ['guest']);
     $r->post('/cadastro', [AuthController::class, 'register'], ['guest']);
@@ -76,6 +78,11 @@ return static function (Router $r): void {
         $r->get('/dados', [AccountController::class, 'profile']);
         $r->post('/dados', [AccountController::class, 'updateProfile']);
         $r->post('/senha', [AccountController::class, 'updatePassword']);
+        $r->get('/duas-etapas', [AccountController::class, 'twoFactorSetup']);
+        $r->post('/duas-etapas', [AccountController::class, 'twoFactorEnable']);
+        $r->get('/duas-etapas/codigos', [AccountController::class, 'twoFactorCodes']);
+        $r->post('/duas-etapas/codigos', [AccountController::class, 'twoFactorRegenerate']);
+        $r->post('/duas-etapas/desativar', [AccountController::class, 'twoFactorDisable']);
     });
 
     // Painel da equipe ------------------------------------------------------
@@ -111,6 +118,7 @@ return static function (Router $r): void {
         $r->get('/usuarios', [Admin\UserController::class, 'index']);
         $r->get('/usuarios/{id:\d+}', [Admin\UserController::class, 'show']);
         $r->post('/usuarios/{id:\d+}', [Admin\UserController::class, 'update']);
+        $r->post('/usuarios/{id:\d+}/duas-etapas/desativar', [Admin\UserController::class, 'disableTwoFactor']);
 
         $r->get('/cupons', [Admin\CouponController::class, 'index']);
         $r->get('/cupons/novo', [Admin\CouponController::class, 'create']);

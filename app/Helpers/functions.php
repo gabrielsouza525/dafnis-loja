@@ -333,6 +333,13 @@ function ini_bytes(string $value): int
     };
 }
 
+/** "ana@example.com" vira "a**@example.com" (mostra de quem é a conta sem expor o endereço). */
+function mask_email(string $email): string
+{
+    [$user, $domain] = array_pad(explode('@', $email, 2), 2, '');
+    return mb_substr($user, 0, 1) . str_repeat('*', max(2, mb_strlen($user) - 1)) . ($domain !== '' ? '@' . $domain : '');
+}
+
 function random_token(int $bytes = 32): string
 {
     return rtrim(strtr(base64_encode(random_bytes($bytes)), '+/', '-_'), '=');

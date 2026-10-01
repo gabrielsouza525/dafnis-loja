@@ -5,6 +5,19 @@ import { spawn } from 'node:child_process';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { createHmac } from 'node:crypto';
+
+const totp = (secret, offset = 0) => {
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+  let bits = '';
+  for (const c of secret.replace(/=+$/, '')) bits += alphabet.indexOf(c).toString(2).padStart(5, '0');
+  const key = Buffer.from(bits.match(/.{8}/g).map((b) => parseInt(b, 2)));
+  const counter = Buffer.alloc(8);
+  counter.writeBigUInt64BE(BigInt(Math.floor(Date.now() / 30000) + offset));
+  const h = createHmac('sha1', key).update(counter).digest();
+  const o = h[19] & 15;
+  return String(((h.readUInt32BE(o) & 0x7fffffff) % 1000000)).padStart(6, '0');
+};
 
 const B = process.argv[2] || 'http://localhost:8000';
 const port = 9800 + Math.floor(Math.random() * 100);
@@ -326,6 +339,42 @@ for (const width of [390, 1440]) {
 }
 check('minha conta: nada passa da borda (390 e 1440 px)', accOver.length === 0, accOver);
 
+// Verificação em duas etapas: o campo de seis casas (digitar, apagar, colar) e a ativação
+await go('/minha-conta/duas-etapas');
+r = await ev(`${wait} const cells = [...document.querySelectorAll('.otp-cell')]; const hidden = document.querySelector('[data-otp-input]');
+  hidden.form.addEventListener('submit', (e) => e.preventDefault()); // aqui só o campo; o envio é testado abaixo
+  const type = (i, v) => { cells[i].value = v; cells[i].dispatchEvent(new Event('input', { bubbles: true })); };
+  cells[0].focus(); type(0, '1'); type(1, '2');
+  const afterTwo = hidden.value + '@' + cells.indexOf(document.activeElement);
+  document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace', bubbles: true }));
+  const afterBack = hidden.value + '@' + cells.indexOf(document.activeElement);
+  type(1, 'x');
+  const letters = hidden.value;
+  const dt = new DataTransfer(); dt.setData('text', '98 76 54');
+  cells[3].dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+  return { cells: cells.length, gaps: document.querySelectorAll('.otp-slot.gap').length, hidden: hidden.type, afterTwo, afterBack, letters,
+    pasted: hidden.value, filled: document.querySelectorAll('.otp-slot.filled').length, secret: document.querySelector('#tf-secret')?.dataset.copyText,
+    qr: !!document.querySelector('.tf-qr svg.qr'), copy: !document.querySelector('[data-copy="tf-secret"]').hidden };`);
+check('código em seis casas: digitar avança, Backspace volta, letras não entram, colar preenche tudo', r.cells === 6 && r.gaps === 1 && r.hidden === 'hidden'
+  && r.afterTwo === '12@2' && r.afterBack === '1@1' && r.letters === '1' && r.pasted === '987654' && r.filled === 6 && r.qr && r.copy, r);
+const tfSecret = r.secret;
+await go('/minha-conta/duas-etapas');
+await ev(`const dt = new DataTransfer(); dt.setData('text', '${totp(tfSecret)}');
+  document.querySelector('.otp-cell').dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true })); return 1`);
+await sleep(1800);
+r = await ev(`return { path: location.pathname, codes: [...document.querySelectorAll('.tf-codes code')].map((c) => c.textContent), download: !document.querySelector('[data-download-text]').hidden };`);
+check('ativação: o código completo é enviado sozinho e mostra os 10 códigos de recuperação', r.path.endsWith('/minha-conta/duas-etapas/codigos') && r.codes.length === 10 && r.download, r);
+const tfRecovery = r.codes[0];
+const tfOver = [];
+for (const width of [360, 1440]) {
+  for (const path of ['/minha-conta/duas-etapas/codigos', '/minha-conta/dados']) {
+    await go(path, width);
+    const o = await ev(outside);
+    if (o.scroll > 0 || o.out.length) tfOver.push(`${path} @${width}px: ${o.scroll > 0 ? 'rola +' + o.scroll + 'px ' : ''}${o.out.join(', ')}`);
+  }
+}
+check('verificação em duas etapas: nada passa da borda (360 e 1440 px)', tfOver.length === 0, tfOver);
+
 // Sai da conta: as telas de entrar, criar conta e recuperar senha só aparecem para visitantes
 await go('/minha-conta');
 await ev(`document.querySelector('form[action$="/sair"]').submit(); return 1`);
@@ -344,6 +393,39 @@ for (const width of [360, 768, 960, 1024, 1180, 1280, 1440]) {
   }
 }
 check('nada passa da borda da tela de 360 a 1440 px', overflow.length === 0, overflow);
+
+// Login com a verificação ativa: senha, depois o código (errado: casas vermelhas e tremida; certo: entra)
+await go('/login');
+await ev(`document.querySelector('#f-email').value = 'ana@example.com'; document.querySelector('#f-password').value = 'dafnis123'; document.querySelector('.auth-form').submit(); return 1`);
+await sleep(1500);
+r = await ev(`return location.pathname`);
+check('login com a verificação ativa pede o código do celular', r.endsWith('/login/verificacao'), r);
+const loginOver = [];
+for (const width of [360, 1440]) {
+  await go('/login/verificacao', width);
+  const o = await ev(outside);
+  if (o.scroll > 0 || o.out.length) loginOver.push(`@${width}px: ${o.scroll > 0 ? 'rola +' + o.scroll + 'px ' : ''}${o.out.join(', ')}`);
+}
+check('segunda etapa: nada passa da borda (360 e 1440 px)', loginOver.length === 0, loginOver);
+await ev(`const dt = new DataTransfer(); dt.setData('text', '${totp(tfSecret, -40)}');
+  document.querySelector('.otp-cell').dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true })); return 1`);
+await sleep(1800);
+r = await ev(`return { error: document.querySelector('.otp')?.classList.contains('is-error'), shake: document.querySelector('.otp')?.classList.contains('shake'),
+  msg: document.querySelector('.otp-msg')?.textContent.trim(), focus: document.activeElement === document.querySelector('.otp-cell') };`);
+check('código errado: casas em vermelho, tremida, mensagem e foco na primeira casa', r.error && r.shake && /incorreto/.test(r.msg) && r.focus, r);
+await ev(`const dt = new DataTransfer(); dt.setData('text', '${totp(tfSecret, 1)}');
+  document.querySelector('.otp-cell').dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true })); return 1`);
+await sleep(1800);
+r = await ev(`return location.pathname`);
+check('código certo entra na conta', r.endsWith('/minha-conta'), r);
+await go('/minha-conta/dados');
+await ev(`const f = document.querySelector('form[action$="/duas-etapas/desativar"]'); f.querySelector('[name=current_password]').value = 'dafnis123';
+  f.querySelector('[name=tf_code]').value = '${tfRecovery}'; f.submit(); return 1`);
+await sleep(1500);
+r = await ev(`return document.querySelector('#duas-etapas .status')?.textContent.trim()`);
+check('desativar com a senha e um código de recuperação', r === 'Desativada', r);
+await ev(`document.querySelector('form[action$="/sair"]').submit(); return 1`);
+await sleep(1500);
 
 // Painel da equipe: entra como admin de demonstração e confere as telas com colunas laterais
 await go('/login');

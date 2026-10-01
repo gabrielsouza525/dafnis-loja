@@ -11,6 +11,7 @@ use App\Services\Activity;
 use App\Services\Auth;
 use App\Services\Notify;
 use App\Services\RateLimiter;
+use App\Services\TwoFactor;
 
 /**
  * Recuperação de senha por link de uso único (o banco guarda só o hash do token).
@@ -73,6 +74,13 @@ final class PasswordController extends Controller
         });
         Auth::forgetAllDevices((int) $row['user_id']);
         Activity::log('password.reset', 'user', (int) $row['user_id']);
+        $user = Database::first('SELECT id, two_factor_enabled_at FROM users WHERE id = :id', ['id' => $row['user_id']]);
+        if (TwoFactor::enabled($user)) {
+            // O link do e-mail não basta: quem usa a verificação em duas etapas ainda digita o código
+            TwoFactor::beginLogin($user, false, null);
+            flash('success', 'Senha alterada. Agora digite o código do aplicativo autenticador.');
+            return $this->redirect('/login/verificacao');
+        }
         Auth::login((int) $row['user_id'], false, $this->request);
         flash('success', 'Senha alterada. Você já está conectado.');
         return $this->redirect(Auth::homePath());

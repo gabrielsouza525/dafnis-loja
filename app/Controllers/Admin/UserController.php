@@ -10,6 +10,7 @@ use App\Models\Enrollment;
 use App\Models\Order;
 use App\Services\Activity;
 use App\Services\Auth;
+use App\Services\TwoFactor;
 
 final class UserController extends AdminController
 {
@@ -47,6 +48,16 @@ final class UserController extends AdminController
             'courses' => Enrollment::forParticipant($user['email']),
             'isSelf' => $id === Auth::id(),
         ]);
+    }
+
+    /** Para quem perdeu o celular e os códigos de recuperação: a equipe desativa e a pessoa ativa de novo. */
+    public function disableTwoFactor(int $id): Response
+    {
+        $user = $this->findOr404(Database::first('SELECT * FROM users WHERE id = :id', ['id' => $id]), 'Usuário não encontrado.');
+        if (TwoFactor::enabled($user)) {
+            TwoFactor::disable($user, true);
+        }
+        return $this->success('Verificação em duas etapas desativada. A pessoa recebeu um aviso por e-mail.', '/admin/usuarios/' . $id);
     }
 
     public function update(int $id): Response

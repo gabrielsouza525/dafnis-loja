@@ -115,15 +115,31 @@ Para trocar de gateway, implemente `app/Services/Payments/PaymentGateway.php` e 
 ## E-mail
 
 Com `MAIL_DRIVER=smtp` e os dados do provedor no `.env`, a loja envia: conta criada, pedido recebido,
-pagamento confirmado, acesso liberado, certificado disponível e recuperação de senha. A equipe recebe
+pagamento confirmado, acesso liberado, certificado disponível, recuperação de senha e o aviso quando a
+verificação em duas etapas é ativada ou desativada. A equipe recebe
 novos pedidos, pagamentos e contatos no `MAIL_ADMIN_ADDRESS` (ou no e-mail de contato das Configurações).
+
+## Verificação em duas etapas
+
+Opcional para cada conta, em *Minha conta › Meus dados*. Depois da senha, o login pede o código de 6
+dígitos de um aplicativo autenticador (Google Authenticator, Microsoft Authenticator...), que muda a
+cada 30 segundos. Ao ativar, a pessoa lê um QR code (gerado na própria loja, sem serviço externo) e
+recebe 10 códigos de recuperação, que valem uma vez cada, para quando perder o celular.
+
+- A chave de cada conta fica criptografada no banco com a `APP_KEY` do `.env`. Sem ela, a loja cria
+  `storage/app.key` (fora do Git). **Guarde essa chave com o backup do banco:** sem ela, quem ativou a
+  verificação precisa ativar de novo.
+- A senha nova pelo link de "Esqueci a senha" também pede o código antes de entrar.
+- Quem perdeu o celular e os códigos: a equipe desativa em *Painel › Usuários › (pessoa)*, depois de
+  confirmar que é a própria pessoa pedindo. Ela recebe um aviso por e-mail.
+- O painel lembra a equipe de ativar a verificação na própria conta.
 
 ## Publicação em hospedagem
 
 1. Envie os arquivos e aponte o domínio para a pasta **`public/`** (se não der, o `.htaccess` da raiz
    redireciona para ela e bloqueia o resto).
-2. Crie o banco e o `.env` com `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://...` e
-   `SESSION_SECURE=true`.
+2. Crie o banco e o `.env` com `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://...`,
+   `SESSION_SECURE=true` e uma `APP_KEY` (`php -r "echo base64_encode(random_bytes(32));"`).
 3. Com SSH: `php bin/console migrate && php bin/console seed && php bin/console admin:create ...`.
    Sem SSH: defina `INSTALL_TOKEN` no `.env`, abra `/instalar`, e depois apague o token.
 4. Em *Painel › Configurações*, preencha contatos, CNPJ, redes sociais, link da plataforma de ensino e

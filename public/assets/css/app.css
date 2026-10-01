@@ -823,6 +823,101 @@ body.lock{overflow:hidden}
 .install-brand{display:flex;justify-content:center;margin-bottom:24px}
 .install-sec{display:flex;align-items:center;gap:10px;margin:6px 0 -4px;font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .install-sec span{width:22px;height:22px;border-radius:50%;background:var(--navy);color:#E6C567;display:grid;place-items:center;font-size:11px;letter-spacing:0}
+/* Código de verificação: seis casas (adaptado do OtpInput). Sem JavaScript, fica o campo comum (.otp-native) */
+.otp-field{display:flex;flex-direction:column;gap:10px}
+.otp-label{font-size:14px;font-weight:600;color:var(--ink)}
+.otp-native{max-width:240px;height:54px;font-family:var(--mono);font-size:22px;letter-spacing:.35em;text-align:center}
+.otp-cells{display:flex;gap:8px}
+.otp-slot{position:relative;width:46px;height:56px;flex-shrink:0}
+.otp-slot.gap{margin-left:14px}
+.otp-cell{display:block;width:100%;height:100%;padding:0;border-radius:12px;border:2px solid var(--line);background:var(--gray);box-shadow:inset 0 1px 2px rgba(11,37,69,.07);text-align:center;font-size:20px;color:transparent;caret-color:transparent;outline:none;transition:background-color .15s,border-color .15s,box-shadow .15s}
+.otp-cell::selection{background:transparent}
+.otp-slot.filled .otp-cell{border-color:var(--line-strong);background:var(--surface);box-shadow:none}
+.otp-slot.active .otp-cell{border-color:var(--blue);background:var(--surface);box-shadow:0 0 0 4px var(--blue-tint)}
+.otp.is-error .otp-cell{border-color:var(--red);background:var(--surface)}
+.otp.is-error .otp-slot.active .otp-cell{box-shadow:0 0 0 4px var(--red-tint)}
+.otp-glyph{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;font-family:var(--mono);font-size:22px;font-weight:600;color:var(--ink)}
+.otp-glyph.pop{animation:otp-in .22s cubic-bezier(.23,1,.32,1)}
+.otp-caret{position:absolute;left:50%;top:50%;width:2px;height:22px;margin:-11px 0 0 -1px;border-radius:1px;background:var(--ink);pointer-events:none;display:none;animation:otp-blink 1.06s step-end infinite}
+.otp-slot.active:not(.filled) .otp-caret{display:block}
+.otp.shake .otp-cells{animation:otp-shake .32s cubic-bezier(.23,1,.32,1)}
+@keyframes otp-in{from{opacity:0;transform:translateY(10px) scale(.97);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
+@keyframes otp-blink{50%{opacity:0}}
+@keyframes otp-shake{25%{transform:translateX(-5px)}50%{transform:translateX(4px)}75%{transform:translateX(-3px)}}
+.otp-msg{display:flex;align-items:center;gap:6px;min-height:18px;margin:0;font-size:13px;color:var(--muted)}
+.otp-msg.is-error{color:var(--red);font-weight:600}
+.otp-msg .ic{width:15px;height:15px;flex-shrink:0}
+@media (max-width: 400px){
+  .otp-cells{gap:6px}
+  .otp-slot{width:40px;height:50px}
+  .otp-slot.gap{margin-left:8px}
+}
+
+/* Verificação em duas etapas: login, ativação (QR code e chave), códigos de recuperação e Meus dados */
+.tf-account{display:flex;align-items:center;gap:8px;margin:16px 0 0;padding:10px 14px;border-radius:10px;background:var(--gray);font-size:14px;color:var(--text)}
+.tf-account .ic{color:var(--muted)}
+.tf-recovery{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+.tf-recovery summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none;font-size:14.5px;font-weight:600;color:var(--blue-dk)}
+.tf-recovery summary::-webkit-details-marker{display:none}
+.tf-recovery summary:hover{color:var(--navy-ink)}
+.tf-recovery .auth-form{margin-top:16px}
+.tf-setup{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start}
+.tf-setup .form-sec > p{max-width:560px}
+.tf-qr-row{display:flex;gap:28px;align-items:center;margin-top:18px;flex-wrap:wrap}
+.tf-qr{width:200px;flex-shrink:0;padding:10px;border:1px solid var(--line);border-radius:14px;background:#fff}
+.tf-qr .qr{display:block;width:100%;height:auto}
+.tf-key{flex:1;min-width:240px;display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+.tf-key p{color:var(--text);font-size:15px}
+.tf-key-label{font-size:13.5px !important;color:var(--muted) !important}
+.tf-secret{display:block;font-family:var(--mono);font-size:16px;font-weight:600;letter-spacing:.08em;color:var(--ink);background:var(--gray);border:1px dashed var(--line-strong);border-radius:10px;padding:10px 14px;word-break:break-all}
+.tf-meta{display:flex;flex-direction:column;gap:4px;margin:4px 0 0;font-size:13px}
+.tf-meta > div{display:flex;gap:8px}
+.tf-meta dt{color:var(--muted);min-width:44px}
+.tf-meta dd{margin:0;color:var(--ink);font-weight:500;overflow-wrap:anywhere}
+.tf-confirm{display:flex;align-items:flex-start;gap:20px;flex-wrap:wrap;margin-top:18px}
+.tf-confirm .btn{margin-top:29px}
+.tf-codes-card{max-width:720px;display:flex;flex-direction:column;gap:22px}
+.tf-codes{list-style:none;margin:0;padding:18px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 24px;border-radius:12px;background:var(--gray);border:1px solid var(--line);counter-reset:tf}
+.tf-codes li{display:flex;align-items:center;gap:10px;counter-increment:tf}
+.tf-codes li::before{content:counter(tf);width:22px;font-family:var(--mono);font-size:11.5px;color:var(--muted);text-align:right}
+.tf-codes code{font-family:var(--mono);font-size:17px;font-weight:600;letter-spacing:.06em;color:var(--ink)}
+.tf-codes-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.tf-done{margin-left:auto}
+.tf-state{display:flex;gap:16px;align-items:flex-start}
+.tf-state-ic{width:48px;height:48px;border-radius:13px;background:var(--gray);color:var(--muted);display:grid;place-items:center;flex-shrink:0}
+.tf-state.is-on .tf-state-ic{background:var(--green-tint);color:var(--green-dk)}
+.tf-state:not(.is-on) .tf-state-ic{background:var(--navy);color:#E6C567}
+.tf-state > div{min-width:0}
+.tf-state strong{display:block;font-size:16px;color:var(--ink)}
+.tf-state p{color:var(--muted);font-size:14.5px;margin:4px 0 16px;max-width:620px}
+.tf-state.is-on p{margin-bottom:0}
+.tf-actions{display:flex;flex-direction:column;gap:10px;margin-top:20px}
+.tf-more{border:1px solid var(--line);border-radius:12px;padding:0 16px}
+.tf-more summary{display:flex;align-items:center;gap:8px;padding:14px 0;cursor:pointer;list-style:none;font-size:14.5px;font-weight:600;color:var(--ink)}
+.tf-more summary::-webkit-details-marker{display:none}
+.tf-more summary .ic{color:var(--muted)}
+.tf-more[open]{padding-bottom:16px}
+.tf-more-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.tf-more-row .field{flex:1;min-width:220px}
+@media (max-width: 1180px){
+  .tf-setup{grid-template-columns:minmax(0,1fr)}
+  .tf-setup .contact-aside{position:static}
+}
+@media (max-width: 760px){
+  .tf-qr-row{flex-direction:column;align-items:flex-start;gap:18px}
+  .tf-qr{width:180px}
+  .tf-key{min-width:0;width:100%}
+  .tf-confirm .btn{margin-top:0;width:100%;justify-content:center}
+  .tf-codes{grid-template-columns:minmax(0,1fr)}
+  .tf-state{flex-direction:column;gap:12px}
+  .tf-state .btn{width:100%;justify-content:center;white-space:normal;text-align:center}
+  .tf-done{margin-left:0;width:100%;justify-content:center}
+}
+@media print{
+  .acc-hero,.ftr,.tf-codes-actions,.note-box{display:none !important}
+  .tf-codes-card{border:0;padding:0}
+}
+
 /* Recuperar e redefinir senha: etapas no alto do cartão, ícone e dicas */
 .recover-steps{margin:0 0 22px;padding-bottom:18px;border-bottom:1px solid var(--line)}
 .recover-steps .step{font-size:13px}

@@ -251,5 +251,99 @@ check('salvar a nova senha já entra na conta', $r['status'] === 302 && $rc->req
 check('o link usado não serve de novo', str_contains($rc->request('GET', '/redefinir-senha/' . $token)['body'], 'Link expirado'));
 check('entra com a nova senha', (new Client($base))->login($email, 'novaSenha2026'));
 
+// 8. Verificação em duas etapas -----------------------------------------
+echo "\nVerificação em duas etapas\n";
+require_once dirname(__DIR__) . '/app/Services/Totp.php';
+$totp = static fn (string $secret, int $offset = 0) => App\Services\Totp::code($secret, intdiv(time(), 30) + $offset);
+$lastResetToken = static function (): ?string {
+    $mails = glob(dirname(__DIR__) . '/storage/mail/*.html') ?: [];
+    rsort($mails);
+    foreach (array_slice($mails, 0, 5) as $file) {
+        if (preg_match('#/redefinir-senha/([A-Za-z0-9_-]{43})#', (string) file_get_contents($file), $m)) {
+            return $m[1];
+        }
+    }
+    return null;
+};
+$tfPass = 'novaSenha2026';
+$tf = new Client($base);
+check('entra sem código enquanto a verificação está desativada', $tf->login($email, $tfPass));
+$setup = $tf->request('GET', '/minha-conta/duas-etapas');
+$secret = preg_match('/id="tf-secret" data-copy-text="([A-Z2-7]{32})"/', $setup['body'], $m) ? $m[1] : '';
+check('ativação mostra o QR code e a chave', $setup['status'] === 200 && str_contains($setup['body'], '<svg class="qr"') && $secret !== '');
+$r = $tf->request('POST', '/minha-conta/duas-etapas', ['code' => $totp($secret, -40)]);
+check('código errado não ativa', $r['status'] === 302 && !str_contains($r['location'], '/codigos'), $r['location']);
+$r = $tf->request('POST', '/minha-conta/duas-etapas', ['code' => $totp($secret)]);
+check('código certo ativa e leva aos códigos de recuperação', $r['status'] === 302 && str_ends_with($r['location'], '/minha-conta/duas-etapas/codigos'), $r['location']);
+$codesPage = $tf->request('GET', '/minha-conta/duas-etapas/codigos')['body'];
+$recovery = preg_match_all('#<code>([a-z2-9]{5}-[a-z2-9]{5})</code>#', $codesPage, $m) ? $m[1] : [];
+check('10 códigos de recuperação, mostrados uma vez', count($recovery) === 10);
+$profile = $tf->request('GET', '/minha-conta/dados')['body'];
+check('Meus dados mostra a verificação ativada', str_contains($profile, 'Ativada desde') && str_contains($profile, 'Restam 10 códigos'));
+check('depois de "Já guardei", os códigos não aparecem de novo', $tf->request('GET', '/minha-conta/duas-etapas/codigos')['status'] === 302);
+
+$tf->request('POST', '/sair');
+$tf->request('GET', '/login');
+$r = $tf->request('POST', '/login', ['email' => $email, 'password' => $tfPass]);
+check('com a verificação ativa, a senha leva à segunda etapa', $r['status'] === 302 && str_ends_with($r['location'], '/login/verificacao'), $r['location']);
+$page = $tf->request('GET', '/login/verificacao')['body'];
+check('segunda etapa mostra o e-mail mascarado e o campo de código', str_contains($page, 'Entrando como') && str_contains($page, 'data-otp') && !str_contains($page, $email));
+check('sem o código, a conta continua fechada', $tf->request('GET', '/minha-conta')['status'] === 302);
+$r = $tf->request('POST', '/login/verificacao', ['code' => $totp($secret, -40)]);
+check('código errado volta com erro', $r['status'] === 302 && str_contains($r['location'], '/login/verificacao') && str_contains($tf->request('GET', '/login/verificacao')['body'], 'Código incorreto'));
+$r = $tf->request('POST', '/login/verificacao', ['code' => $totp($secret)]);
+check('o mesmo código não vale duas vezes', $r['status'] === 302 && str_contains($r['location'], '/login/verificacao'), $r['location']);
+$r = $tf->request('POST', '/login/verificacao', ['code' => $totp($secret, 1)]);
+check('código do aplicativo entra na conta', $r['status'] === 302 && $tf->request('GET', '/minha-conta')['status'] === 200, $r['location']);
+
+$tf->request('POST', '/sair');
+$tf->request('GET', '/login');
+$tf->request('POST', '/login', ['email' => $email, 'password' => $tfPass]);
+$tf->request('GET', '/login/verificacao');
+$r = $tf->request('POST', '/login/verificacao', ['recovery_code' => strtoupper($recovery[0])]);
+$profile = $tf->request('GET', '/minha-conta/dados')['body'];
+check('código de recuperação entra e leva a Meus dados (restam 9)', $r['status'] === 302 && str_contains($r['location'], '/minha-conta/dados') && str_contains($profile, 'Restam 9 códigos'), $r['location']);
+
+$tf->request('POST', '/sair');
+$tf->request('GET', '/esqueci-senha');
+$tf->request('POST', '/esqueci-senha', ['email' => $email]);
+$token = $lastResetToken();
+$tf->request('GET', '/redefinir-senha/' . $token);
+$r = $tf->request('POST', '/redefinir-senha', ['token' => (string) $token, 'password' => $tfPass, 'password_confirmation' => $tfPass]);
+check('senha nova pelo e-mail ainda pede o código', $r['status'] === 302 && str_ends_with($r['location'], '/login/verificacao') && $tf->request('GET', '/minha-conta')['status'] === 302, $r['location']);
+$tf->request('GET', '/login/verificacao');
+$r = $tf->request('POST', '/login/verificacao', ['recovery_code' => $recovery[0]]);
+check('código de recuperação já usado não vale', $r['status'] === 302 && str_contains($r['location'], '/login/verificacao'), $r['location']);
+$r = $tf->request('POST', '/login/verificacao', ['recovery_code' => $recovery[1]]);
+check('outro código de recuperação entra', $r['status'] === 302 && $tf->request('GET', '/minha-conta')['status'] === 200, $r['location']);
+
+$tf->request('GET', '/minha-conta/dados');
+$r = $tf->request('POST', '/minha-conta/duas-etapas/codigos', ['_scope' => '2fa-codes', 'current_password' => 'errada123']);
+check('novos códigos pedem a senha atual', $r['status'] === 302 && str_contains($r['location'], '/minha-conta/dados'), $r['location']);
+$r = $tf->request('POST', '/minha-conta/duas-etapas/codigos', ['_scope' => '2fa-codes', 'current_password' => $tfPass]);
+$codesPage = $tf->request('GET', '/minha-conta/duas-etapas/codigos')['body'];
+$newRecovery = preg_match_all('#<code>([a-z2-9]{5}-[a-z2-9]{5})</code>#', $codesPage, $m) ? $m[1] : [];
+check('gera 10 códigos novos', $r['status'] === 302 && count($newRecovery) === 10 && !in_array($recovery[2], $newRecovery, true));
+$tf->request('GET', '/minha-conta/dados');
+$r = $tf->request('POST', '/minha-conta/duas-etapas/desativar', ['_scope' => '2fa-off', 'current_password' => $tfPass, 'tf_code' => $recovery[2]]);
+check('código de recuperação antigo não desativa', str_contains($tf->request('GET', '/minha-conta/dados')['body'], 'Ativada desde'));
+$r = $tf->request('POST', '/minha-conta/duas-etapas/desativar', ['_scope' => '2fa-off', 'current_password' => $tfPass, 'tf_code' => $newRecovery[0]]);
+check('desativar com a senha e um código', $r['status'] === 302 && str_contains($tf->request('GET', '/minha-conta/dados')['body'], 'Proteja a sua conta com um código do celular'));
+$tf->request('POST', '/sair');
+check('desativada, volta a entrar só com a senha', $tf->login($email, $tfPass));
+
+// A equipe desativa para quem perdeu o celular e os códigos
+$setup = $tf->request('GET', '/minha-conta/duas-etapas');
+$secret = preg_match('/id="tf-secret" data-copy-text="([A-Z2-7]{32})"/', $setup['body'], $m) ? $m[1] : '';
+$tf->request('POST', '/minha-conta/duas-etapas', ['code' => $totp($secret)]);
+$users = $admin->request('GET', '/admin/usuarios?q=' . rawurlencode($email))['body'];
+$userId = preg_match('#/admin/usuarios/(\d+)#', $users, $m) ? $m[1] : '0';
+$userPage = $admin->request('GET', '/admin/usuarios/' . $userId)['body'];
+check('painel mostra a verificação ativada no usuário', str_contains($userPage, 'Ativada em') && str_contains($userPage, '/duas-etapas/desativar'));
+$admin->request('POST', '/admin/usuarios/' . $userId . '/duas-etapas/desativar');
+$tf->request('POST', '/sair');
+check('depois que a equipe desativa, entra só com a senha', $tf->login($email, $tfPass));
+check('o painel lembra a equipe de ativar a verificação', str_contains($admin->request('GET', '/admin')['body'], 'Proteja o painel'));
+
 echo "\n$checks verificações, $failures falha(s).\n";
 exit($failures ? 1 : 0);

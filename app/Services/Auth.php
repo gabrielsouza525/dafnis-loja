@@ -53,9 +53,10 @@ final class Auth
     }
 
     /**
+     * Confere e-mail e senha sem entrar na conta (a verificação em duas etapas pode vir depois).
      * @throws ValidationException quando as credenciais não conferem
      */
-    public static function attempt(string $email, string $password, bool $remember, Request $request): array
+    public static function verifyCredentials(string $email, string $password, Request $request): array
     {
         $email = mb_strtolower(trim($email));
         RateLimiter::check('login', $email, $request->ip(), 5, 20, 15);
@@ -81,8 +82,7 @@ final class Auth
 
         RateLimiter::clear('login', $email);
         RateLimiter::hit('login', $email, $request->ip(), true);
-        self::login((int) $user['id'], $remember, $request);
-        return self::user();
+        return $user;
     }
 
     public static function login(int $userId, bool $remember, Request $request): void
@@ -197,7 +197,7 @@ final class Auth
     private static function findActive(int $id): ?array
     {
         return Database::first(
-            'SELECT id, name, email, phone, document, role, is_active, last_login_at, created_at
+            'SELECT id, name, email, phone, document, role, is_active, last_login_at, created_at, two_factor_enabled_at
                FROM users WHERE id = :id AND is_active = 1',
             ['id' => $id]
         );

@@ -14,6 +14,10 @@ use App\Models\Order;
 use App\Services\Activity;
 use App\Services\Auth;
 use App\Services\Enrollments;
+use App\Services\QrCode;
+use App\Services\RateLimiter;
+use App\Services\Totp;
+use App\Services\TwoFactor;
 use App\Services\Payments\Payments;
 use App\Services\Uploads;
 
@@ -128,7 +132,96 @@ final class AccountController extends Controller
 
     public function profile(): Response
     {
-        return $this->account('account/profile', 'dados', ['title' => 'Meus dados', 'user' => Auth::user()]);
+        TwoFactor::forgetFreshCodes(); // "Já guardei os códigos" volta para cá
+        $row = Database::first('SELECT two_factor_enabled_at, two_factor_recovery FROM users WHERE id = :id', ['id' => Auth::id()]) ?? [];
+        return $this->account('account/profile', 'dados', [
+            'title' => 'Meus dados',
+            'user' => Auth::user(),
+            'twoFactor' => TwoFactor::enabled($row) ? ['since' => $row['two_factor_enabled_at'], 'left' => TwoFactor::recoveryLeft($row)] : null,
+        ]);
+    }
+
+    /** Ativar a verificação em duas etapas: QR code, chave e o primeiro código do aplicativo. */
+    public function twoFactorSetup(): Response
+    {
+        $user = Auth::user();
+        if (TwoFactor::enabled($user)) {
+            return $this->redirect('/minha-conta/dados#duas-etapas');
+        }
+        $secret = TwoFactor::setupSecret();
+        return $this->account('account/two-factor', 'dados', [
+            'title' => 'Ativar a verificação em duas etapas',
+            'secret' => $secret,
+            'qr' => QrCode::svg(Totp::uri($secret, $user['email'], TwoFactor::issuer()), 'QR code para o aplicativo autenticador'),
+            'issuer' => TwoFactor::issuer(),
+        ]);
+    }
+
+    public function twoFactorEnable(): Response
+    {
+        $user = Auth::user();
+        if (TwoFactor::enabled($user)) {
+            return $this->redirect('/minha-conta/dados#duas-etapas');
+        }
+        RateLimiter::check('2fa-setup', 'user:' . $user['id'], $this->request->ip(), 10, 20, 15);
+        try {
+            TwoFactor::enable($user, (string) $this->request->input('code', ''));
+        } catch (ValidationException $e) {
+            RateLimiter::hit('2fa-setup', 'user:' . $user['id'], $this->request->ip());
+            throw $e;
+        }
+        Auth::reset();
+        return $this->redirect('/minha-conta/duas-etapas/codigos');
+    }
+
+    /** Códigos de recuperação recém-gerados (mostrados uma vez). */
+    public function twoFactorCodes(): Response
+    {
+        $fresh = TwoFactor::freshCodes();
+        if (!$fresh) {
+            return $this->redirect('/minha-conta/dados#duas-etapas');
+        }
+        return $this->account('account/two-factor-codes', 'dados', [
+            'title' => 'Códigos de recuperação',
+            'codes' => $fresh['codes'],
+            'reason' => $fresh['reason'],
+        ]);
+    }
+
+    public function twoFactorRegenerate(): Response
+    {
+        $row = $this->confirmPassword('2fa-codes');
+        if (!TwoFactor::enabled($row)) {
+            return $this->redirect('/minha-conta/dados#duas-etapas');
+        }
+        TwoFactor::regenerateRecovery($row);
+        return $this->redirect('/minha-conta/duas-etapas/codigos');
+    }
+
+    public function twoFactorDisable(): Response
+    {
+        $row = $this->confirmPassword('2fa-off');
+        if (!TwoFactor::enabled($row)) {
+            return $this->redirect('/minha-conta/dados#duas-etapas');
+        }
+        RateLimiter::check('2fa', 'user:' . $row['id'], $this->request->ip(), 5, 20, 15);
+        if (!TwoFactor::verifyAny($row, trim((string) $this->request->input('tf_code', '')))) {
+            RateLimiter::hit('2fa', 'user:' . $row['id'], $this->request->ip());
+            throw ValidationException::with('tf_code', 'Código incorreto. Use o código do aplicativo ou um código de recuperação.');
+        }
+        TwoFactor::disable($row);
+        Auth::reset();
+        return $this->success('Verificação em duas etapas desativada.', '/minha-conta/dados#duas-etapas');
+    }
+
+    /** Ações de segurança pedem a senha atual de novo. */
+    private function confirmPassword(string $scope): array
+    {
+        $row = Database::first('SELECT * FROM users WHERE id = :id', ['id' => Auth::id()]);
+        if (!password_verify((string) $this->request->input('current_password'), $row['password_hash'])) {
+            throw ValidationException::with('current_password', 'A senha atual não confere.');
+        }
+        return $row;
     }
 
     public function updateProfile(): Response

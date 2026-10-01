@@ -12,11 +12,13 @@ use App\Services\Auth;
 use App\Services\Cart;
 use App\Services\Notify;
 use App\Services\RateLimiter;
+use App\Services\TwoFactor;
 
 final class AuthController extends Controller
 {
     public function loginForm(): Response
     {
+        TwoFactor::forgetPendingLogin(); // "Voltar para o login" na segunda etapa recomeça
         return $this->view('auth/login', [
             'title' => 'Entrar',
             'noindex' => true,
@@ -28,8 +30,67 @@ final class AuthController extends Controller
     public function login(): Response
     {
         $data = $this->validate(['email' => 'required|email', 'password' => 'required'], ['email' => 'e-mail', 'password' => 'senha']);
-        Auth::attempt($data['email'], (string) $this->request->input('password'), $this->request->bool('remember'), $this->request);
-        $to = Auth::safeReturnPath($this->request->input('volta')) ?? Auth::homePath();
+        $user = Auth::verifyCredentials($data['email'], (string) $this->request->input('password'), $this->request);
+        $remember = $this->request->bool('remember');
+        $volta = Auth::safeReturnPath($this->request->input('volta'));
+        if (TwoFactor::enabled($user)) {
+            TwoFactor::beginLogin($user, $remember, $volta);
+            return $this->redirect('/login/verificacao');
+        }
+        Auth::login((int) $user['id'], $remember, $this->request);
+        return $this->afterLogin($volta);
+    }
+
+    /** Segunda etapa: o código do aplicativo autenticador (ou um de recuperação). */
+    public function twoFactorForm(): Response
+    {
+        $pending = TwoFactor::pendingLogin();
+        if (!$pending) {
+            flash('error', 'Por segurança, entre de novo com o seu e-mail e a senha.');
+            return $this->redirect('/login');
+        }
+        $email = (string) Database::value('SELECT email FROM users WHERE id = :id', ['id' => $pending['user_id']]);
+        return $this->view('auth/two-factor', [
+            'title' => 'Verificação em duas etapas',
+            'noindex' => true,
+            'email' => mask_email($email),
+        ]);
+    }
+
+    public function twoFactor(): Response
+    {
+        $pending = TwoFactor::pendingLogin();
+        if (!$pending) {
+            flash('error', 'Por segurança, entre de novo com o seu e-mail e a senha.');
+            return $this->redirect('/login');
+        }
+        $key = 'user:' . $pending['user_id'];
+        RateLimiter::check('2fa', $key, $this->request->ip(), 5, 20, 15);
+        $row = Database::first('SELECT * FROM users WHERE id = :id AND is_active = 1', ['id' => $pending['user_id']]);
+        $recovery = trim((string) $this->request->input('recovery_code', ''));
+        $ok = $row && TwoFactor::enabled($row) && ($recovery !== ''
+            ? TwoFactor::useRecoveryCode($row, $recovery)
+            : TwoFactor::verifyApp($row, (string) $this->request->input('code', '')));
+        if (!$ok) {
+            RateLimiter::hit('2fa', $key, $this->request->ip());
+            throw $recovery !== ''
+                ? ValidationException::with('recovery_code', 'Código de recuperação inválido ou já usado.')
+                : ValidationException::with('code', 'Código incorreto. Digite o código que aparece agora no aplicativo.');
+        }
+        RateLimiter::clear('2fa', $key);
+        TwoFactor::forgetPendingLogin();
+        Auth::login((int) $row['id'], (bool) $pending['remember'], $this->request);
+        if ($recovery !== '') {
+            $left = TwoFactor::recoveryLeft(Database::first('SELECT two_factor_recovery FROM users WHERE id = :id', ['id' => $row['id']]) ?? []);
+            flash('success', 'Você entrou com um código de recuperação. ' . ($left > 0 ? 'Restam ' . pluralize($left, 'código', 'códigos') . '; se perdeu o celular, gere novos aqui.' : 'Não restam códigos: gere novos aqui.'));
+            return $this->redirect('/minha-conta/dados#duas-etapas');
+        }
+        return $this->afterLogin($pending['volta'] ?? null);
+    }
+
+    private function afterLogin(?string $volta): Response
+    {
+        $to = $volta ?? Auth::homePath();
         if (Auth::isAdmin() && $to === '/minha-conta') {
             $to = '/admin';
         }

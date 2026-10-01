@@ -29,7 +29,15 @@ use App\Models\Order;
 <dt>Telefone</dt><dd><?= e($u['phone'] ? phone_display($u['phone']) : '—') ?></dd>
 <dt>CPF</dt><dd><?= e($u['document'] ? document_display($u['document']) : '—') ?></dd>
 <dt>Último acesso</dt><dd><?= e($u['last_login_at'] ? date_br($u['last_login_at'], true) : 'Nunca entrou') ?></dd>
+<dt>Duas etapas</dt><dd><?= $u['two_factor_enabled_at'] ? 'Ativada em ' . e(date_br($u['two_factor_enabled_at'])) : 'Desativada' ?></dd>
 </dl>
+<?php if ($u['two_factor_enabled_at'] && !$isSelf): ?>
+<form method="post" action="<?= e(url('/admin/usuarios/' . $u['id'] . '/duas-etapas/desativar')) ?>" data-confirm="Desativar a verificação em duas etapas desta conta? Faça isso só depois de confirmar que é a própria pessoa pedindo (ela perdeu o celular e os códigos de recuperação)." style="margin-top:14px">
+<?= csrf_field() ?>
+<button class="btn btn-outline btn-xs" type="submit"><?= icon('shield', 'ic-sm') ?>Desativar a verificação em duas etapas</button>
+<p class="hint">Para quem perdeu o celular e os códigos. A pessoa recebe um aviso por e-mail.</p>
+</form>
+<?php endif; ?>
 </div></div>
 <form class="panel" method="post" action="<?= e(url('/admin/usuarios/' . $u['id'])) ?>" data-confirm="Salvar as alterações de acesso deste usuário?">
 <?= csrf_field() ?>

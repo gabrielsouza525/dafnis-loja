@@ -30,6 +30,16 @@ final class Notify
         Mailer::send($user['email'], 'Criar nova senha', 'reset-password', ['name' => $user['name'], 'url' => $url, 'minutes' => $minutes]);
     }
 
+    public static function twoFactorChanged(array $user, bool $enabled, bool $byTeam = false): void
+    {
+        Mailer::send($user['email'], $enabled ? 'Verificação em duas etapas ativada' : 'Verificação em duas etapas desativada', 'two-factor', [
+            'name' => $user['name'],
+            'enabled' => $enabled,
+            'byTeam' => $byTeam,
+            'url' => absolute_url('/minha-conta/dados') . '#duas-etapas',
+        ]);
+    }
+
     public static function orderCreated(array $order): void
     {
         $items = Order::items((int) $order['id']);

@@ -494,6 +494,213 @@
     checkPassword();
   }
 
+  /* ---------- código de verificação: seis casas (adaptado do componente OtpInput em React) ----------
+     O campo original vira oculto e guarda o valor; digitar avança, colar preenche tudo, Backspace volta,
+     setas/Home/End navegam e, com data-otp-autosubmit, o formulário é enviado ao completar. */
+  $all('[data-otp]').forEach(function (root) {
+    var native = $('[data-otp-input]', root);
+    if (!native) return;
+    var length = parseInt(native.getAttribute('maxlength'), 10) || 6;
+    var groupEvery = 3;
+    var label = root.getAttribute('data-otp-label') || 'Código de verificação';
+    var form = native.form;
+    var msg = root.parentNode && $('[data-otp-msg]', root.parentNode);
+    var chars = [];
+    var initial = (native.value || '').replace(/\D/g, '');
+    for (var n = 0; n < length; n++) chars.push(initial.charAt(n));
+    var cells = [];
+    var slots = [];
+    var glyphs = [];
+    var focused = -1;
+    var submitted = false;
+
+    var group = doc.createElement('div');
+    group.className = 'otp-cells';
+    group.setAttribute('role', 'group');
+    group.setAttribute('aria-label', label);
+    for (var i = 0; i < length; i++) {
+      var slot = doc.createElement('div');
+      slot.className = 'otp-slot' + (i > 0 && i % groupEvery === 0 ? ' gap' : '');
+      var cell = doc.createElement('input');
+      cell.type = 'text';
+      cell.className = 'otp-cell';
+      cell.inputMode = 'numeric';
+      cell.autocomplete = i === 0 ? 'one-time-code' : 'off';
+      cell.setAttribute('autocorrect', 'off');
+      cell.setAttribute('autocapitalize', 'off');
+      cell.spellcheck = false;
+      cell.setAttribute('aria-label', label + ', dígito ' + (i + 1) + ' de ' + length);
+      if (native.getAttribute('aria-describedby')) cell.setAttribute('aria-describedby', native.getAttribute('aria-describedby'));
+      if (native.getAttribute('aria-invalid')) cell.setAttribute('aria-invalid', 'true');
+      var glyph = doc.createElement('span');
+      glyph.className = 'otp-glyph';
+      glyph.setAttribute('aria-hidden', 'true');
+      var caret = doc.createElement('span');
+      caret.className = 'otp-caret';
+      caret.setAttribute('aria-hidden', 'true');
+      slot.appendChild(cell);
+      slot.appendChild(glyph);
+      slot.appendChild(caret);
+      group.appendChild(slot);
+      cells.push(cell);
+      slots.push(slot);
+      glyphs.push(glyph);
+    }
+    // O campo original fica oculto (envia o valor); o rótulo passa a apontar para a primeira casa
+    var lab = native.id && doc.querySelector('label[for="' + native.id + '"]');
+    cells[0].id = native.id + '-1';
+    if (lab) lab.htmlFor = cells[0].id;
+    var wantsFocus = native.hasAttribute('autofocus');
+    native.type = 'hidden';
+    native.removeAttribute('autofocus');
+    root.appendChild(group);
+
+    var keep = function (text) { return String(text).replace(/\D/g, ''); };
+    var render = function () {
+      for (var k = 0; k < length; k++) {
+        var c = chars[k] || '';
+        if (cells[k].value !== c) cells[k].value = c;
+        if (glyphs[k].textContent !== c) {
+          glyphs[k].textContent = c;
+          glyphs[k].classList.remove('pop');
+          if (c && !reduceMotion) { void glyphs[k].offsetWidth; glyphs[k].classList.add('pop'); }
+        }
+        slots[k].classList.toggle('filled', c !== '');
+        slots[k].classList.toggle('active', focused === k);
+      }
+    };
+    var clearError = function () {
+      if (!root.classList.contains('is-error')) return;
+      root.classList.remove('is-error', 'shake');
+      cells.forEach(function (c) { c.removeAttribute('aria-invalid'); });
+      if (msg) {
+        var hint = msg.getAttribute('data-hint');
+        msg.classList.remove('is-error');
+        msg.innerHTML = hint ? '<span>' + escapeHtml(hint) + '</span>' : '';
+      }
+    };
+    var commit = function (next) {
+      chars = next;
+      native.value = chars.join('');
+      clearError();
+      render();
+      if (chars.every(function (c) { return c !== ''; }) && form && root.hasAttribute('data-otp-autosubmit') && !submitted) {
+        submitted = true;
+        setTimeout(function () {
+          if (form.requestSubmit) form.requestSubmit(); else form.submit();
+        }, 140);
+      }
+    };
+    var focusAt = function (index) {
+      var el = cells[Math.max(0, Math.min(length - 1, index))];
+      el.focus();
+      el.select();
+    };
+    var fillFrom = function (index, text) {
+      var incoming = keep(text);
+      if (!incoming) return;
+      var next = chars.slice();
+      var cursor = index;
+      for (var k = 0; k < incoming.length && cursor < length; k++) next[cursor++] = incoming.charAt(k);
+      commit(next);
+      focusAt(cursor);
+    };
+
+    cells.forEach(function (cell, index) {
+      cell.addEventListener('input', function () {
+        var previous = chars[index] || '';
+        var raw = cell.value;
+        var trimmed = raw.length > 1 && previous && raw.indexOf(previous) === 0 ? raw.slice(previous.length) : raw;
+        var incoming = keep(trimmed);
+        if (!incoming) {
+          if (raw === '' && previous) {
+            var cleared = chars.slice();
+            cleared[index] = '';
+            commit(cleared);
+          }
+          cell.value = chars[index] || '';
+          return;
+        }
+        if (incoming.length === 1) {
+          var next = chars.slice();
+          next[index] = incoming;
+          commit(next);
+          if (index < length - 1) focusAt(index + 1);
+          return;
+        }
+        fillFrom(index, incoming);
+      });
+      cell.addEventListener('keydown', function (e) {
+        var next;
+        if (e.key === 'Backspace') {
+          e.preventDefault();
+          next = chars.slice();
+          if (chars[index]) { next[index] = ''; commit(next); return; }
+          if (index > 0) { next[index - 1] = ''; commit(next); focusAt(index - 1); }
+          return;
+        }
+        if (e.key === 'Delete') { e.preventDefault(); next = chars.slice(); next[index] = ''; commit(next); return; }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); focusAt(index - 1); return; }
+        if (e.key === 'ArrowRight') { e.preventDefault(); focusAt(index + 1); return; }
+        if (e.key === 'Home') { e.preventDefault(); focusAt(0); return; }
+        if (e.key === 'End') { e.preventDefault(); focusAt(length - 1); }
+      });
+      cell.addEventListener('paste', function (e) {
+        e.preventDefault();
+        var text = keep((e.clipboardData || window.clipboardData).getData('text'));
+        fillFrom(text.length >= length ? 0 : index, text);
+      });
+      cell.addEventListener('focus', function () {
+        cell.select();
+        var firstEmpty = chars.indexOf('');
+        if (firstEmpty !== -1 && firstEmpty < index) { focusAt(firstEmpty); return; }
+        focused = index;
+        render();
+      });
+      cell.addEventListener('blur', function (e) {
+        if (e.relatedTarget && cells.indexOf(e.relatedTarget) !== -1) return;
+        focused = -1;
+        render();
+      });
+    });
+    if (form) form.addEventListener('submit', function () { submitted = true; });
+
+    render();
+    // Código errado (o servidor devolve a página com o erro): treme e volta para a primeira casa
+    if (root.classList.contains('is-error')) {
+      if (!reduceMotion) root.classList.add('shake');
+      focusAt(0);
+    } else if (wantsFocus) {
+      focusAt(0);
+    }
+  });
+
+  /* ---------- copiar e baixar texto (chave da verificação, códigos de recuperação) ---------- */
+  $all('[data-copy]').forEach(function (btn) {
+    if (!navigator.clipboard) return;
+    btn.hidden = false;
+    btn.addEventListener('click', function () {
+      var src = doc.getElementById(btn.getAttribute('data-copy'));
+      if (!src) return;
+      navigator.clipboard.writeText(src.getAttribute('data-copy-text') || src.textContent.trim()).then(function () {
+        toast(btn.getAttribute('data-copied') || 'Copiado.');
+      });
+    });
+  });
+  $all('[data-download-text]').forEach(function (btn) {
+    btn.hidden = false;
+    btn.addEventListener('click', function () {
+      var url = URL.createObjectURL(new Blob([btn.getAttribute('data-download-text')], { type: 'text/plain;charset=utf-8' }));
+      var a = doc.createElement('a');
+      a.href = url;
+      a.download = btn.getAttribute('data-filename') || 'arquivo.txt';
+      doc.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    });
+  });
+
   /* ---------- páginas legais: índice marca a seção visível; botão de imprimir ---------- */
   var tocLinks = $all('[data-toc-link]');
   if (tocLinks.length && 'IntersectionObserver' in window) {
