@@ -1,6 +1,15 @@
 <?php
 /** @var array $page @var string $q @var string $status @var int $category @var array $categories */
 $filters = ['todos' => 'Todos', 'ativos' => 'Ativos', 'inativos' => 'Inativos', 'sem-preco' => 'Sob consulta', 'destaques' => 'Destaques / mais vendidos'];
+// Miniatura: a capa do curso ativo; os inativos ganham uma placa cinza com o código
+$active = App\Models\Course::allActive();
+$thumb = static function (array $c) use ($active): array {
+    if (isset($active[(int) $c['id']])) {
+        return $active[(int) $c['id']];
+    }
+    $code = $c['code'] ?: ($c['nr_number'] ? 'NR ' . $c['nr_number'] : null);
+    return ['tone' => 'd', 'image_url' => null, 'url' => '#', 'display_title' => $c['title'], 'kicker' => '', 'plate_big' => $code ?: ($c['short_title'] ?: 'Curso'), 'plate_is_text' => !$code, 'icon' => $c['icon'] ?: 'clipboard', 'badge' => null];
+};
 ?>
 <div class="adm-head"><div><h1>Cursos</h1><p>Catálogo da loja: preços, cargas horárias, destaques e disponibilidade.</p></div>
 <div class="adm-actions"><a class="btn btn-navy btn-sm" href="<?= e(url('/admin/cursos/novo')) ?>"><?= icon('plus', 'ic-sm') ?>Novo curso</a></div></div>
@@ -21,7 +30,7 @@ $filters = ['todos' => 'Todos', 'ativos' => 'Ativos', 'inativos' => 'Inativos', 
 <tbody>
 <?php foreach ($page['rows'] as $c): ?>
 <tr<?= (int) $c['is_active'] ? '' : ' class="is-off"' ?>>
-<td><a href="<?= e(url('/admin/cursos/' . $c['id'] . '/editar')) ?>"><?= e(($c['code'] ?: ($c['nr_number'] ? 'NR ' . $c['nr_number'] : '')) ? ($c['code'] ?: 'NR ' . $c['nr_number']) . ' — ' : '') ?><?= e($c['title']) ?></a><span class="sub">/cursos/<?= e($c['slug']) ?></span></td>
+<td><span class="course-cell"><?= partial('cover', ['course' => $thumb($c), 'variant' => 'thumb']) ?><span class="who-txt"><a href="<?= e(url('/admin/cursos/' . $c['id'] . '/editar')) ?>"><?= e(($c['code'] ?: ($c['nr_number'] ? 'NR ' . $c['nr_number'] : '')) ? ($c['code'] ?: 'NR ' . $c['nr_number']) . ' — ' : '') ?><?= e($c['title']) ?></a><span class="sub">/cursos/<?= e($c['slug']) ?></span></span></span></td>
 <td><?= e((string) $c['category_name']) ?></td>
 <td><?= e(hours_short($c['hours'])) ?></td>
 <td><?= e(modality_label($c['modality'])) ?></td>

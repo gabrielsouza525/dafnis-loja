@@ -13,7 +13,7 @@ use App\Controllers\Site\PageController;
 <div style="display:flex;flex-direction:column;gap:16px">
 <?php foreach ($page['rows'] as $r): ?>
 <div class="panel" style="margin:0">
-<div class="panel-head"><h2 style="font-size:16px"><?= e($r['name']) ?><?= $r['company'] ? ' · ' . e($r['company']) : '' ?></h2><span class="muted" style="font-size:13px"><?= e(date_br($r['created_at'], true)) ?></span></div>
+<div class="panel-head"><span class="who"><span class="avatar"><?= e(initials($r['name'])) ?></span><span class="who-txt"><strong><?= e($r['name']) ?></strong><span class="sub"><?= $r['company'] ? e($r['company']) . ' · ' : '' ?><?= e(PageController::SUBJECTS[$r['subject']] ?? $r['subject']) ?></span></span></span><span class="muted" style="font-size:13px"><?= e(date_br($r['created_at'], true)) ?></span></div>
 <div class="panel-body">
 <dl class="dl">
 <dt>Assunto</dt><dd><?= e(PageController::SUBJECTS[$r['subject']] ?? $r['subject']) ?><?= $r['course_title'] ? ' — ' . e(($r['nr_number'] ? ($r['course_code'] ?: 'NR ' . $r['nr_number']) . ' ' : '') . $r['course_title']) : '' ?></dd>
@@ -21,7 +21,11 @@ use App\Controllers\Site\PageController;
 <?php if ($r['participants']): ?><dt>Participantes</dt><dd><?= (int) $r['participants'] ?></dd><?php endif; ?>
 <?php if ($r['message']): ?><dt>Mensagem</dt><dd style="white-space:pre-line;font-weight:400"><?= e($r['message']) ?></dd><?php endif; ?>
 </dl>
-<form method="post" action="<?= e(url('/admin/contatos/' . $r['id'])) ?>" style="margin-top:14px"><?= csrf_field() ?><button class="btn btn-<?= $status === 'new' ? 'navy' : 'outline' ?> btn-xs" type="submit"><?= $status === 'new' ? 'Marcar como atendido' : 'Reabrir' ?></button></form>
+<div class="contact-actions">
+<a class="btn btn-outline btn-xs" href="mailto:<?= e($r['email']) ?>?subject=<?= rawurlencode('Dafnis Treinamentos — ' . (PageController::SUBJECTS[$r['subject']] ?? 'seu contato')) ?>"><?= icon('mail', 'ic-sm') ?>Responder por e-mail</a>
+<?php if ($r['phone']): ?><a class="btn btn-outline btn-xs" href="<?= e(wa_link($r['phone'], 'Olá, ' . first_name($r['name']) . '! Aqui é da Dafnis Treinamentos, sobre o seu contato pelo site.')) ?>" target="_blank" rel="noopener"><?= icon('whatsapp', 'ic-sm') ?>WhatsApp</a><?php endif; ?>
+<form method="post" action="<?= e(url('/admin/contatos/' . $r['id'])) ?>"><?= csrf_field() ?><button class="btn btn-<?= $status === 'new' ? 'navy' : 'outline' ?> btn-xs" type="submit"><?= icon($status === 'new' ? 'check' : 'refresh', 'ic-sm') ?><?= $status === 'new' ? 'Marcar como atendido' : 'Reabrir' ?></button></form>
+</div>
 </div>
 </div>
 <?php endforeach; ?>

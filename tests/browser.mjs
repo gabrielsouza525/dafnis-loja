@@ -363,6 +363,14 @@ check('painel: nada passa da borda (390, 1024 e 1440 px)', admOver.length === 0,
 await go('/admin/pedidos');
 r = await ev(`return { groups: [...document.querySelectorAll('.adm-nav-label')].map((l) => l.textContent), current: document.querySelector('.adm-nav [aria-current]')?.textContent.trim(), crumb: document.querySelector('.adm-crumbs [aria-current]')?.textContent }`);
 check('painel: menu em grupos, item atual marcado e caminho no topo', r.groups.join() === 'Vendas,Catálogo,Pessoas,Sistema' && /^Pedidos/.test(r.current) && r.crumb === 'Pedidos', r);
+r = { orders: await ev(`return document.querySelectorAll('.table .who .avatar').length`) };
+await go('/admin/matriculas');
+r.progress = await ev(`return document.querySelectorAll('.mini-progress .progress').length`);
+await go('/admin/cursos');
+r.thumbs = await ev(`return document.querySelectorAll('.course-cell .thumb').length`);
+await go('/admin/contatos');
+r.reply = await ev(`return document.querySelectorAll('.contact-actions a[href^="mailto:"]').length`);
+check('painel: avatares nas listas, progresso em barra, miniaturas dos cursos e responder contatos', r.orders >= 5 && r.progress >= 5 && r.thumbs >= 10 && r.reply >= 1, r);
 await go('/admin', 390);
 r = await ev(`${wait} document.querySelector('[data-admin-menu]').click(); await w(300); const open = document.querySelector('#adm-side').classList.contains('open');
   const backdrop = getComputedStyle(document.querySelector('.adm'), '::after').content !== 'none';

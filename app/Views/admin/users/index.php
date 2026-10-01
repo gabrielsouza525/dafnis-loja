@@ -14,7 +14,7 @@
 <tbody>
 <?php foreach ($page['rows'] as $u): ?>
 <tr<?= (int) $u['is_active'] ? '' : ' class="is-off"' ?>>
-<td><a href="<?= e(url('/admin/usuarios/' . $u['id'])) ?>"><?= e($u['name']) ?></a><?= (int) $u['is_active'] ? '' : '<span class="sub">Desativado</span>' ?></td>
+<td><span class="who"><span class="avatar<?= $u['role'] === 'admin' ? ' is-team' : '' ?>"><?= e(initials($u['name'])) ?></span><span class="who-txt"><a href="<?= e(url('/admin/usuarios/' . $u['id'])) ?>"><?= e($u['name']) ?></a><?= (int) $u['is_active'] ? '' : '<span class="sub">Desativado</span>' ?></span></span></td>
 <td><?= e($u['email']) ?><span class="sub"><?= e($u['phone'] ? phone_display($u['phone']) : '—') ?></span></td>
 <td><?= partial('status', ['label' => $u['role'] === 'admin' ? 'Equipe' : 'Aluno', 'tone' => $u['role'] === 'admin' ? 'blue' : 'muted']) ?></td>
 <td class="num"><?= (int) $u['paid_orders'] ?></td>

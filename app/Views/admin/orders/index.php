@@ -21,7 +21,7 @@ $all = array_sum($counts);
 <?php foreach ($page['rows'] as $o): ?>
 <tr>
 <td><a href="<?= e(url('/admin/pedidos/' . $o['id'])) ?>"><?= e($o['number']) ?></a><span class="sub"><?= e(date_br($o['created_at'], true)) ?></span></td>
-<td><?= e($o['buyer_type'] === 'pj' ? $o['company_name'] : $o['buyer_name']) ?><span class="sub"><?= e($o['buyer_email']) ?></span></td>
+<td><?php $who = $o['buyer_type'] === 'pj' ? $o['company_name'] : $o['buyer_name']; ?><span class="who"><span class="avatar"><?= e(initials((string) $who)) ?></span><span class="who-txt"><?= e($who) ?><span class="sub"><?= e($o['buyer_email']) ?></span></span></span></td>
 <td><?= e(Order::METHODS[$o['payment_method']]['label'] ?? $o['payment_method']) ?><span class="sub"><?= e($o['gateway'] === 'mercadopago' ? 'Mercado Pago' : 'Manual') ?></span></td>
 <td><?= (int) $o['participants'] ?></td>
 <td><?= partial('status', ['label' => Order::statusLabel($o['status']), 'tone' => Order::STATUS_TONE[$o['status']] ?? 'muted']) ?></td>

@@ -19,10 +19,10 @@ use App\Models\Enrollment;
 <tbody>
 <?php foreach ($page['rows'] as $e): ?>
 <tr>
-<td><?= $e['participant_name'] ? e($e['participant_name']) . '<span class="sub">' . e((string) $e['participant_email']) . '</span>' : '<span class="muted">Não indicado</span>' ?></td>
+<td><?php if ($e['participant_name']): ?><span class="who"><span class="avatar"><?= e(initials($e['participant_name'])) ?></span><span class="who-txt"><?= e($e['participant_name']) ?><span class="sub"><?= e((string) $e['participant_email']) ?></span></span></span><?php else: ?><span class="who is-empty"><span class="avatar">?</span><span class="who-txt muted">Não indicado</span></span><?php endif; ?></td>
 <td><?= e(($e['course_code'] ? $e['course_code'] . ' — ' : '') . $e['course_title']) ?></td>
 <td><a href="<?= e(url('/admin/pedidos/' . $e['order_id'])) ?>"><?= e($e['order_number']) ?></a><span class="sub"><?= e($e['buyer_type'] === 'pj' ? (string) $e['company_name'] : $e['buyer_name']) ?></span></td>
-<td><?= (int) $e['progress'] ?>%<?= $e['certificate_id'] ? '<span class="sub">Certificado anexado</span>' : '' ?></td>
+<td><span class="mini-progress"><span class="progress<?= (int) $e['progress'] >= 100 ? ' done' : '' ?>"><span style="width:<?= (int) $e['progress'] ?>%"></span></span><?= (int) $e['progress'] ?>%</span><?= $e['certificate_id'] ? '<span class="sub">Certificado anexado</span>' : '' ?></td>
 <td><?= partial('status', ['label' => Enrollment::statusLabel($e['status']), 'tone' => Enrollment::STATUS_TONE[$e['status']] ?? 'muted']) ?></td>
 <td class="num"><a class="btn btn-<?= $e['status'] === 'processing' ? 'navy' : 'ghost' ?> btn-xs" href="<?= e(url('/admin/matriculas/' . $e['id'])) ?>"><?= $e['status'] === 'processing' ? 'Liberar' : 'Abrir' ?></a></td>
 </tr>
