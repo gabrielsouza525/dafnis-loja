@@ -467,6 +467,33 @@
     if (nrFilter.value) filterNrs();
   }
 
+  /* ---------- cadastro: requisitos da senha e a confirmação conferidos enquanto a pessoa digita ---------- */
+  var pwRules = $('[data-pw-rules]');
+  var pwInput = pwRules && doc.getElementById(pwRules.getAttribute('data-pw-rules'));
+  if (pwInput) {
+    var pwMatch = $('[data-pw-match]');
+    var pwConfirm = pwMatch && doc.getElementById(pwMatch.getAttribute('data-pw-match'));
+    // Mesmas regras do servidor (Validator: password)
+    var pwTests = {
+      len: function (v) { return v.length >= 8; },
+      letter: function (v) { return /[A-Za-z]/.test(v); },
+      digit: function (v) { return /\d/.test(v); }
+    };
+    var checkPassword = function () {
+      var v = pwInput.value;
+      $all('[data-rule]', pwRules).forEach(function (li) { li.classList.toggle('ok', pwTests[li.getAttribute('data-rule')](v)); });
+      if (!pwConfirm) return;
+      var c = pwConfirm.value;
+      var same = c !== '' && c === v;
+      pwMatch.hidden = c === '';
+      pwMatch.className = 'pw-match ' + (same ? 'ok' : 'no');
+      pwMatch.innerHTML = svg(same ? 'check' : 'alert') + (same ? 'As senhas conferem' : 'As senhas ainda não conferem');
+    };
+    pwInput.addEventListener('input', checkPassword);
+    if (pwConfirm) pwConfirm.addEventListener('input', checkPassword);
+    checkPassword();
+  }
+
   /* ---------- páginas legais: índice marca a seção visível; botão de imprimir ---------- */
   var tocLinks = $all('[data-toc-link]');
   if (tocLinks.length && 'IntersectionObserver' in window) {

@@ -773,6 +773,22 @@ body.lock{overflow:hidden}
 .auth-split .auth-side .check{color:#E3E9F2}
 .auth-split .auth-side .check .ic{color:#6EE7A0}
 .auth-split .auth-card{align-self:center;justify-self:center;width:min(460px,calc(100% - 64px));margin:48px 0}
+.auth-steps{list-style:none;margin:32px 0 0;padding:28px 0 0;border-top:1px solid rgba(255,255,255,.16);max-width:480px;display:flex;flex-direction:column;gap:18px}
+.auth-steps li{display:flex;gap:14px;align-items:flex-start}
+.auth-steps li > span{width:32px;height:32px;border-radius:50%;background:rgba(213,161,59,.16);border:1px solid rgba(230,197,103,.5);color:#E6C567;display:grid;place-items:center;font-family:var(--mono);font-size:13px;font-weight:600;flex-shrink:0}
+.auth-steps strong{display:block;color:#fff;font-size:15.5px}
+.auth-steps small{display:block;color:#AFC0D8;font-size:13.5px;margin-top:3px;line-height:1.5}
+.pw-group{display:flex;flex-direction:column;gap:8px}
+.pw-rules{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--muted)}
+.pw-rules li{display:inline-flex;align-items:center;gap:6px;transition:color .15s}
+.pw-rules .ic{width:16px;height:16px;padding:2px;border-radius:50%;background:var(--gray);border:1px solid var(--line-strong);color:transparent;transition:background .15s,color .15s,border-color .15s}
+.pw-rules li.ok{color:var(--green-dk)}
+.pw-rules li.ok .ic{background:var(--green);border-color:var(--green);color:#fff}
+.pw-match{display:flex;align-items:center;gap:6px;margin:0;font-size:12.5px;font-weight:600}
+.pw-match .ic{width:15px;height:15px}
+.pw-match.ok{color:var(--green-dk)}
+.pw-match.no{color:#9A6B12}
+[data-theme="dark"] .pw-match.no{color:#E6C567}
 .auth-solo{display:grid;place-items:center;min-height:calc(100vh - 73px);padding:56px 0;background:var(--navy-deep)}
 .auth-solo > .wrap{width:100%}
 .auth-solo .auth-card{box-shadow:0 24px 60px rgba(0,0,0,.35)}
@@ -1254,7 +1270,7 @@ body.lock{overflow:hidden}
   .auth-split .auth-grid{grid-template-columns:minmax(0,1fr);max-width:none;min-height:0}
   .auth-split .auth-side{display:flex;padding:32px 28px 88px}
   .auth-split .auth-side h1{font-size:32px}
-  .auth-split .auth-side > p,.auth-split .auth-side .checks{display:none}
+  .auth-split .auth-side > p,.auth-split .auth-side .checks,.auth-split .auth-side .auth-steps{display:none}
   .auth-split .auth-card{width:min(520px,calc(100% - 56px));margin:-56px 0 56px;position:relative}
   .contact-grid{grid-template-columns:minmax(0,1fr)}
   .contact-aside{position:static}

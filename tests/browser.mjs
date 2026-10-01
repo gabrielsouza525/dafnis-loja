@@ -116,6 +116,10 @@ check('entrar: painel com foto à esquerda e formulário à direita', Math.abs(r
 await go('/cadastro?volta=/checkout');
 r = await ev(`${wait} const t = document.querySelector('#f-phone'); t.value = '18999990000'; t.dispatchEvent(new Event('input', {bubbles:true})); return t.value;`);
 check('máscara de telefone', r === '(18) 99999-0000', r);
+r = await ev(`const p = document.querySelector('#f-password'), c = document.querySelector('#f-password-confirmation'), m = document.querySelector('[data-pw-match]');
+  const type = (a, b) => { p.value = a; c.value = b; p.dispatchEvent(new Event('input')); return [...document.querySelectorAll('[data-rule].ok')].map(l => l.dataset.rule).join(',') + '|' + (m.hidden ? '' : m.className); };
+  return { steps: document.querySelectorAll('.auth-steps li').length, empty: type('', ''), letters: type('treina', ''), diff: type('treina2026', 'treina'), same: type('treina2026', 'treina2026') };`);
+check('cadastro: passos ao lado e requisitos da senha conferidos ao digitar', r.steps === 3 && r.empty === '|' && r.letters === 'letter|' && r.diff === 'len,letter,digit|pw-match no' && r.same === 'len,letter,digit|pw-match ok', r);
 await go('/login?volta=/checkout');
 r = await ev(`${wait} document.querySelector('#f-email').value = 'ana@example.com'; document.querySelector('#f-password').value = 'dafnis123'; document.querySelector('.auth-form').submit(); return true;`);
 await sleep(1500);

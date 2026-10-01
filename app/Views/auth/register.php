@@ -6,11 +6,11 @@
 <div class="kicker"><?= $fromCheckout ? 'Etapa 2 · Identificação' : 'Área do aluno' ?></div>
 <h1>Crie sua conta em menos de um minuto</h1>
 <p>Com a conta você acompanha pedidos, indica os participantes de cada vaga e acessa cursos e certificados.</p>
-<div class="checks">
-<div class="check"><?= icon('check') ?>Compra para você ou para a sua equipe</div>
-<div class="check"><?= icon('check') ?>Acompanhamento do progresso dos cursos</div>
-<div class="check"><?= icon('check') ?>Certificados reunidos em um só lugar</div>
-</div>
+<ol class="auth-steps">
+<li><span>1</span><div><strong>Crie a sua conta</strong><small>Nome, e-mail, telefone e senha. CPF ou CNPJ só na compra.</small></div></li>
+<li><span>2</span><div><strong>Escolha os treinamentos</strong><small>Para você ou para a sua equipe, com quantas vagas precisar.</small></div></li>
+<li><span>3</span><div><strong>Acompanhe tudo em Minha conta</strong><small>Cursos, progresso, vagas da equipe e certificados.</small></div></li>
+</ol>
 </div>
 <div class="auth-card">
 <div class="tabs"><a href="<?= e(url('/login', ['volta' => $volta])) ?>">Entrar</a><a class="on" href="<?= e(url('/cadastro', ['volta' => $volta])) ?>" aria-current="page">Criar conta</a></div>
@@ -22,8 +22,18 @@
 <?= partial('field', ['name' => 'name', 'label' => 'Nome completo', 'required' => true, 'attrs' => ['autocomplete' => 'name', 'autofocus' => true]]) ?>
 <?= partial('field', ['name' => 'email', 'label' => 'E-mail', 'type' => 'email', 'required' => true, 'attrs' => ['autocomplete' => 'email']]) ?>
 <?= partial('field', ['name' => 'phone', 'label' => 'Telefone / WhatsApp', 'type' => 'tel', 'required' => true, 'mask' => 'phone', 'placeholder' => '(00) 00000-0000', 'attrs' => ['autocomplete' => 'tel']]) ?>
-<?= partial('field', ['name' => 'password', 'label' => 'Senha', 'type' => 'password', 'required' => true, 'hint' => 'Mínimo de 8 caracteres, com letras e números.', 'attrs' => ['autocomplete' => 'new-password', 'minlength' => 8]]) ?>
-<?= partial('field', ['name' => 'password_confirmation', 'label' => 'Confirme a senha', 'type' => 'password', 'required' => true, 'attrs' => ['autocomplete' => 'new-password']]) ?>
+<div class="pw-group">
+<?= partial('field', ['name' => 'password', 'label' => 'Senha', 'type' => 'password', 'required' => true, 'attrs' => ['autocomplete' => 'new-password', 'minlength' => 8, 'aria-describedby' => 'pw-rules']]) ?>
+<ul class="pw-rules" id="pw-rules" data-pw-rules="f-password" aria-label="A senha precisa ter">
+<li data-rule="len"><?= icon('check', 'ic-sm') ?>8 caracteres ou mais</li>
+<li data-rule="letter"><?= icon('check', 'ic-sm') ?>Letras</li>
+<li data-rule="digit"><?= icon('check', 'ic-sm') ?>Números</li>
+</ul>
+</div>
+<div class="pw-group">
+<?= partial('field', ['name' => 'password_confirmation', 'label' => 'Confirme a senha', 'type' => 'password', 'required' => true, 'attrs' => ['autocomplete' => 'new-password', 'aria-describedby' => 'pw-match']]) ?>
+<p class="pw-match" id="pw-match" data-pw-match="f-password-confirmation" aria-live="polite" hidden></p>
+</div>
 <label class="check-row"><input type="checkbox" name="accept_terms" value="1" required><span>Li e aceito os <a href="<?= e(url('/termos-de-uso')) ?>" target="_blank">termos de uso</a> e a <a href="<?= e(url('/politica-de-privacidade')) ?>" target="_blank">política de privacidade</a>.</span></label>
 <?php if ($err = field_error('accept_terms')): ?><p class="field-error"><?= icon('alert') ?><?= e($err) ?></p><?php endif; ?>
 <button class="btn btn-primary btn-lg btn-block" type="submit">Criar conta<?= icon('arrowR') ?></button>
