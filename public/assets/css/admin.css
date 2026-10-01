@@ -22,8 +22,8 @@ body.admin{background:var(--gray)}
 .adm-side-links a,.adm-side-links button{display:flex;align-items:center;gap:8px;width:100%;height:34px;padding:0 10px;border:0;border-radius:8px;background:none;color:#AFC0D8;font-size:13px;text-decoration:none;text-align:left}
 .adm-side-links a:hover,.adm-side-links button:hover{background:rgba(255,255,255,.07);color:#fff}
 .adm-main{min-width:0;display:flex;flex-direction:column}
-.adm-top{height:64px;background:rgba(255,255,255,.96);-webkit-backdrop-filter:saturate(1.4) blur(8px);backdrop-filter:saturate(1.4) blur(8px);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:0 28px;position:sticky;top:0;z-index:30}
-.adm-top .icon-btn{display:none}
+.adm-top{height:64px;background:var(--hdr-bg);-webkit-backdrop-filter:saturate(1.4) blur(8px);backdrop-filter:saturate(1.4) blur(8px);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:0 28px;position:sticky;top:0;z-index:30}
+.adm-top [data-admin-menu]{display:none}
 .adm-crumbs{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--muted);min-width:0}
 .adm-crumbs a{color:var(--muted);text-decoration:none}
 .adm-crumbs a:hover{color:var(--blue-dk)}
@@ -40,7 +40,7 @@ body.admin{background:var(--gray)}
 .toolbar .input,.toolbar .form-select{height:40px;width:auto;min-width:180px;font-size:14px}
 .toolbar .search{flex:1;min-width:220px}
 .chips{display:flex;gap:6px;flex-wrap:wrap}
-.chips a{height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:#fff;display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:500;color:var(--text);text-decoration:none}
+.chips a{height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:500;color:var(--text);text-decoration:none}
 .chips a.on{background:var(--navy);border-color:var(--navy);color:#fff}
 .chips a span{font-family:var(--mono);font-size:11.5px;opacity:.8}
 .table td .sub{display:block;font-size:12.5px;color:var(--muted);font-weight:400}
@@ -51,7 +51,7 @@ body.admin{background:var(--gray)}
 .table .actions form{display:inline}
 .pager-admin{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px;border-top:1px solid var(--line);font-size:13.5px;color:var(--muted);flex-wrap:wrap}
 .pager-admin nav{display:flex;gap:4px}
-.pager-admin a,.pager-admin span.cur{min-width:34px;height:34px;padding:0 10px;border-radius:8px;border:1px solid var(--line);display:grid;place-items:center;font-weight:600;color:var(--navy);background:#fff;text-decoration:none}
+.pager-admin a,.pager-admin span.cur{min-width:34px;height:34px;padding:0 10px;border-radius:8px;border:1px solid var(--line);display:grid;place-items:center;font-weight:600;color:var(--navy-ink);background:var(--surface);text-decoration:none}
 .pager-admin span.cur{background:var(--navy);border-color:var(--navy);color:#fff}
 .grid-2{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:22px;align-items:start}
 .grid-2 > *{min-width:0}
@@ -89,7 +89,7 @@ body.admin{background:var(--gray)}
   .adm-side{position:fixed;left:0;top:0;bottom:0;width:min(280px,86%);z-index:80;transform:translateX(-100%);transition:transform .25s ease;height:auto}
   .adm-side.open{transform:none;box-shadow:20px 0 40px rgba(7,26,51,.3)}
   .adm:has(.adm-side.open)::after{content:'';position:fixed;inset:0;z-index:70;background:rgba(7,26,51,.48);animation:fade .2s ease}
-  .adm-top .icon-btn{display:grid}
+  .adm-top [data-admin-menu]{display:grid}
   .adm-content{padding:20px 16px}
   .adm-top{padding:0 12px}
   .adm-crumbs > a,.adm-crumbs > .ic{display:none}
@@ -121,3 +121,14 @@ body.admin{background:var(--gray)}
 .course-cell .thumb .plate-stripe{width:20px;height:3px}
 .contact-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line-2)}
 .contact-actions form{margin:0}
+
+/* Modo escuro do painel (os tokens vêm de app.css; aqui só o que precisa de mais contraste) */
+[data-theme="dark"] .adm-side{border-right:1px solid var(--line)}
+[data-theme="dark"] .adm-top{box-shadow:0 1px 0 rgba(0,0,0,.25)}
+[data-theme="dark"] .chips a.on,[data-theme="dark"] .pager-admin span.cur{background:var(--blue);border-color:var(--blue);color:#fff}
+[data-theme="dark"] .chips a:hover{border-color:var(--line-strong)}
+[data-theme="dark"] .switch input{accent-color:var(--blue)}
+[data-theme="dark"] .adm-me .avatar,[data-theme="dark"] .who .avatar{background:var(--navy-2)}
+[data-theme="dark"] .adm:has(.adm-side.open)::after{background:rgba(0,0,0,.6)}
+[data-theme="dark"] .adm-side.open{box-shadow:20px 0 40px rgba(0,0,0,.5)}
+

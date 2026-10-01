@@ -39,7 +39,7 @@ $css = ['admin.css'];
 $scripts = array_merge(['admin.js'], $scripts ?? []);
 ?>
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-themeable>
 <head>
 <?= partial('head', get_defined_vars()) ?>
 </head>
@@ -71,6 +71,7 @@ $scripts = array_merge(['admin.js'], $scripts ?? []);
 <button class="icon-btn" type="button" aria-label="Abrir menu" aria-controls="adm-side" aria-expanded="false" data-admin-menu><?= icon('menu') ?></button>
 <nav class="adm-crumbs" aria-label="Você está em"><a href="<?= e(url('/admin')) ?>">Painel</a><?= icon('chevR', 'ic-sm') ?><span aria-current="page"><?= e($items[$section][1] ?? 'Painel') ?></span></nav>
 <div class="adm-top-actions">
+<button class="icon-btn theme-btn" type="button" aria-label="Modo escuro" aria-pressed="false" title="Alternar modo escuro" data-theme-toggle hidden><?= icon('moon', 'ic-moon') ?><?= icon('sun', 'ic-sun') ?></button>
 <a class="btn btn-outline btn-xs" href="<?= e(url('/')) ?>" target="_blank"><?= icon('external', 'ic-sm') ?>Ver a loja</a>
 <a class="adm-me" href="<?= e(url('/minha-conta')) ?>" title="<?= e($user['name'] . ' — minha conta') ?>" aria-label="<?= e('Minha conta (' . $user['name'] . ')') ?>"><span class="avatar"><?= e($initials) ?></span></a>
 </div>

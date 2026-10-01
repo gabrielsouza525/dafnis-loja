@@ -2,7 +2,7 @@
 document.documentElement.classList.add('js');
 
 // Tema da loja, também antes da pintura: vale a escolha salva no botão; sem escolha, segue o sistema.
-// Só nas páginas com o botão de tema (a loja); o painel da equipe fica sempre claro.
+// Só nas páginas com o botão de tema (a loja e o painel da equipe, que compartilham a escolha).
 (function (root) {
   if (!root.hasAttribute('data-themeable')) return;
   var saved = null;

@@ -451,6 +451,12 @@ check('painel: nada passa da borda (390, 1024 e 1440 px)', admOver.length === 0,
 await go('/admin/pedidos');
 r = await ev(`return { groups: [...document.querySelectorAll('.adm-nav-label')].map((l) => l.textContent), current: document.querySelector('.adm-nav [aria-current]')?.textContent.trim(), crumb: document.querySelector('.adm-crumbs [aria-current]')?.textContent }`);
 check('painel: menu em grupos, item atual marcado e caminho no topo', r.groups.join() === 'Vendas,Catálogo,Pessoas,Sistema' && /^Pedidos/.test(r.current) && r.crumb === 'Pedidos', r);
+r = await ev(`${wait} const btn = document.querySelector('.adm-top [data-theme-toggle]'); const before = document.documentElement.dataset.theme;
+  btn.click(); await w(100); const after = document.documentElement.dataset.theme; const top = getComputedStyle(document.querySelector('.adm-top')).backgroundColor;
+  let saved = null; try { saved = localStorage.getItem('dafnis-theme'); } catch (e) {}
+  btn.click(); await w(100); try { localStorage.removeItem('dafnis-theme'); } catch (e) {}
+  return { visible: !btn.hidden, before, after, top, saved };`);
+check('painel: botão de modo escuro no topo, com a mesma escolha da loja', r.visible && r.before === 'light' && r.after === 'dark' && r.saved === 'dark' && !/255, 255, 255/.test(r.top), r);
 r = { orders: await ev(`return document.querySelectorAll('.table .who .avatar').length`) };
 await go('/admin/matriculas');
 r.progress = await ev(`return document.querySelectorAll('.mini-progress .progress').length`);

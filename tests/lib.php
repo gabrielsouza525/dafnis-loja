@@ -77,8 +77,13 @@ final class Client
         if ($totpSecret !== null && $r['status'] === 302 && str_ends_with($r['location'], '/login/verificacao')) {
             require_once dirname(__DIR__) . '/app/Services/Totp.php';
             $this->request('GET', '/login/verificacao');
-            // O mesmo código não vale duas vezes: se outro teste acabou de usar o atual, vale o próximo
-            foreach ([0, 1] as $offset) {
+            // O mesmo código não vale duas vezes: se outro teste acabou de usar o atual, vale o próximo;
+            // se os dois já foram usados (testes seguidos no mesmo banco), espera o código seguinte
+            foreach ([0, 1, 'esperar', 1] as $offset) {
+                if ($offset === 'esperar') {
+                    sleep(31 - time() % 30);
+                    continue;
+                }
                 $code = App\Services\Totp::code($totpSecret, intdiv(time(), 30) + $offset);
                 $r = $this->request('POST', '/login/verificacao', ['code' => $code]);
                 if (!str_contains($r['location'], '/login')) {
