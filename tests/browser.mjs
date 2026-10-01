@@ -206,6 +206,11 @@ await go('/contato?assunto=empresas');
 r = await ev(`return { topics: document.querySelectorAll('.topics input[name=subject]').length, checked: document.querySelector('.topics input[name=subject]:checked')?.value, select: !!document.querySelector('select[name=subject]') }`);
 check('contato: assunto em 4 cartões, o do link já marcado', r.topics === 4 && r.checked === 'empresas' && !r.select, r);
 
+// Rodapé: vantagens, colunas, todas as NRs e "voltar ao topo"
+r = await ev(`const f = document.querySelector('footer.ftr');
+  return { perks: f.querySelectorAll('.ftr-perk').length, nrs: f.querySelectorAll('.ftr-nrs a').length, cols: f.querySelectorAll('.ftr-top h2').length, up: f.querySelector('.ftr-up')?.getAttribute('href'), cats: !!f.querySelector('.ftr-link[href$="/categorias"]') };`);
+check('rodapé: vantagens, colunas, todas as NRs e voltar ao topo', r.perks === 3 && r.nrs >= 19 && r.cols === 4 && r.up === '#' && r.cats, r);
+
 // Sobre nós: página própria (antes era um trecho da home)
 await go('/sobre');
 r = await ev(`const n = [...document.querySelectorAll('.about-stats .stat-n')].map(e => e.textContent);

@@ -98,56 +98,74 @@ $catUrl = static function (string $slug) use ($categories): ?string {
 
 <footer class="ftr">
 <div class="wrap">
+<div class="ftr-perks">
+<div class="ftr-perk"><span class="ftr-perk-ic"><?= icon('award') ?></span><div><strong>Certificado de conclusão</strong><small>Em cada treinamento concluído</small></div></div>
+<div class="ftr-perk"><span class="ftr-perk-ic"><?= icon('users') ?></span><div><strong>Vagas para equipes</strong><small>Compra com CNPJ, uma vaga por participante</small></div></div>
+<div class="ftr-perk"><span class="ftr-perk-ic"><?= icon('monitor') ?></span><div><strong>Estude onde estiver</strong><small>No computador ou no celular</small></div></div>
+<a class="btn btn-gold ftr-perks-cta" href="<?= e(url('/cursos')) ?>">Ver treinamentos<?= icon('arrowR', 'ic-sm') ?></a>
+</div>
 <div class="ftr-top">
 <div class="ftr-brand">
 <a class="logo inv" href="<?= e(url('/')) ?>" aria-label="Dafnis — página inicial"><?= partial('logo') ?></a>
-<p class="ftr-tag">Treinamentos profissionais para pessoas e empresas.</p>
+<p class="ftr-tag">Treinamentos de Normas Regulamentadoras, segurança do trabalho e cursos complementares para pessoas e empresas.</p>
+<?php if ($cityLine = Settings::cityLine()): ?><p class="ftr-place"><?= icon('pin', 'ic-sm') ?><?= e($cityLine) ?></p><?php endif; ?>
+<?php if ($socials): ?>
+<div class="socials">
+<?php foreach ($socials as $label => $href): ?><a class="social" href="<?= e($href) ?>" target="_blank" rel="noopener" aria-label="<?= e($label) ?>" title="<?= e($label) ?>"><?= icon(strtolower($label)) ?></a><?php endforeach; ?>
 </div>
-<div><h2>Cursos</h2><div class="ftr-links">
+<?php endif; ?>
+</div>
+<div><h2>Treinamentos</h2><div class="ftr-links">
+<a class="ftr-link" href="<?= e(url('/cursos')) ?>">Todos os treinamentos</a>
+<a class="ftr-link" href="<?= e(url('/categorias')) ?>">Categorias</a>
 <a class="ftr-link" href="<?= e(url('/nrs')) ?>">NRs</a>
-<?php foreach (['seguranca-do-trabalho' => 'Segurança do Trabalho', 'primeiros-socorros' => 'Primeiros Socorros', 'treinamentos-corporativos' => 'Treinamentos Corporativos'] as $slug => $label): ?>
+<?php foreach (['seguranca-do-trabalho' => 'Segurança do Trabalho', 'primeiros-socorros' => 'Primeiros Socorros', 'brigada-de-incendio' => 'Brigada de Incêndio'] as $slug => $label): ?>
 <?php if ($u = $catUrl($slug)): ?><a class="ftr-link" href="<?= e($u) ?>"><?= e($label) ?></a><?php endif; ?>
 <?php endforeach; ?>
-<a class="ftr-link" href="<?= e(url('/cursos')) ?>">Todos os treinamentos</a>
 </div></div>
 <div><h2>Empresa</h2><div class="ftr-links">
 <a class="ftr-link" href="<?= e(url('/sobre')) ?>">Sobre nós</a>
-<a class="ftr-link" href="<?= e(url('/empresas')) ?>">Empresas</a>
+<a class="ftr-link" href="<?= e(url('/empresas')) ?>">Para empresas</a>
+<a class="ftr-link" href="<?= e(url('/empresas')) ?>#proposta">Solicitar proposta</a>
 <a class="ftr-link" href="<?= e(url('/contato')) ?>">Contato</a>
 </div></div>
-<div><h2>Suporte</h2><div class="ftr-links">
-<a class="ftr-link" href="<?= e(url('/#faq')) ?>">FAQ</a>
+<div><h2>Ajuda</h2><div class="ftr-links">
+<a class="ftr-link" href="<?= e(url('/#faq')) ?>">Perguntas frequentes</a>
 <a class="ftr-link" href="<?= e($accountUrl) ?>"><?= $user ? e($accountLabel) : 'Área do aluno' ?></a>
 <a class="ftr-link" href="<?= e(url('/termos-de-uso')) ?>">Termos de uso</a>
 <a class="ftr-link" href="<?= e(url('/politica-de-privacidade')) ?>">Política de privacidade</a>
 </div></div>
-<div class="ftr-social">
-<?php if ($socials): ?>
-<h2>Redes sociais</h2>
-<div class="socials">
-<?php foreach ($socials as $label => $href): ?><a class="social" href="<?= e($href) ?>" target="_blank" rel="noopener"><?= e($label) ?></a><?php endforeach; ?>
-</div>
-<?php endif; ?>
+<div class="ftr-help">
+<h2>Atendimento</h2>
 <?php if ($whatsapp || $phone || $email): ?>
-<h2<?= $socials ? ' style="margin-top:24px"' : '' ?>>Atendimento</h2>
 <div class="ftr-links">
 <?php if ($whatsapp): ?><a class="ftr-link ftr-contact" href="<?= e(wa_link($whatsapp, 'Olá! Vim pelo site da Dafnis Treinamentos.')) ?>" target="_blank" rel="noopener"><?= icon('whatsapp') ?><?= e(phone_display($whatsapp)) ?></a><?php endif; ?>
 <?php if ($phone && $phone !== $whatsapp): ?><a class="ftr-link ftr-contact" href="<?= e(tel_link($phone)) ?>"><?= icon('phone') ?><?= e(phone_display($phone)) ?></a><?php endif; ?>
 <?php if ($email): ?><a class="ftr-link ftr-contact" href="mailto:<?= e($email) ?>"><?= icon('mail') ?><?= e($email) ?></a><?php endif; ?>
 </div>
-<?php elseif (!$socials): ?>
-<h2>Atendimento</h2>
-<div class="ftr-links"><a class="ftr-link" href="<?= e(url('/contato')) ?>">Fale com a nossa equipe</a></div>
+<?php else: ?>
+<p class="ftr-help-text">Mande a sua mensagem pelo formulário. A nossa equipe responde pelo e-mail ou telefone que você informar.</p>
 <?php endif; ?>
+<a class="btn btn-line-w btn-sm ftr-help-btn" href="<?= e(url('/contato')) ?>"><?= icon('message', 'ic-sm') ?>Fale com a nossa equipe</a>
 </div>
 </div>
-<div class="ftr-bot"><span>© <?= date('Y') ?> <?= e(Settings::businessName()) ?>. Todos os direitos reservados.</span><span><?php
+<?php if ($nrIndex): ?>
+<nav class="ftr-nrs" aria-label="Treinamentos por NR">
+<span>Normas Regulamentadoras</span>
+<?php foreach ($nrIndex as $m): ?><a href="<?= e($m['url']) ?>" title="<?= e($m['code'] . ' — ' . $m['name']) ?>"><?= e($m['code']) ?></a><?php endforeach; ?>
+</nav>
+<?php endif; ?>
+<div class="ftr-bot">
+<span>© <?= date('Y') ?> <?= e(Settings::businessName()) ?>. Todos os direitos reservados.</span>
+<?php
 $bits = array_filter([
     ($cnpj = Settings::get('business.cnpj')) ? 'CNPJ ' . document_display($cnpj) : null,
     Settings::cityLine(),
 ]);
-echo e(implode(' · ', $bits));
-?></span></div>
+?>
+<?php if ($bits): ?><span><?= e(implode(' · ', $bits)) ?></span><?php endif; ?>
+<a class="ftr-up" href="#">Voltar ao topo<?= icon('chevD', 'ic-sm') ?></a>
+</div>
 </div>
 </footer>
 
