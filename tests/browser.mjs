@@ -219,6 +219,12 @@ r = await ev(`${wait} const links = [...document.querySelectorAll('[data-toc-lin
   return { links: links.length, ok, on: document.querySelector('[data-toc-link].on')?.getAttribute('href'), print: !document.querySelector('[data-print]').hidden };`);
 check('termos: índice das seções marca a seção visível e botão de imprimir', r.links === 7 && r.ok && r.on === '#cancelamento' && r.print, r);
 
+// Política de privacidade: mesmo índice dos termos, resumo e os dados coletados em cartões
+await go('/politica-de-privacidade');
+r = await ev(`const links = [...document.querySelectorAll('[data-toc-link]')];
+  return { links: links.length, ok: links.every(a => document.getElementById(a.getAttribute('href').slice(1))), summary: document.querySelectorAll('.legal-summary li').length, data: document.querySelectorAll('.legal-data li').length };`);
+check('privacidade: índice das seções, resumo e dados em cartões', r.links === 6 && r.ok && r.summary === 3 && r.data === 5, r);
+
 // Sobre nós: página própria (antes era um trecho da home)
 await go('/sobre');
 r = await ev(`const n = [...document.querySelectorAll('.about-stats .stat-n')].map(e => e.textContent);
@@ -298,7 +304,7 @@ await sleep(1500);
 // (carrosséis, abas) e desenhos decorativos (aria-hidden, svg) podem passar.
 const overflow = [];
 for (const width of [360, 768, 960, 1024, 1180, 1280, 1440]) {
-  for (const path of ['/', '/cursos', '/cursos/nr-33-espacos-confinados-trabalhador-e-vigia', '/carrinho', '/login', '/cadastro', '/esqueci-senha', '/contato', '/sobre', '/empresas', '/categorias', '/nrs', '/termos-de-uso']) {
+  for (const path of ['/', '/cursos', '/cursos/nr-33-espacos-confinados-trabalhador-e-vigia', '/carrinho', '/login', '/cadastro', '/esqueci-senha', '/contato', '/sobre', '/empresas', '/categorias', '/nrs', '/termos-de-uso', '/politica-de-privacidade']) {
     await go(path, width);
     const o = await ev(outside);
     const at = await ev(`return location.pathname`);

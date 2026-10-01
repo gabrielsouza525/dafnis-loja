@@ -1085,6 +1085,17 @@ body.lock{overflow:hidden}
 .legal-note a{color:#5E430C;font-weight:600}
 [data-theme="dark"] .legal-note{background:rgba(213,161,59,.12);border-color:rgba(213,161,59,.32);color:#EED68E}
 [data-theme="dark"] .legal-note .ic,[data-theme="dark"] .legal-note a{color:#E6C567}
+.legal-summary{margin-top:28px;padding:22px 24px;border-radius:14px;background:var(--blue-tint);border:1px solid rgba(31,95,214,.14)}
+.legal-summary h2{font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--blue-dk)}
+.legal-summary ul{list-style:none;margin:14px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.legal-summary li{display:flex;flex-direction:column;gap:10px;font-size:14.5px;line-height:1.5;color:var(--ink)}
+.legal-summary .ic{width:36px;height:36px;padding:8px;border-radius:10px;background:var(--navy);color:#E6C567}
+.legal-sec .legal-data{list-style:none;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.legal-sec .legal-data li{display:flex;gap:12px;align-items:flex-start;margin:0;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2)}
+.legal-data-ic{width:34px;height:34px;border-radius:9px;background:var(--blue-tint);color:var(--blue-dk);display:grid;place-items:center;flex-shrink:0}
+.legal-data-ic .ic{width:18px;height:18px}
+.legal-sec .legal-data p{font-size:14.5px;line-height:1.55}
+.legal-data strong{color:var(--ink)}
 @media (max-width: 940px){
   .legal{grid-template-columns:minmax(0,1fr);gap:20px;padding-top:24px}
   .legal-aside{position:static}
@@ -1099,6 +1110,10 @@ body.lock{overflow:hidden}
   .legal-sec{padding-top:24px}
   .legal-sec + .legal-sec{margin-top:24px}
   .legal-sec h2{font-size:18px}
+  .legal-summary{padding:18px}
+  .legal-summary ul,.legal-sec .legal-data{grid-template-columns:minmax(0,1fr)}
+  .legal-summary li{flex-direction:row;align-items:flex-start}
+  .legal-summary .ic{flex-shrink:0}
   .legal{padding-bottom:64px}
 }
 @media print{
