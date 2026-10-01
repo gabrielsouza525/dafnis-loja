@@ -439,6 +439,34 @@
     applyBuyer();
   }
 
+  /* ---------- NRs: filtra os cartões ao digitar (número da norma ou parte do nome) ---------- */
+  var nrFilter = $('[data-nr-filter]');
+  if (nrFilter) {
+    var nrItems = $all('[data-nr-item]');
+    var nrEmpty = $('[data-nr-empty]');
+    var nrSearchLink = $('[data-nr-search-link]');
+    var plain = function (s) { return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim(); };
+    var visibleNrs = function () { return nrItems.filter(function (el) { return !el.hidden; }); };
+    var filterNrs = function () {
+      var q = plain(nrFilter.value).replace(/^nr\s*/, '');
+      var numeric = /^\d+$/.test(q);
+      nrItems.forEach(function (el) {
+        el.hidden = q !== '' && !(numeric ? el.getAttribute('data-nr').indexOf(q) === 0 : el.getAttribute('data-name').indexOf(q) !== -1);
+      });
+      if (nrEmpty) nrEmpty.hidden = visibleNrs().length > 0;
+      if (nrSearchLink) nrSearchLink.href = nrFilter.form.action + '?q=' + encodeURIComponent(nrFilter.value.trim());
+    };
+    nrFilter.addEventListener('input', filterNrs);
+    // Enter: com uma NR só na lista, abre ela; sem nenhuma, pesquisa no catálogo
+    nrFilter.form.addEventListener('submit', function (e) {
+      var shown = visibleNrs();
+      if (shown.length === 0 && nrFilter.value.trim() !== '') return;
+      e.preventDefault();
+      if (shown.length === 1) window.location.href = shown[0].href;
+    });
+    if (nrFilter.value) filterNrs();
+  }
+
   /* ---------- pedido: abre o Mercado Pago logo após o checkout ---------- */
   var autopay = $('[data-autopay="1"]');
   if (autopay) {

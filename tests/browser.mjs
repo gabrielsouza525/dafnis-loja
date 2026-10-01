@@ -218,6 +218,15 @@ await go('/categorias/primeiros-socorros');
 r = await ev(`return { crumb: [...document.querySelectorAll('.crumbs a')].map(a => a.textContent).join(' › '), nav: document.querySelector('.nav-link[aria-current="page"]')?.textContent };`);
 check('página de uma categoria: caminho por Categorias e menu marcado', r.crumb === 'Início › Categorias' && r.nav === 'Categorias', r);
 
+// NRs: um cartão por norma e filtro ao digitar (número ou nome, com ou sem acento)
+await go('/nrs');
+r = await ev(`${wait} const i = document.querySelector('[data-nr-filter]');
+  const shown = async (v) => { i.value = v; i.dispatchEvent(new Event('input')); await w(50); return [...document.querySelectorAll('[data-nr-item]')].filter(e => !e.hidden).map(e => e.dataset.nr).join(','); };
+  const all = document.querySelectorAll('.nrc').length;
+  const r = { all, n33: await shown('33'), nr3: await shown('NR 3'), inc: await shown('incendio'), acc: await shown('incêndio'), none: await shown('xyz'), empty: !document.querySelector('[data-nr-empty]').hidden };
+  await shown(''); r.back = document.querySelectorAll('.nrc:not([hidden])').length; return r;`);
+check('NRs: filtro por número ou nome, com ou sem acento', r.all >= 19 && r.n33 === '33' && r.nr3 === '31,32,33,34,37' && r.inc === '23' && r.acc === '23' && r.none === '' && r.empty && r.back === r.all, r);
+
 // Empresas: página própria com a prévia do pedido e o formulário de proposta
 await go('/empresas');
 r = await ev(`const f = document.querySelector('#proposta form');
@@ -273,7 +282,7 @@ await sleep(1500);
 // (carrosséis, abas) e desenhos decorativos (aria-hidden, svg) podem passar.
 const overflow = [];
 for (const width of [360, 768, 960, 1024, 1180, 1280, 1440]) {
-  for (const path of ['/', '/cursos', '/cursos/nr-33-espacos-confinados-trabalhador-e-vigia', '/carrinho', '/login', '/cadastro', '/esqueci-senha', '/contato', '/sobre', '/empresas', '/categorias']) {
+  for (const path of ['/', '/cursos', '/cursos/nr-33-espacos-confinados-trabalhador-e-vigia', '/carrinho', '/login', '/cadastro', '/esqueci-senha', '/contato', '/sobre', '/empresas', '/categorias', '/nrs']) {
     await go(path, width);
     const o = await ev(outside);
     const at = await ev(`return location.pathname`);

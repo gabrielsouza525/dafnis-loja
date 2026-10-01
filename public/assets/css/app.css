@@ -975,6 +975,7 @@ body.lock{overflow:hidden}
 .catx-more-card.is-dark .kicker{color:#E6C567}
 .catx-more-card.is-dark .chip{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.16);color:#fff}
 .catx-more-card.is-dark .chip:hover{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.3)}
+.catx-more-card .cat-jump{margin:0 0 22px}
 @media (max-width: 940px){
   .catx-grid,.catx-more{grid-template-columns:minmax(0,1fr)}
 }
@@ -988,7 +989,39 @@ body.lock{overflow:hidden}
   .catx-more{padding-bottom:64px;gap:14px}
   .catx-more-card{padding:26px 22px}
   .catx-more-in > .btn{align-self:stretch;justify-content:center}
-  .catx-more-card .quick{flex-wrap:wrap;overflow:visible;margin:0 0 22px;padding:0}
+  .catx-more-card .quick,.catx-more-card .cat-jump{flex-wrap:wrap;overflow:visible;margin:0 0 22px;padding:0}
+}
+
+/* NRs: um cartão por norma (número em destaque, tipos de treinamento e menor preço) e filtro ao digitar */
+.nrc-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;padding-top:40px}
+.nrc{display:flex;flex-direction:column;gap:14px;padding:22px;background:var(--surface);border:1px solid var(--line);border-radius:16px;color:var(--ink);text-decoration:none;transition:transform .2s ease,border-color .2s,box-shadow .2s}
+.nrc:hover{transform:translateY(-3px);border-color:var(--line-strong);box-shadow:var(--shadow-h);color:var(--ink)}
+.nrc[hidden]{display:none}
+.nrc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.nrc-badge{width:60px;height:60px;border-radius:14px;background:var(--navy);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:24px;line-height:1;letter-spacing:-.02em;flex-shrink:0;transition:background .2s}
+.nrc-badge small{font-family:var(--mono);font-weight:600;font-size:10px;letter-spacing:.12em;color:#E6C567;margin-bottom:4px}
+.nrc:hover .nrc-badge{background:var(--blue)}
+.nrc-count{font-size:13px;font-weight:600;color:var(--muted);margin-top:4px;white-space:nowrap}
+.nrc-name{font-size:17px;letter-spacing:-.01em;line-height:1.3}
+.nrc-tags{display:flex;flex-wrap:wrap;gap:6px}
+.nrc-tags span{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 4px 0 10px;border-radius:999px;background:var(--gray);font-size:12px;font-weight:600;color:var(--text)}
+.nrc-tags b{min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--surface);color:var(--navy-ink);font-size:11px;display:grid;place-items:center}
+.nrc-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;padding-top:14px;border-top:1px solid var(--line-2);font-size:13.5px;color:var(--muted)}
+.nrc-foot strong{color:var(--ink);font-weight:600}
+.nrc-foot .ic{color:var(--blue);transition:transform .2s}
+.nrc:hover .nrc-foot .ic{transform:translateX(4px)}
+.nr-empty{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:40px;padding:16px 18px;border-radius:12px;background:var(--surface);border:1px dashed var(--line-strong);font-size:14.5px;color:var(--muted)}
+.nr-empty[hidden]{display:none}
+.nr-empty + .nrc-grid{padding-top:16px}
+@media (max-width: 1180px){
+  .nrc-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width: 940px){
+  .nrc-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width: 560px){
+  .nrc-grid{grid-template-columns:minmax(0,1fr);gap:12px;padding-top:24px}
+  .nrc{padding:18px}
 }
 
 /* Empresas: prévia de um pedido com vagas no topo e formulário de proposta */
