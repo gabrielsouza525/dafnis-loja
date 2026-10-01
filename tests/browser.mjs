@@ -129,10 +129,13 @@ check('entrar: painel com foto à esquerda e formulário à direita', Math.abs(r
 await go('/cadastro?volta=/checkout');
 r = await ev(`${wait} const t = document.querySelector('#f-phone'); t.value = '18999990000'; t.dispatchEvent(new Event('input', {bubbles:true})); return t.value;`);
 check('máscara de telefone', r === '(18) 99999-0000', r);
-r = await ev(`const p = document.querySelector('#f-password'), c = document.querySelector('#f-password-confirmation'), m = document.querySelector('[data-pw-match]');
-  const type = (a, b) => { p.value = a; c.value = b; p.dispatchEvent(new Event('input')); return [...document.querySelectorAll('[data-rule].ok')].map(l => l.dataset.rule).join(',') + '|' + (m.hidden ? '' : m.className); };
-  return { steps: document.querySelectorAll('.auth-steps li').length, empty: type('', ''), letters: type('treina', ''), diff: type('treina2026', 'treina'), same: type('treina2026', 'treina2026') };`);
-check('cadastro: passos ao lado e requisitos da senha conferidos ao digitar', r.steps === 3 && r.empty === '|' && r.letters === 'letter|' && r.diff === 'len,letter,digit|pw-match no' && r.same === 'len,letter,digit|pw-match ok', r);
+r = await ev(`${wait} const p = document.querySelector('#f-password'), c = document.querySelector('#f-password-confirmation'), m = document.querySelector('[data-pw-match]');
+  const meter = document.querySelector('[data-pw-meter]'), box = document.querySelector('[data-pw-strength]');
+  const type = (a, b) => { p.value = a; c.value = b; p.dispatchEvent(new Event('input')); return meter.getAttribute('aria-valuetext') + '/' + document.querySelectorAll('.pw-meter > span.on').length + '|' + [...document.querySelectorAll('[data-rule].ok')].map(l => l.dataset.rule).join(',') + '|' + (box.classList.contains('is-guess') ? 'adivinhavel' : '') + '|' + (m.hidden ? '' : m.className); };
+  const r = { steps: document.querySelectorAll('.auth-steps li').length, empty: type('', ''), short: type('treina', ''), fair: type('treina2026', 'treina'), strong: type('Treina2026!', 'Treina2026!'), guess: type('Senha2026!', '') };
+  await w(800); r.announce = document.querySelector('[data-pw-announce]').textContent; return r;`);
+check('cadastro: medidor de força (barras, rótulo, itens, padrão fácil) e confirmação ao digitar', r.steps === 3 && r.empty === 'Vazia/0|||' && r.short === 'Fraca/1|||'
+  && r.fair === 'Razoável/2|len,mix||pw-match no' && r.strong === 'Forte/4|len,mix,case,symbol||pw-match ok' && r.guess === 'Fraca/1|len,mix,case,symbol|adivinhavel|' && /fácil de adivinhar/.test(r.announce), r);
 // Recuperar senha: etapas no cartão; link inválido mostra "Link expirado" com o caminho de volta
 await go('/esqueci-senha');
 r = await ev(`return { steps: document.querySelectorAll('.recover-steps .step').length, current: document.querySelector('.recover-steps [aria-current]')?.textContent };`);
@@ -322,7 +325,7 @@ r.certs = await ev(`return document.querySelectorAll('.cert-card').length`);
 await go('/minha-conta/pedidos');
 r.orders = await ev(`return document.querySelectorAll('.order-row').length`);
 await go('/minha-conta/dados');
-r.pw = await ev(`return !!document.querySelector('[data-pw-rules]') && !!document.querySelector('[data-pw-match]')`);
+r.pw = await ev(`return !!document.querySelector('[data-pw-strength] [data-pw-meter]') && !!document.querySelector('[data-pw-match]')`);
 check('minha conta: cursos com atalhos, certificados em cartões, pedidos em lista e senha com requisitos', r.jump === 3 && r.secs >= 1 && r.certs >= 1 && r.orders >= 1 && r.pw, r);
 
 // Pedido pago: situação, próximos passos (o atual marcado) e o resumo ao lado

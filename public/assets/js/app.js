@@ -467,21 +467,61 @@
     if (nrFilter.value) filterNrs();
   }
 
-  /* ---------- cadastro: requisitos da senha e a confirmação conferidos enquanto a pessoa digita ---------- */
-  var pwRules = $('[data-pw-rules]');
-  var pwInput = pwRules && doc.getElementById(pwRules.getAttribute('data-pw-rules'));
+  /* ---------- senha nova: medidor de força (adaptado do componente PasswordStrength em React) ----------
+     Quatro barras e o rótulo (fraca a forte), o aviso de padrão fácil de adivinhar, os itens marcados ao digitar
+     e o anúncio para leitores de tela depois de uma pausa. A confirmação diz se as senhas conferem. */
+  var pwBox = $('[data-pw-strength]');
+  var pwInput = pwBox && doc.getElementById(pwBox.getAttribute('data-pw-strength'));
   if (pwInput) {
     var pwMatch = $('[data-pw-match]');
     var pwConfirm = pwMatch && doc.getElementById(pwMatch.getAttribute('data-pw-match'));
-    // Mesmas regras do servidor (Validator: password)
+    var pwMeter = $('[data-pw-meter]', pwBox);
+    var pwCells = $all('.pw-meter > span', pwBox);
+    var pwLabels = $all('[data-score]', pwBox);
+    var pwAnnounce = $('[data-pw-announce]', pwBox);
+    var pwNames = ['vazia', 'fraca', 'razoável', 'boa', 'forte'];
+    var pwCommon = /^(?:password|passw0rd|senha|qwerty|letmein|welcome|admin|iloveyou|monkey|dragon|abc123|111111|123123|123456|dafnis|brasil)/i;
+    var pwRepeat = /(.)\1{3,}/;
+    var pwSequence = /(?:0123|1234|2345|3456|4567|5678|6789|abcd|bcde|cdef|defg|qwer|wert|erty|asdf)/i;
+    // Os dois primeiros são as regras do servidor (Validator: password); os outros deixam a senha mais forte
     var pwTests = {
       len: function (v) { return v.length >= 8; },
-      letter: function (v) { return /[A-Za-z]/.test(v); },
-      digit: function (v) { return /\d/.test(v); }
+      mix: function (v) { return /[A-Za-z]/.test(v) && /\d/.test(v); },
+      'case': function (v) { return /[a-z]/.test(v) && /[A-Z]/.test(v); },
+      symbol: function (v) { return /[!-\/:-@\[-`{-~]/.test(v); }
     };
+    var pwTimer = null;
     var checkPassword = function () {
       var v = pwInput.value;
-      $all('[data-rule]', pwRules).forEach(function (li) { li.classList.toggle('ok', pwTests[li.getAttribute('data-rule')](v)); });
+      var met = {};
+      var missing = [];
+      $all('[data-rule]', pwBox).forEach(function (li) {
+        var id = li.getAttribute('data-rule');
+        met[id] = pwTests[id](v);
+        li.classList.toggle('ok', met[id]);
+        var state = $('[data-rule-state]', li);
+        if (state) state.textContent = met[id] ? 'cumprido' : 'não cumprido';
+        if (!met[id]) missing.push(li.textContent.replace(/(recomendado|não cumprido|cumprido)/g, '').trim().toLowerCase());
+      });
+      var guessable = v !== '' && (pwCommon.test(v) || pwRepeat.test(v) || pwSequence.test(v));
+      // Sem o mínimo do servidor ou com padrão óbvio, é fraca; depois cada recomendação sobe um nível
+      var score = v === '' ? 0 : (guessable || !met.len || !met.mix) ? 1 : 2 + (met['case'] ? 1 : 0) + (met.symbol ? 1 : 0);
+      pwBox.setAttribute('data-tone', score === 0 ? 'none' : score === 1 ? 'danger' : score === 2 ? 'caution' : 'safe');
+      pwBox.classList.toggle('is-guess', guessable);
+      pwCells.forEach(function (cell, i) {
+        cell.firstChild.style.transitionDelay = i < score ? (i * 30) + 'ms' : '0ms';
+        cell.classList.toggle('on', i < score);
+      });
+      pwLabels.forEach(function (l) { l.classList.toggle('on', +l.getAttribute('data-score') === score); });
+      pwMeter.setAttribute('aria-valuenow', score);
+      pwMeter.setAttribute('aria-valuetext', pwNames[score].charAt(0).toUpperCase() + pwNames[score].slice(1));
+      // Anuncia só depois de uma pausa na digitação
+      clearTimeout(pwTimer);
+      if (pwAnnounce) {
+        var text = v === '' ? '' : ['Senha ' + pwNames[score] + '.', guessable ? 'É um padrão fácil de adivinhar.' : '',
+          missing.length ? 'Falta: ' + missing.join(', ') + '.' : 'Todos os itens cumpridos.'].filter(Boolean).join(' ');
+        pwTimer = setTimeout(function () { pwAnnounce.textContent = text; }, text ? 700 : 0);
+      }
       if (!pwConfirm) return;
       var c = pwConfirm.value;
       var same = c !== '' && c === v;

@@ -809,11 +809,39 @@ body.lock{overflow:hidden}
 .auth-steps strong{display:block;color:#fff;font-size:15.5px}
 .auth-steps small{display:block;color:#AFC0D8;font-size:13.5px;margin-top:3px;line-height:1.5}
 .pw-group{display:flex;flex-direction:column;gap:8px}
-.pw-rules{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--muted)}
-.pw-rules li{display:inline-flex;align-items:center;gap:6px;transition:color .15s}
-.pw-rules .ic{width:16px;height:16px;padding:2px;border-radius:50%;background:var(--gray);border:1px solid var(--line-strong);color:transparent;transition:background .15s,color .15s,border-color .15s}
-.pw-rules li.ok{color:var(--green-dk)}
-.pw-rules li.ok .ic{background:var(--green);border-color:var(--green);color:#fff}
+/* Medidor de força da senha (adaptado do PasswordStrength): barras, rótulo, aviso e itens */
+.pw-strength{display:flex;flex-direction:column}
+.pw-meter{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:2px}
+.pw-meter > span{position:relative;height:6px;border-radius:2px;background:var(--line);overflow:hidden}
+.pw-meter i{position:absolute;inset:0;border-radius:2px;background:var(--line-strong);transform:scaleX(0);transform-origin:left;transition:transform .32s cubic-bezier(.34,1.45,.64,1),background-color .2s}
+.pw-meter > span.on i{transform:scaleX(1)}
+.pw-strength[data-tone="danger"] .pw-meter i{background:var(--red)}
+.pw-strength[data-tone="caution"] .pw-meter i{background:#D97706}
+.pw-strength[data-tone="safe"] .pw-meter i{background:var(--green)}
+.pw-meta{display:flex;justify-content:space-between;align-items:center;gap:12px;height:20px;margin-top:8px}
+.pw-label{display:inline-grid;font-size:12.5px;font-weight:600;line-height:20px}
+.pw-label span{grid-area:1 / 1;white-space:nowrap;opacity:0;color:var(--muted);transition:opacity .22s,color .2s}
+.pw-label span.on{opacity:1}
+.pw-strength[data-tone="danger"] .pw-label span{color:var(--red)}
+.pw-strength[data-tone="caution"] .pw-label span{color:#B45309}
+.pw-strength[data-tone="safe"] .pw-label span{color:var(--green-dk)}
+.pw-guess{font-size:11.5px;line-height:20px;white-space:nowrap;color:#B45309;opacity:0;transition:opacity .22s}
+.pw-strength.is-guess .pw-guess{opacity:1}
+.pw-rules{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px}
+.pw-rules li{display:flex;align-items:center;gap:8px;font-size:12.5px;line-height:20px;color:var(--muted);transition:color .2s}
+.pw-rules li.ok{color:var(--text)}
+.pw-rules small{font-size:11px;color:var(--muted);margin-left:2px}
+.pw-box{position:relative;width:14px;height:14px;border-radius:4px;border:1px solid var(--line-strong);display:grid;place-items:center;flex-shrink:0;color:#fff}
+.pw-box::before{content:'';position:absolute;inset:-1px;border-radius:4px;background:var(--green);opacity:0;transition:opacity .22s}
+.pw-box svg{position:relative;width:9px;height:9px;opacity:0;transform:scale(.6);transition:opacity .2s,transform .3s cubic-bezier(.34,1.56,.64,1)}
+.pw-rules li.ok .pw-box{border-color:var(--green)}
+.pw-rules li.ok .pw-box::before,.pw-rules li.ok .pw-box svg{opacity:1}
+.pw-rules li.ok .pw-box svg{transform:none}
+/* Sem JavaScript não há o que medir: ficam só os itens */
+html:not(.js) .pw-meter,html:not(.js) .pw-meta{display:none}
+[data-theme="dark"] .pw-strength[data-tone="caution"] .pw-meter i{background:#F59E0B}
+[data-theme="dark"] .pw-strength[data-tone="caution"] .pw-label span,[data-theme="dark"] .pw-guess{color:#FBBF24}
+[data-theme="dark"] .pw-box{color:#0A1322}
 .pw-match{display:flex;align-items:center;gap:6px;margin:0;font-size:12.5px;font-weight:600}
 .pw-match .ic{width:15px;height:15px}
 .pw-match.ok{color:var(--green-dk)}

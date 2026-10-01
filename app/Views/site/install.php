@@ -11,6 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;600;700;800&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap">
 <link rel="stylesheet" href="<?= e(asset('css/app.css')) ?>">
+<script src="<?= e(asset('js/boot.js')) ?>"></script>
 <script src="<?= e(asset('js/app.js')) ?>" defer></script>
 </head>
 <body class="err-page">
@@ -36,14 +37,7 @@
 <p class="install-sec"><span>2</span>Administrador</p>
 <?= partial('field', ['name' => 'name', 'label' => 'Seu nome', 'required' => true, 'attrs' => ['autocomplete' => 'name']]) ?>
 <?= partial('field', ['name' => 'email', 'label' => 'E-mail do administrador', 'type' => 'email', 'required' => true, 'attrs' => ['autocomplete' => 'email']]) ?>
-<div class="pw-group">
-<?= partial('field', ['name' => 'password', 'label' => 'Senha', 'type' => 'password', 'required' => true, 'attrs' => ['autocomplete' => 'new-password', 'minlength' => 8, 'aria-describedby' => 'pw-rules']]) ?>
-<ul class="pw-rules" id="pw-rules" data-pw-rules="f-password" aria-label="A senha precisa ter">
-<li data-rule="len"><?= icon('check', 'ic-sm') ?>8 caracteres ou mais</li>
-<li data-rule="letter"><?= icon('check', 'ic-sm') ?>Letras</li>
-<li data-rule="digit"><?= icon('check', 'ic-sm') ?>Números</li>
-</ul>
-</div>
+<?= partial('new-password', ['label' => 'Senha', 'confirm' => false]) ?>
 <button class="btn btn-primary btn-lg btn-block" type="submit">Instalar<?= icon('arrowR') ?></button>
 </form>
 <?php endif; ?>
