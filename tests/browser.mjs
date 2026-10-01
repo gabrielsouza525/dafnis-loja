@@ -296,9 +296,13 @@ const outside = `const vw = document.documentElement.clientWidth; const out = []
 await go('/minha-conta/certificados');
 r = await ev(`return { tabs: document.querySelectorAll('.acc-tabs a').length, current: document.querySelector('.acc-tabs [aria-current]')?.textContent.trim(), hello: document.querySelector('.acc-hello')?.textContent.trim(), avatar: getComputedStyle(document.querySelector('.acc-avatar')).display };`);
 check('minha conta: saudação no topo e abas com a atual marcada', r.tabs === 5 && r.current === 'Certificados' && /^Olá, /.test(r.hello) && r.avatar === 'grid', r);
+// Pedido pago: situação, próximos passos (o atual marcado) e o resumo ao lado
+await go('/pedido/DF000001');
+r = await ev(`return { status: document.querySelector('.order-status h2')?.textContent, steps: document.querySelectorAll('.order-timeline li').length, done: document.querySelectorAll('.order-timeline .is-done').length, on: document.querySelectorAll('.order-timeline .is-on').length, lines: document.querySelectorAll('.order-summary .sum-line').length };`);
+check('pedido: situação, próximos passos com o atual marcado e resumo', r.status === 'Tudo certo com o seu pedido' && r.steps === 4 && r.done >= 1 && r.on === 1 && r.lines >= 1, r);
 const accOver = [];
 for (const width of [390, 1440]) {
-  for (const path of ['/minha-conta', '/minha-conta/cursos', '/minha-conta/certificados', '/minha-conta/pedidos', '/minha-conta/dados']) {
+  for (const path of ['/minha-conta', '/minha-conta/cursos', '/minha-conta/certificados', '/minha-conta/pedidos', '/minha-conta/pedidos/DF000001', '/minha-conta/dados', '/pedido/DF000001']) {
     await go(path, width);
     const o = await ev(outside);
     if (o.scroll > 0 || o.out.length) accOver.push(`${path} @${width}px: ${o.scroll > 0 ? 'rola +' + o.scroll + 'px ' : ''}${o.out.join(', ')}`);

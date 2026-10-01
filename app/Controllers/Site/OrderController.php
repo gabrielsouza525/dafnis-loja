@@ -5,6 +5,7 @@ namespace App\Controllers\Site;
 
 use App\Controllers\Controller;
 use App\Core\Response;
+use App\Models\Course;
 use App\Models\Enrollment;
 use App\Models\Order;
 use App\Services\Auth;
@@ -21,7 +22,9 @@ final class OrderController extends Controller
     public function show(string $number): Response
     {
         $order = $this->ownOrder($number);
-        $items = Order::items((int) $order['id']);
+        $active = Course::allActive();
+        // Miniatura do curso no resumo (curso desativado depois da compra fica sem)
+        $items = array_map(static fn ($i) => $i + ['course' => $active[(int) $i['course_id']] ?? null], Order::items((int) $order['id']));
         $seats = $order['status'] === 'paid' ? Enrollment::forOrder((int) $order['id']) : [];
 
         return $this->view('site/order', [
@@ -30,6 +33,8 @@ final class OrderController extends Controller
             'order' => $order,
             'items' => $items,
             'awaiting' => count(array_filter($seats, static fn ($s) => $s['status'] === 'awaiting_participant')),
+            // Pessoa física com uma vaga por curso já é a participante (Orders::createSeats)
+            'needsParticipants' => $order['buyer_type'] === 'pj' || array_filter($items, static fn ($i) => (int) $i['quantity'] > 1) !== [],
             'online' => Payments::isOnline(),
             'autoPay' => $this->request->query('pagar') === '1' && $order['status'] === 'pending' && Payments::isOnline(),
             'gatewayStatus' => MercadoPagoGateway::statusLabel($order['gateway_status']),

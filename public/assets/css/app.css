@@ -700,17 +700,47 @@ fieldset{margin:0;padding:0;border:0;min-width:0}
 .note-box.ok{background:var(--green-tint);border-color:#BFE3CB;color:#0B5A2A}
 .note-box.err{background:var(--red-tint);border-color:#F4C7C3;color:var(--red)}
 .note-box a{color:inherit;font-weight:600}
-.success{max-width:680px;margin:0 auto;padding:72px 0 110px;text-align:center;display:flex;flex-direction:column;align-items:center}
 .success-ic{width:80px;height:80px;border-radius:50%;background:var(--green-tint);color:var(--green);display:grid;place-items:center;margin-bottom:24px;animation:bump .6s ease}
 .success-ic.wait{background:#FBF1DA;color:#9A6B12}
 .success-ic.err{background:var(--red-tint);color:var(--red)}
 .success-ic .ic{width:38px;height:38px;stroke-width:2.2}
-.success h1{font-size:36px;letter-spacing:-.03em}
-.success > p{color:var(--muted);margin-top:12px;font-size:17px}
-.success .btns{display:flex;gap:12px;margin-top:32px;flex-wrap:wrap;justify-content:center}
-.order-box{width:100%;margin-top:32px;border:1px solid var(--line);border-radius:16px;text-align:left;overflow:hidden;background:var(--surface)}
-.order-box-head{display:flex;justify-content:space-between;gap:12px;padding:16px 20px;background:var(--gray);border-bottom:1px solid var(--line);font-size:14px;flex-wrap:wrap}
-.order-box-body{padding:8px 20px 16px}
+/* Pedido: situação e próximos passos à esquerda, resumo fixo à direita */
+.order-main{display:flex;flex-direction:column;gap:20px}
+.order-status{display:flex;gap:24px;align-items:flex-start;padding:32px}
+.order-status .success-ic{width:64px;height:64px;margin:0;flex-shrink:0}
+.order-status .success-ic .ic{width:30px;height:30px}
+.order-status h2{font-size:28px;letter-spacing:-.02em;margin-top:8px}
+.order-status p{color:var(--muted);margin-top:10px;font-size:16px;line-height:1.6;max-width:620px}
+.order-status .btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
+.order-status.is-paid{border-top:4px solid var(--green)}
+.order-status.is-pending{border-top:4px solid var(--gold)}
+.order-status.is-cancelled,.order-status.is-refunded{border-top:4px solid var(--red)}
+.order-next h2{font-size:20px}
+.order-timeline{list-style:none;margin:20px 0 0;padding:0;display:flex;flex-direction:column}
+.order-timeline li{position:relative;display:flex;gap:16px;padding-bottom:22px}
+.order-timeline li:last-child{padding-bottom:0}
+.order-timeline li:not(:last-child)::before{content:'';position:absolute;left:15px;top:34px;bottom:2px;width:2px;background:var(--line)}
+.order-timeline li.is-done:not(:last-child)::before{background:var(--green)}
+.ot-n{position:relative;width:32px;height:32px;border-radius:50%;border:2px solid var(--line-strong);background:var(--surface);color:var(--muted);display:grid;place-items:center;font-family:var(--mono);font-size:13px;font-weight:600;flex-shrink:0}
+.ot-n .ic{width:16px;height:16px;stroke-width:2.4}
+.is-done .ot-n{background:var(--green);border-color:var(--green);color:#fff}
+.is-on .ot-n{background:var(--navy);border-color:var(--navy);color:#E6C567;box-shadow:0 0 0 4px var(--blue-tint)}
+.order-timeline strong{display:block;font-size:15.5px;color:var(--ink);margin-top:5px}
+.order-timeline small{display:block;font-size:14px;color:var(--muted);margin-top:3px;line-height:1.5}
+.order-timeline .is-todo strong{color:var(--muted)}
+.order-meta{font-size:13.5px;color:var(--muted);margin:-4px 0 16px}
+.order-meta strong{color:var(--ink)}
+.order-thumb{width:64px;height:46px;border-radius:8px;background:var(--navy);color:#E6C567;display:grid;place-items:center}
+.order-facts{margin:18px 0;padding:16px 0 0;border-top:1px solid var(--line-2);display:flex;flex-direction:column;gap:12px}
+.order-facts > div{display:flex;justify-content:space-between;gap:16px;font-size:14px}
+.order-facts dt{display:flex;align-items:center;gap:8px;color:var(--muted)}
+.order-facts dd{margin:0;text-align:right;color:var(--ink);font-weight:500;min-width:0;overflow-wrap:anywhere}
+.order-facts dd small{display:block;font-weight:400;color:var(--muted);font-size:12.5px}
+@media (max-width: 760px){
+  .order-status{flex-direction:column;gap:16px;padding:24px 20px}
+  .order-status h2{font-size:23px}
+  .order-status .btns .btn{flex:1 1 100%}
+}
 
 /* status */
 .status{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:999px;font-size:12.5px;font-weight:600;white-space:nowrap;background:var(--gray);color:var(--muted)}
