@@ -2,9 +2,9 @@
 /** @var array $enrollments @var array $user */
 $crumbs = [['Início', '/'], ['Minha conta', '/minha-conta'], ['Meus cursos', null]];
 $groups = [
-    'Em andamento' => array_filter($enrollments, static fn ($e) => $e['status'] === 'active'),
-    'Acesso em liberação' => array_filter($enrollments, static fn ($e) => $e['status'] === 'processing'),
-    'Concluídos' => array_filter($enrollments, static fn ($e) => $e['status'] === 'completed'),
+    'andamento' => ['Em andamento', 'pulse', array_filter($enrollments, static fn ($e) => $e['status'] === 'active')],
+    'liberacao' => ['Acesso em liberação', 'clock', array_filter($enrollments, static fn ($e) => $e['status'] === 'processing')],
+    'concluidos' => ['Concluídos', 'award', array_filter($enrollments, static fn ($e) => $e['status'] === 'completed')],
 ];
 ?>
 <div class="screen">
@@ -18,11 +18,16 @@ $groups = [
 <a class="btn btn-primary" href="<?= e(url('/cursos')) ?>">Explorar cursos</a>
 </div>
 <?php else: ?>
-<?php foreach ($groups as $label => $list): if (!$list) { continue; } ?>
-<div class="panel">
-<div class="panel-head"><h2><?= e($label) ?></h2><span class="muted" style="font-size:14px"><?= count($list) ?></span></div>
-<div class="panel-body"><div class="my-courses"><?php foreach ($list as $e): ?><?= partial('my-course', ['e' => $e]) ?><?php endforeach; ?></div></div>
-</div>
+<nav class="acc-jump" aria-label="Situação dos cursos">
+<?php foreach ($groups as $id => [$label, $ic, $list]): ?>
+<a href="#<?= e($id) ?>"<?= $list ? '' : ' aria-disabled="true" tabindex="-1"' ?>><?= icon($ic, 'ic-sm') ?><?= e($label) ?><b><?= count($list) ?></b></a>
+<?php endforeach; ?>
+</nav>
+<?php foreach ($groups as $id => [$label, $ic, $list]): if (!$list) { continue; } ?>
+<section class="acc-sec" id="<?= e($id) ?>">
+<h2 class="acc-sec-title"><?= e($label) ?><span><?= count($list) ?></span></h2>
+<div class="my-courses"><?php foreach ($list as $e): ?><?= partial('my-course', ['e' => $e]) ?><?php endforeach; ?></div>
+</section>
 <?php endforeach; ?>
 <?php endif; ?>
 <?= partial('account-shell-close') ?>

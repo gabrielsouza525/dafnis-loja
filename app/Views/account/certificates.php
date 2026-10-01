@@ -14,20 +14,27 @@ $crumbs = [['Início', '/'], ['Minha conta', '/minha-conta'], ['Certificados', n
 </div>
 <?php endif; ?>
 <?php foreach (['Meus certificados' => [$mine, false], 'Certificados da sua equipe' => [$team, true]] as $heading => [$list, $showName]): if (!$list) { continue; } ?>
-<div class="panel"><div class="panel-head"><h2><?= e($heading) ?></h2></div>
-<div class="table-wrap"><table class="table">
-<thead><tr><th><?= $showName ? 'Treinamento / participante' : 'Treinamento' ?></th><th>Carga</th><th>Emissão</th><th>Código</th><th class="num">Arquivo</th></tr></thead>
-<tbody>
-<?php foreach ($list as $e): ?>
-<tr>
-<td><strong><?= e(($e['course_code'] ? $e['course_code'] . ' — ' : '') . $e['course_title']) ?></strong><?php if ($showName): ?><br><small class="muted"><?= e((string) $e['participant_name']) ?></small><?php endif; ?></td>
-<td><?= e(hours_short($e['course_hours'])) ?></td>
-<td><?= e($e['certificate_issued_at'] ? date_br($e['certificate_issued_at']) : date_br($e['completed_at'])) ?></td>
-<td class="mono" style="font-size:13px"><?= e($e['certificate_code'] ?: '—') ?></td>
-<td class="num"><?php if ($e['certificate_id'] && ($e['certificate_file'] || $e['certificate_url'])): ?><a class="btn btn-buy btn-xs" href="<?= e(url('/minha-conta/certificados/' . $e['certificate_id'] . '/baixar')) ?>"><?= icon('download', 'ic-sm') ?>Baixar</a><?php else: ?><?= partial('status', ['label' => 'Em emissão', 'tone' => 'info']) ?><?php endif; ?></td>
-</tr>
+<section class="acc-sec">
+<h2 class="acc-sec-title"><?= e($heading) ?><span><?= count($list) ?></span></h2>
+<div class="cert-grid">
+<?php foreach ($list as $e): $ready = $e['certificate_id'] && ($e['certificate_file'] || $e['certificate_url']); ?>
+<article class="cert-card">
+<div class="cert-card-top"><span class="cert-card-seal"><?= icon('award') ?></span><?php if ($e['certificate_code']): ?><span class="cert-card-code"><?= e($e['certificate_code']) ?></span><?php endif; ?></div>
+<h3><?= e(($e['course_code'] ? $e['course_code'] . ' — ' : '') . $e['course_title']) ?></h3>
+<?php if ($showName): ?><p class="cert-card-who"><?= icon('user', 'ic-sm') ?><?= e((string) $e['participant_name']) ?></p><?php endif; ?>
+<dl class="cert-card-facts">
+<div><dt>Carga horária</dt><dd><?= e(hours_short($e['course_hours'])) ?></dd></div>
+<div><dt>Emissão</dt><dd><?= e($e['certificate_issued_at'] ? date_br($e['certificate_issued_at']) : date_br($e['completed_at'])) ?></dd></div>
+</dl>
+<?php if ($ready): ?>
+<a class="btn btn-buy btn-sm btn-block" href="<?= e(url('/minha-conta/certificados/' . $e['certificate_id'] . '/baixar')) ?>"><?= icon('download', 'ic-sm') ?>Baixar certificado</a>
+<?php else: ?>
+<span class="cert-card-wait"><?= icon('clock', 'ic-sm') ?>Certificado em emissão</span>
+<?php endif; ?>
+</article>
 <?php endforeach; ?>
-</tbody></table></div></div>
+</div>
+</section>
 <?php endforeach; ?>
 <?= partial('account-shell-close') ?>
 </div>

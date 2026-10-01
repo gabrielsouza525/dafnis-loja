@@ -23,18 +23,7 @@
 <form class="auth-form" method="post" action="<?= e(url('/redefinir-senha')) ?>" data-loading-form>
 <?= csrf_field() ?>
 <input type="hidden" name="token" value="<?= e($token) ?>">
-<div class="pw-group">
-<?= partial('field', ['name' => 'password', 'label' => 'Nova senha', 'type' => 'password', 'required' => true, 'attrs' => ['autocomplete' => 'new-password', 'autofocus' => true, 'minlength' => 8, 'aria-describedby' => 'pw-rules']]) ?>
-<ul class="pw-rules" id="pw-rules" data-pw-rules="f-password" aria-label="A senha precisa ter">
-<li data-rule="len"><?= icon('check', 'ic-sm') ?>8 caracteres ou mais</li>
-<li data-rule="letter"><?= icon('check', 'ic-sm') ?>Letras</li>
-<li data-rule="digit"><?= icon('check', 'ic-sm') ?>Números</li>
-</ul>
-</div>
-<div class="pw-group">
-<?= partial('field', ['name' => 'password_confirmation', 'label' => 'Confirme a nova senha', 'type' => 'password', 'required' => true, 'attrs' => ['autocomplete' => 'new-password', 'aria-describedby' => 'pw-match']]) ?>
-<p class="pw-match" id="pw-match" data-pw-match="f-password-confirmation" aria-live="polite" hidden></p>
-</div>
+<?= partial('new-password', ['label' => 'Nova senha', 'confirmLabel' => 'Confirme a nova senha', 'autofocus' => true]) ?>
 <button class="btn btn-primary btn-lg btn-block" type="submit">Salvar nova senha<?= icon('arrowR') ?></button>
 <p class="recover-note"><?= icon('info', 'ic-sm') ?><span>Por segurança, os aparelhos em que você marcou "manter conectado" vão precisar entrar de novo.</span></p>
 </form>

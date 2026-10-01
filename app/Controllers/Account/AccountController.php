@@ -8,6 +8,7 @@ use App\Core\Database;
 use App\Core\Response;
 use App\Core\Session;
 use App\Core\ValidationException;
+use App\Models\Course;
 use App\Models\Enrollment;
 use App\Models\Order;
 use App\Services\Activity;
@@ -104,7 +105,7 @@ final class AccountController extends Controller
         return $this->account('account/order', 'pedidos', [
             'title' => 'Pedido ' . $order['number'],
             'order' => $order,
-            'items' => Order::items((int) $order['id']),
+            'items' => array_map(static fn ($i) => $i + ['course' => Course::allActive()[(int) $i['course_id']] ?? null], Order::items((int) $order['id'])),
             'seats' => Enrollment::forOrder((int) $order['id']),
             'online' => Payments::isOnline(),
         ]);

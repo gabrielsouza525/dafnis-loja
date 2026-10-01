@@ -48,7 +48,8 @@ final class Order
     {
         return Database::select(
             'SELECT o.*, (SELECT COALESCE(SUM(quantity), 0) FROM order_items WHERE order_id = o.id) AS participants,
-                    (SELECT COUNT(*) FROM order_items WHERE order_id = o.id) AS item_count
+                    (SELECT COUNT(*) FROM order_items WHERE order_id = o.id) AS item_count,
+                    (SELECT COUNT(*) FROM enrollments WHERE order_id = o.id AND status = \'awaiting_participant\') AS awaiting
                FROM orders o WHERE o.user_id = :u ORDER BY o.id DESC' . ($limit ? ' LIMIT ' . (int) $limit : ''),
             ['u' => $userId]
         );

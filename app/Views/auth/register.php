@@ -22,18 +22,7 @@
 <?= partial('field', ['name' => 'name', 'label' => 'Nome completo', 'required' => true, 'attrs' => ['autocomplete' => 'name', 'autofocus' => true]]) ?>
 <?= partial('field', ['name' => 'email', 'label' => 'E-mail', 'type' => 'email', 'required' => true, 'attrs' => ['autocomplete' => 'email']]) ?>
 <?= partial('field', ['name' => 'phone', 'label' => 'Telefone / WhatsApp', 'type' => 'tel', 'required' => true, 'mask' => 'phone', 'placeholder' => '(00) 00000-0000', 'attrs' => ['autocomplete' => 'tel']]) ?>
-<div class="pw-group">
-<?= partial('field', ['name' => 'password', 'label' => 'Senha', 'type' => 'password', 'required' => true, 'attrs' => ['autocomplete' => 'new-password', 'minlength' => 8, 'aria-describedby' => 'pw-rules']]) ?>
-<ul class="pw-rules" id="pw-rules" data-pw-rules="f-password" aria-label="A senha precisa ter">
-<li data-rule="len"><?= icon('check', 'ic-sm') ?>8 caracteres ou mais</li>
-<li data-rule="letter"><?= icon('check', 'ic-sm') ?>Letras</li>
-<li data-rule="digit"><?= icon('check', 'ic-sm') ?>Números</li>
-</ul>
-</div>
-<div class="pw-group">
-<?= partial('field', ['name' => 'password_confirmation', 'label' => 'Confirme a senha', 'type' => 'password', 'required' => true, 'attrs' => ['autocomplete' => 'new-password', 'aria-describedby' => 'pw-match']]) ?>
-<p class="pw-match" id="pw-match" data-pw-match="f-password-confirmation" aria-live="polite" hidden></p>
-</div>
+<?= partial('new-password', ['label' => 'Senha', 'confirmLabel' => 'Confirme a senha']) ?>
 <label class="check-row"><input type="checkbox" name="accept_terms" value="1" required><span>Li e aceito os <a href="<?= e(url('/termos-de-uso')) ?>" target="_blank">termos de uso</a> e a <a href="<?= e(url('/politica-de-privacidade')) ?>" target="_blank">política de privacidade</a>.</span></label>
 <?php if ($err = field_error('accept_terms')): ?><p class="field-error"><?= icon('alert') ?><?= e($err) ?></p><?php endif; ?>
 <button class="btn btn-primary btn-lg btn-block" type="submit">Criar conta<?= icon('arrowR') ?></button>

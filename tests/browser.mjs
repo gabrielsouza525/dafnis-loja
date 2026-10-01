@@ -296,6 +296,17 @@ const outside = `const vw = document.documentElement.clientWidth; const out = []
 await go('/minha-conta/certificados');
 r = await ev(`return { tabs: document.querySelectorAll('.acc-tabs a').length, current: document.querySelector('.acc-tabs [aria-current]')?.textContent.trim(), hello: document.querySelector('.acc-hello')?.textContent.trim(), avatar: getComputedStyle(document.querySelector('.acc-avatar')).display };`);
 check('minha conta: saudação no topo e abas com a atual marcada', r.tabs === 5 && r.current === 'Certificados' && /^Olá, /.test(r.hello) && r.avatar === 'grid', r);
+// Minha conta: cursos com atalhos por situação, certificados em cartões, pedidos em lista e nova senha com requisitos
+await go('/minha-conta/cursos');
+r = await ev(`return { jump: document.querySelectorAll('.acc-jump a').length, secs: document.querySelectorAll('.acc-sec .my-course').length };`);
+await go('/minha-conta/certificados');
+r.certs = await ev(`return document.querySelectorAll('.cert-card').length`);
+await go('/minha-conta/pedidos');
+r.orders = await ev(`return document.querySelectorAll('.order-row').length`);
+await go('/minha-conta/dados');
+r.pw = await ev(`return !!document.querySelector('[data-pw-rules]') && !!document.querySelector('[data-pw-match]')`);
+check('minha conta: cursos com atalhos, certificados em cartões, pedidos em lista e senha com requisitos', r.jump === 3 && r.secs >= 1 && r.certs >= 1 && r.orders >= 1 && r.pw, r);
+
 // Pedido pago: situação, próximos passos (o atual marcado) e o resumo ao lado
 await go('/pedido/DF000001');
 r = await ev(`return { status: document.querySelector('.order-status h2')?.textContent, steps: document.querySelectorAll('.order-timeline li').length, done: document.querySelectorAll('.order-timeline .is-done').length, on: document.querySelectorAll('.order-timeline .is-on').length, lines: document.querySelectorAll('.order-summary .sum-line').length };`);

@@ -24,8 +24,7 @@ $crumbs = [['Início', '/'], ['Minha conta', '/minha-conta'], ['Meus dados', nul
 <div class="panel-body">
 <div class="fields">
 <div class="full"><?= partial('field', ['name' => 'current_password', 'label' => 'Senha atual', 'type' => 'password', 'required' => true, 'attrs' => ['autocomplete' => 'current-password']]) ?></div>
-<?= partial('field', ['name' => 'password', 'label' => 'Nova senha', 'type' => 'password', 'required' => true, 'hint' => 'Mínimo de 8 caracteres, com letras e números.', 'attrs' => ['autocomplete' => 'new-password']]) ?>
-<?= partial('field', ['name' => 'password_confirmation', 'label' => 'Confirme a nova senha', 'type' => 'password', 'required' => true, 'attrs' => ['autocomplete' => 'new-password']]) ?>
+<?= partial('new-password', ['label' => 'Nova senha', 'confirmLabel' => 'Confirme a nova senha']) ?>
 </div>
 <button class="btn btn-outline" type="submit" style="margin-top:20px">Alterar senha</button>
 <p class="hint">Ao alterar a senha, os outros aparelhos conectados precisam entrar de novo.</p>

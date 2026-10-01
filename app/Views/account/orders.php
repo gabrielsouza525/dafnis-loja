@@ -15,15 +15,23 @@ $crumbs = [['Início', '/'], ['Minha conta', '/minha-conta'], ['Pedidos e vagas'
 <a class="btn btn-primary" href="<?= e(url('/cursos')) ?>">Explorar cursos</a>
 </div>
 <?php else: ?>
-<div class="panel">
-<div class="table-wrap"><table class="table">
-<thead><tr><th>Pedido</th><th>Data</th><th>Treinamentos</th><th>Participantes</th><th>Situação</th><th class="num">Total</th></tr></thead>
-<tbody>
-<?php foreach ($orders as $o): ?>
-<tr><td><a href="<?= e(url('/minha-conta/pedidos/' . $o['number'])) ?>"><?= e($o['number']) ?></a></td><td><?= e(date_br($o['created_at'])) ?></td><td><?= (int) $o['item_count'] ?></td><td><?= (int) $o['participants'] ?></td><td><?= partial('status', ['label' => Order::statusLabel($o['status']), 'tone' => Order::STATUS_TONE[$o['status']] ?? 'muted']) ?></td><td class="num"><?= money($o['total']) ?></td></tr>
+<ul class="order-list">
+<?php foreach ($orders as $o): $awaiting = (int) $o['awaiting']; ?>
+<li>
+<a class="order-row<?= $awaiting > 0 ? ' has-pending' : '' ?>" href="<?= e(url('/minha-conta/pedidos/' . $o['number'])) ?>">
+<span class="order-row-ic"><?= icon('receipt') ?></span>
+<span class="order-row-main">
+<strong>Pedido <?= e($o['number']) ?></strong>
+<small><?= e(date_br($o['created_at'])) ?> · <?= e(pluralize((int) $o['item_count'], 'treinamento', 'treinamentos')) ?> · <?= e(pluralize((int) $o['participants'], 'participante', 'participantes')) ?></small>
+<?php if ($awaiting > 0): ?><span class="order-row-alert"><?= icon('users', 'ic-sm') ?><?= e(pluralize($awaiting, 'vaga aguarda', 'vagas aguardam')) ?> o participante</span><?php endif; ?>
+</span>
+<?= partial('status', ['label' => Order::statusLabel($o['status']), 'tone' => Order::STATUS_TONE[$o['status']] ?? 'muted']) ?>
+<strong class="order-row-total"><?= money($o['total']) ?></strong>
+<?= icon('chevR', 'order-row-go') ?>
+</a>
+</li>
 <?php endforeach; ?>
-</tbody></table></div>
-</div>
+</ul>
 <?php endif; ?>
 <?= partial('account-shell-close') ?>
 </div>
