@@ -1260,6 +1260,32 @@ body.lock{overflow:hidden}
   .legal-doc{border:0;padding:0;max-width:none}
 }
 
+/* Páginas de erro (sem banco): fundo da marca, número grande, busca e atalhos no 404 */
+.err-page{background:var(--navy-deep)}
+.err{position:relative;isolation:isolate;overflow:hidden;min-height:100vh;display:grid;place-items:center;padding:56px 16px;color:#C9D4E5}
+.err::before{content:'';position:absolute;inset:0;z-index:-2;background:linear-gradient(180deg,rgba(7,26,51,.86),rgba(7,26,51,.94)),url('../img/hero-1600.jpg') center 35%/cover,var(--navy-deep)}
+.err::after{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:32px 32px}
+.err-in{width:min(640px,100%);text-align:center;display:flex;flex-direction:column;align-items:center}
+.err-code{font-family:var(--display);font-weight:800;font-size:clamp(96px,18vw,168px);line-height:.9;letter-spacing:-.05em;margin-top:40px;background:linear-gradient(180deg,#F0D58A,#D5A13B 55%,#9E6F1E);-webkit-background-clip:text;background-clip:text;color:transparent}
+.err .kicker{color:#E6C567;margin-top:18px}
+.err h1{color:#fff;font-size:clamp(30px,5vw,42px);letter-spacing:-.03em;margin-top:10px}
+.err-msg{font-size:17px;line-height:1.6;margin-top:12px;max-width:520px}
+.err-note{font-size:14.5px;color:#9FB3CF}
+.err-search{display:flex;gap:10px;width:100%;margin-top:28px}
+.err-search .search-field{flex:1;height:52px;border-color:transparent}
+.err-search .btn{height:52px}
+.err-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:20px}
+.err-actions .btn-line-w{border-color:rgba(255,255,255,.3)}
+.err-links{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 20px;margin-top:28px;padding-top:22px;border-top:1px solid rgba(255,255,255,.12);width:100%}
+.err-links a{color:#AFC0D8;font-size:14px;font-weight:600;text-decoration:none}
+.err-links a:hover{color:#fff}
+.err-debug{margin-top:28px;width:100%;text-align:left;white-space:pre-wrap;font-size:12px;color:#B42318;background:#FDECEC;padding:16px;border-radius:10px;overflow:auto}
+@media (max-width: 560px){
+  .err-search{flex-direction:column}
+  .err-search .search-field{flex:none}
+  .err-search .btn,.err-actions .btn{width:100%;justify-content:center}
+}
+
 /* Empresas: prévia de um pedido com vagas no topo e formulário de proposta */
 .intro-points{list-style:none;margin:22px 0 0;padding:0;display:flex;flex-direction:column;gap:10px}
 .intro-points li{display:flex;align-items:center;gap:10px;font-size:15.5px;color:#DCE5F2}

@@ -236,6 +236,11 @@ r = await ev(`const links = [...document.querySelectorAll('[data-toc-link]')];
   return { links: links.length, ok: links.every(a => document.getElementById(a.getAttribute('href').slice(1))), summary: document.querySelectorAll('.legal-summary li').length, data: document.querySelectorAll('.legal-data li').length };`);
 check('privacidade: índice das seções, resumo e dados em cartões', r.links === 6 && r.ok && r.summary === 3 && r.data === 5, r);
 
+// Página de erro (404): número grande, texto que não repete o título, busca e atalhos
+await go('/pagina-que-nao-existe');
+r = await ev(`return { code: document.querySelector('.err-code')?.textContent, h1: document.querySelector('.err h1')?.textContent, msg: document.querySelector('.err-msg')?.textContent, search: !!document.querySelector('.err-search input[name=q]'), links: document.querySelectorAll('.err-links a').length };`);
+check('erro 404: número, mensagem útil, busca e atalhos', r.code === '404' && r.h1 === 'Página não encontrada' && r.msg !== 'Página não encontrada.' && r.search && r.links === 4, r);
+
 // Sobre nós: página própria (antes era um trecho da home)
 await go('/sobre');
 r = await ev(`const n = [...document.querySelectorAll('.about-stats .stat-n')].map(e => e.textContent);
@@ -330,7 +335,7 @@ await sleep(1500);
 // (carrosséis, abas) e desenhos decorativos (aria-hidden, svg) podem passar.
 const overflow = [];
 for (const width of [360, 768, 960, 1024, 1180, 1280, 1440]) {
-  for (const path of ['/', '/cursos', '/cursos/nr-33-espacos-confinados-trabalhador-e-vigia', '/carrinho', '/login', '/cadastro', '/esqueci-senha', '/contato', '/sobre', '/empresas', '/categorias', '/nrs', '/termos-de-uso', '/politica-de-privacidade']) {
+  for (const path of ['/', '/cursos', '/cursos/nr-33-espacos-confinados-trabalhador-e-vigia', '/carrinho', '/login', '/cadastro', '/esqueci-senha', '/contato', '/sobre', '/empresas', '/categorias', '/nrs', '/termos-de-uso', '/politica-de-privacidade', '/pagina-que-nao-existe']) {
     await go(path, width);
     const o = await ev(outside);
     const at = await ev(`return location.pathname`);

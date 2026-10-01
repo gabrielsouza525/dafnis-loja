@@ -15,6 +15,15 @@ $titles = [
     503 => 'Loja indisponível no momento',
 ];
 $heading = $titles[$status] ?? 'Algo deu errado';
+// Texto padrão quando a mensagem só repete o título (ex.: "Página não encontrada.")
+$defaults = [
+    404 => 'O endereço pode ter mudado ou não existir mais. Procure o treinamento abaixo ou volte ao início.',
+    419 => 'Por segurança, a página ficou aberta tempo demais. Volte e tente de novo.',
+    503 => 'Estamos com uma instabilidade momentânea. Tente de novo em alguns minutos.',
+];
+if (trim($message, " .") === '' || trim($message, " .") === $heading) {
+    $message = $defaults[$status] ?? $message;
+}
 ?>
 <!doctype html>
 <html lang="pt-BR">
@@ -29,25 +38,39 @@ $heading = $titles[$status] ?? 'Algo deu errado';
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@700;800&amp;family=IBM+Plex+Sans:wght@400;600&amp;family=IBM+Plex+Mono:wght@600&amp;display=swap">
 <link rel="stylesheet" href="<?= e(asset('css/app.css')) ?>">
 </head>
-<body>
-<main class="wrap" style="min-height:100vh;display:grid;place-content:center;padding-top:48px;padding-bottom:48px">
-<a class="logo" href="<?= e(url('/')) ?>" aria-label="Dafnis — página inicial"><?= partial('logo') ?></a>
-<p class="kicker" style="margin-top:32px">Erro <?= (int) $status ?></p>
-<h1 style="font-size:40px;letter-spacing:-.03em;margin-top:10px"><?= e($heading) ?></h1>
-<p style="color:var(--muted);font-size:17px;margin-top:12px;max-width:520px"><?= e($message) ?></p>
-<?php if (static_demo() && $status === 404): ?><p style="color:var(--muted);font-size:15px;margin-top:8px;max-width:520px">Esta é uma prévia estática da loja: algumas telas (como filtros do painel e páginas secundárias) só existem na versão publicada.</p><?php endif; ?>
-<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:28px">
-<a class="btn btn-primary" href="<?= e(url('/')) ?>">Ir para o início</a>
-<?php if ($status !== 503): ?>
-<a class="btn btn-outline" href="<?= e(url('/cursos')) ?>">Ver cursos</a>
+<body class="err-page">
+<main class="err">
+<div class="err-in">
+<a class="logo inv" href="<?= e(url('/')) ?>" aria-label="Dafnis — página inicial"><?= partial('logo') ?></a>
+<div class="err-code" aria-hidden="true"><?= (int) $status ?></div>
+<p class="kicker">Erro <?= (int) $status ?></p>
+<h1><?= e($heading) ?></h1>
+<p class="err-msg"><?= e($message) ?></p>
+<?php if (static_demo() && $status === 404): ?><p class="err-msg err-note">Esta é uma prévia estática da loja: algumas telas (como filtros do painel e páginas secundárias) só existem na versão publicada.</p><?php endif; ?>
+<?php if ($status === 404): ?>
+<form class="err-search" action="<?= e(url('/cursos')) ?>" method="get" role="search">
+<label class="search-field"><?= icon('search') ?><span class="sr-only">Pesquisar treinamentos</span><input type="search" name="q" placeholder="Pesquise por curso, NR ou palavra-chave..." autocomplete="off" enterkeyhint="search"></label>
+<button class="btn btn-gold" type="submit">Pesquisar</button>
+</form>
+<?php endif; ?>
+<div class="err-actions">
+<a class="btn <?= $status === 404 ? 'btn-line-w' : 'btn-gold' ?>" href="<?= e(url('/')) ?>"><?= icon('home', 'ic-sm') ?>Ir para o início</a>
+<?php if ($status === 503 || $status === 419): ?>
+<a class="btn btn-line-w" href=""><?= icon('refresh', 'ic-sm') ?>Tentar de novo</a>
 <?php else: ?>
-<a class="btn btn-outline" href="">Tentar de novo</a>
+<a class="btn btn-line-w" href="<?= e(url('/cursos')) ?>"><?= icon('book', 'ic-sm') ?>Ver cursos</a>
 <?php endif; ?>
 </div>
+<?php if ($status === 404): ?>
+<nav class="err-links" aria-label="Páginas da loja">
+<a href="<?= e(url('/categorias')) ?>">Categorias</a><a href="<?= e(url('/nrs')) ?>">NRs</a><a href="<?= e(url('/empresas')) ?>">Para empresas</a><a href="<?= e(url('/contato')) ?>">Contato</a>
+</nav>
+<?php endif; ?>
 <?php if ($debug): ?>
-<pre style="margin-top:28px;white-space:pre-wrap;font-size:12px;color:#B42318;background:#FDECEC;padding:16px;border-radius:10px;overflow:auto;max-width:960px">[DEBUG — APP_DEBUG=true]
+<pre class="err-debug">[DEBUG — APP_DEBUG=true]
 <?= e(get_class($debug) . ': ' . $debug->getMessage() . "\n" . $debug->getFile() . ':' . $debug->getLine() . "\n\n" . $debug->getTraceAsString()) ?></pre>
 <?php endif; ?>
+</div>
 </main>
 </body>
 </html>
