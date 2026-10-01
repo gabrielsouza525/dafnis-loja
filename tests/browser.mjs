@@ -120,6 +120,13 @@ r = await ev(`const p = document.querySelector('#f-password'), c = document.quer
   const type = (a, b) => { p.value = a; c.value = b; p.dispatchEvent(new Event('input')); return [...document.querySelectorAll('[data-rule].ok')].map(l => l.dataset.rule).join(',') + '|' + (m.hidden ? '' : m.className); };
   return { steps: document.querySelectorAll('.auth-steps li').length, empty: type('', ''), letters: type('treina', ''), diff: type('treina2026', 'treina'), same: type('treina2026', 'treina2026') };`);
 check('cadastro: passos ao lado e requisitos da senha conferidos ao digitar', r.steps === 3 && r.empty === '|' && r.letters === 'letter|' && r.diff === 'len,letter,digit|pw-match no' && r.same === 'len,letter,digit|pw-match ok', r);
+// Recuperar senha: etapas no cartão; link inválido mostra "Link expirado" com o caminho de volta
+await go('/esqueci-senha');
+r = await ev(`return { steps: document.querySelectorAll('.recover-steps .step').length, current: document.querySelector('.recover-steps [aria-current]')?.textContent };`);
+check('recuperar senha: etapas no cartão, a primeira marcada', r.steps === 2 && r.current === '1Pedir o link', r);
+await go('/redefinir-senha/' + 'x'.repeat(43));
+r = await ev(`return { title: document.querySelector('.recover-head h2')?.textContent, links: [...document.querySelectorAll('.recover-actions a')].map(a => a.getAttribute('href')) };`);
+check('link de nova senha inválido: "Link expirado" com pedir de novo e voltar ao login', r.title === 'Link expirado' && r.links.length === 2 && r.links[0].endsWith('/esqueci-senha') && r.links[1].endsWith('/login'), r);
 await go('/login?volta=/checkout');
 r = await ev(`${wait} document.querySelector('#f-email').value = 'ana@example.com'; document.querySelector('#f-password').value = 'dafnis123'; document.querySelector('.auth-form').submit(); return true;`);
 await sleep(1500);

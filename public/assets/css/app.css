@@ -789,6 +789,25 @@ body.lock{overflow:hidden}
 .pw-match.ok{color:var(--green-dk)}
 .pw-match.no{color:#9A6B12}
 [data-theme="dark"] .pw-match.no{color:#E6C567}
+/* Recuperar e redefinir senha: etapas no alto do cartão, ícone e dicas */
+.recover-steps{margin:0 0 22px;padding-bottom:18px;border-bottom:1px solid var(--line)}
+.recover-steps .step{font-size:13px}
+.recover-steps .step:not(:first-child)::before{width:24px;margin:0 10px}
+.recover-steps .step-n{width:24px;height:24px;font-size:11px}
+.recover-head{display:flex;gap:14px;align-items:flex-start}
+.recover-ic{width:48px;height:48px;border-radius:13px;background:var(--navy);color:#E6C567;display:grid;place-items:center;flex-shrink:0}
+.recover-ic.is-ok{background:var(--green-tint);color:var(--green-dk)}
+.recover-ic.is-warn{background:#FBF1DA;color:#9A6B12}
+[data-theme="dark"] .recover-ic.is-warn{background:rgba(213,161,59,.16);color:#E6C567}
+.recover-head h2{font-size:24px}
+.recover-head p{color:var(--muted);margin-top:4px;font-size:14.5px}
+.recover-tips{list-style:none;margin:20px 0 0;padding:16px 18px;border-radius:12px;background:var(--gray);display:flex;flex-direction:column;gap:10px;font-size:14px;color:var(--text)}
+.recover-tips li{display:flex;gap:10px;align-items:flex-start}
+.recover-tips .ic{width:16px;height:16px;color:var(--blue);flex-shrink:0;margin-top:2px}
+.recover-tips a{font-weight:600}
+.recover-actions{display:flex;flex-direction:column;gap:10px;margin-top:22px}
+.recover-note{display:flex;gap:8px;align-items:flex-start;margin:0;font-size:13px;line-height:1.5;color:var(--muted)}
+.recover-note .ic{flex-shrink:0;margin-top:2px}
 .auth-solo{display:grid;place-items:center;min-height:calc(100vh - 73px);padding:56px 0;background:var(--navy-deep)}
 .auth-solo > .wrap{width:100%}
 .auth-solo .auth-card{box-shadow:0 24px 60px rgba(0,0,0,.35)}

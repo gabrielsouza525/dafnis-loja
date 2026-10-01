@@ -229,5 +229,27 @@ $admin->request('GET', '/admin/cursos/' . $m[1] . '/editar');
 $admin->request('POST', '/admin/cursos/' . $m[1] . '/excluir');
 check('excluir curso sem vendas', $guest->request('GET', '/cursos/curso-criado-no-teste')['status'] === 404);
 
+// 7. Recuperar senha (com MAIL_DRIVER=log o e-mail fica em storage/mail) ------
+echo "\nRecuperar senha\n";
+$rc = new Client($base);
+$rc->request('GET', '/esqueci-senha');
+$r = $rc->request('POST', '/esqueci-senha', ['email' => $email]);
+check('pedido de nova senha', $r['status'] === 302 && str_contains($r['location'], 'enviado=1'));
+$mails = glob(dirname(__DIR__) . '/storage/mail/*.html') ?: [];
+rsort($mails); // o nome começa com data e hora
+$token = null;
+foreach (array_slice($mails, 0, 5) as $file) {
+    if (preg_match('#/redefinir-senha/([A-Za-z0-9_-]{43})#', (string) file_get_contents($file), $m)) {
+        $token = $m[1];
+        break;
+    }
+}
+$page = $token ? $rc->request('GET', '/redefinir-senha/' . $token)['body'] : '';
+check('o link do e-mail abre a tela de nova senha, com os requisitos', $token !== null && str_contains($page, 'Criar nova senha') && str_contains($page, 'data-pw-rules'), $token ? '' : 'link não encontrado em storage/mail');
+$r = $rc->request('POST', '/redefinir-senha', ['token' => (string) $token, 'password' => 'novaSenha2026', 'password_confirmation' => 'novaSenha2026']);
+check('salvar a nova senha já entra na conta', $r['status'] === 302 && $rc->request('GET', '/minha-conta')['status'] === 200, $r['location'] ?? '');
+check('o link usado não serve de novo', str_contains($rc->request('GET', '/redefinir-senha/' . $token)['body'], 'Link expirado'));
+check('entra com a nova senha', (new Client($base))->login($email, 'novaSenha2026'));
+
 echo "\n$checks verificações, $failures falha(s).\n";
 exit($failures ? 1 : 0);
