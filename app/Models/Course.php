@@ -90,19 +90,27 @@ final class Course
     }
 
     /** Índice de NRs com a quantidade de treinamentos (menu NRs, atalhos e filtro). */
+    /** Uma linha por NR com cursos: quantidade, quantos são de cada tipo (inicial, periódico, simulador) e o menor preço. */
     public static function nrIndex(): array
     {
-        $names = self::NR_NAMES;
-        $counts = [];
+        $byNr = [];
         foreach (self::allActive() as $c) {
-            if ($c['nr_number']) {
-                $counts[$c['nr_number']] = ($counts[$c['nr_number']] ?? 0) + 1;
+            if (!$c['nr_number']) {
+                continue;
             }
+            $s = &$byNr[$c['nr_number']];
+            $s ??= ['count' => 0, 'inicial' => 0, 'periodico' => 0, 'simulador' => 0, 'from_price' => null];
+            $s['count']++;
+            $s[$c['is_simulator'] ? 'simulador' : ($c['training_type'] === 'periodico' ? 'periodico' : 'inicial')]++;
+            if ($c['has_price'] && ($s['from_price'] === null || $c['final_price'] < $s['from_price'])) {
+                $s['from_price'] = (float) $c['final_price'];
+            }
+            unset($s);
         }
-        ksort($counts);
+        ksort($byNr);
         $out = [];
-        foreach ($counts as $nr => $count) {
-            $out[] = ['nr' => $nr, 'code' => 'NR ' . $nr, 'name' => $names[$nr] ?? '', 'count' => $count, 'url' => url('/nr/' . $nr)];
+        foreach ($byNr as $nr => $s) {
+            $out[] = ['nr' => $nr, 'code' => 'NR ' . $nr, 'name' => self::NR_NAMES[$nr] ?? '', 'url' => url('/nr/' . $nr)] + $s;
         }
         return $out;
     }

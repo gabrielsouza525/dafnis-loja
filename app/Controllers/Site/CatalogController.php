@@ -86,27 +86,12 @@ final class CatalogController extends Controller
 
     public function nrs(): Response
     {
-        // Por NR: quantos cursos de cada tipo e o menor preço
-        $stats = [];
-        foreach (Course::allActive() as $c) {
-            if (!$c['nr_number']) {
-                continue;
-            }
-            $s = &$stats[$c['nr_number']];
-            $s ??= ['inicial' => 0, 'periodico' => 0, 'simulador' => 0, 'from_price' => null];
-            $s[$c['is_simulator'] ? 'simulador' : ($c['training_type'] === 'periodico' ? 'periodico' : 'inicial')]++;
-            if ($c['has_price'] && ($s['from_price'] === null || $c['final_price'] < $s['from_price'])) {
-                $s['from_price'] = (float) $c['final_price'];
-            }
-            unset($s);
-        }
-        $cards = array_map(static fn ($m) => $m + $stats[$m['nr']], Course::nrIndex());
         return $this->view('site/nrs', [
             'nav' => 'nrs',
             'title' => 'Treinamentos por Norma Regulamentadora',
             'description' => 'Encontre os treinamentos por NR: NR 1, NR 5, NR 10, NR 11, NR 12, NR 20, NR 33 e outras normas regulamentadoras.',
             'canonical' => '/nrs',
-            'nrIndex' => $cards,
+            'nrIndex' => Course::nrIndex(),
             'categories' => array_values(array_filter(Category::active(), static fn ($k) => $k['course_count'] > 0)),
             'jsonLd' => [Seo::breadcrumbs([['Início', '/'], ['NRs', '/nrs']])],
         ]);

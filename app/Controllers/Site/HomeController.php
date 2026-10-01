@@ -12,6 +12,15 @@ use App\Services\Settings;
 
 final class HomeController extends Controller
 {
+    /** As NRs com mais treinamentos, em ordem de número. */
+    private static function topNrs(array $nrIndex, int $limit): array
+    {
+        usort($nrIndex, static fn ($a, $b) => [$b['count'], $a['nr']] <=> [$a['count'], $b['nr']]);
+        $top = array_slice($nrIndex, 0, $limit);
+        usort($top, static fn ($a, $b) => $a['nr'] <=> $b['nr']);
+        return $top;
+    }
+
     public function index(): Response
     {
         $all = Course::allActive();
@@ -33,6 +42,7 @@ final class HomeController extends Controller
             'featured' => Course::featured(8),
             'bestsellers' => Course::bestsellers(4),
             'nrIndex' => $nrIndex,
+            'topNrs' => self::topNrs($nrIndex, 8),
             'heroCourse' => Course::findActiveBySlug('nr-33-espacos-confinados-trabalhador-e-vigia'),
             'certCourse' => Course::findActiveBySlug('nr-10-seguranca-em-instalacoes-e-servicos-com-eletricidade-basico'),
             'stats' => array_merge([

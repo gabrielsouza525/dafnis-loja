@@ -1,7 +1,7 @@
 <?php
 /**
  * @var int $total @var array $categories @var array $featured @var array $bestsellers @var array $nrIndex
- * @var array|null $heroCourse @var array|null $certCourse @var array $stats @var ?string $about @var array $faq
+ * @var array $topNrs @var array|null $heroCourse @var array|null $certCourse @var array $stats @var ?string $about @var array $faq
  */
 // Foto de fundo do topo: public/assets/img/hero-{largura}.jpg (sem arquivo, fica o fundo azul com grade).
 // Foto atual: Rafael Juárez, Unsplash (hTUdXgbhd3o), licença Unsplash. Para trocar, substitua os 3 arquivos.
@@ -55,7 +55,7 @@ foreach ([960, 1600, 2400] as $w) {
 <div class="wrap">
 <div class="sec-head reveal">
 <div><div class="kicker">Categorias</div><h2 id="cat-titulo">Encontre o treinamento ideal</h2><p>Navegue pelas áreas de capacitação e encontre o conteúdo certo para cada função.</p></div>
-<a class="text-link" href="<?= e(url('/cursos')) ?>">Ver catálogo completo<?= icon('arrowR', 'ic-sm') ?></a>
+<a class="text-link" href="<?= e(url('/categorias')) ?>">Ver todas as categorias<?= icon('arrowR', 'ic-sm') ?></a>
 </div>
 <div class="cats reveal">
 <?php foreach ($categories as $k): ?>
@@ -89,15 +89,11 @@ foreach ([960, 1600, 2400] as $w) {
 <section class="sec" id="nrs" aria-labelledby="nrs-titulo">
 <div class="wrap">
 <div class="sec-head reveal">
-<div><div class="kicker">Normas Regulamentadoras</div><h2 id="nrs-titulo">NRs em destaque</h2><p>Escolha a norma e veja todos os treinamentos relacionados: formação inicial, reciclagem e simuladores.</p></div>
-<a class="text-link" href="<?= e(url('/nrs')) ?>">Ver todas as NRs<?= icon('arrowR', 'ic-sm') ?></a>
+<div><div class="kicker">Normas Regulamentadoras</div><h2 id="nrs-titulo">NRs em destaque</h2><p>As normas com mais treinamentos no catálogo: formação inicial, reciclagem e simuladores.</p></div>
+<a class="text-link" href="<?= e(url('/nrs')) ?>">Ver todas as <?= count($nrIndex) ?> NRs<?= icon('arrowR', 'ic-sm') ?></a>
 </div>
-<div class="nr-board reveal">
-<div class="mega-grid">
-<?php foreach ($nrIndex as $m): ?>
-<a class="mega-item" href="<?= e($m['url']) ?>"><span class="mega-code"><?= e($m['code']) ?></span><span class="mega-name"><?= e($m['name']) ?><small><?= e(pluralize($m['count'], 'treinamento', 'treinamentos')) ?></small></span></a>
-<?php endforeach; ?>
-</div>
+<div class="nrc-grid is-compact reveal">
+<?php foreach ($topNrs as $m): ?><?= partial('nr-card', ['m' => $m, 'heading' => 'h3']) ?><?php endforeach; ?>
 </div>
 </div>
 </section>
@@ -158,9 +154,17 @@ foreach ([960, 1600, 2400] as $w) {
 </div>
 <div class="cert-stage reveal" aria-hidden="true">
 <div class="grid-bg"></div>
-<div class="hv-card">
-<div class="hv-row"><span class="hv-badge"><?= icon('award') ?></span><div><div class="hv-title">Certificado de conclusão</div><div class="hv-sub">[Nome do participante]</div></div></div>
-<div class="hv-foot"><span><strong><?= e($heroCourse['code_label'] ?? 'NR 33') ?></strong> · <?= e($heroCourse['hours_label'] ?? '16 h') ?></span><span>Emitido em [data]</span></div>
+<div class="cert-doc">
+<div class="cert-doc-top"><span class="cert-doc-brand"><img src="<?= e(asset('img/logo-mark.png')) ?>" alt="" width="101" height="111">Dafnis Treinamentos</span><span class="cert-doc-seal"><?= icon('award') ?></span></div>
+<div class="cert-doc-kicker">Certificado de conclusão</div>
+<div class="cert-doc-name">[Nome do participante]</div>
+<p class="cert-doc-text">concluiu o treinamento</p>
+<div class="cert-doc-course"><?= e(($heroCourse['code_label'] ?? 'NR 33') . ' — ' . ($heroCourse['title'] ?? 'Espaços Confinados')) ?></div>
+<div class="cert-doc-foot">
+<div><small>Carga horária</small><strong><?= e($heroCourse['hours_label'] ?? '16 h') ?></strong></div>
+<div><small>Emissão</small><strong>[data]</strong></div>
+<div class="cert-doc-sign"><span></span><small>Assinatura</small></div>
+</div>
 </div>
 <div class="hv-stripe"></div>
 </div>
@@ -197,13 +201,19 @@ foreach ([960, 1600, 2400] as $w) {
 </section>
 <?php endif; ?>
 
-<section class="cta-band" aria-labelledby="cta-titulo">
-<div class="grid-bg"></div>
-<div class="wrap cta-in">
-<div><h2 id="cta-titulo">Pronto para capacitar você e sua equipe?</h2><p>Escolha o treinamento, defina os participantes e finalize em poucos passos.</p></div>
-<div class="cta-ctas">
+<section class="sec cta-sec" aria-labelledby="cta-titulo">
+<div class="wrap">
+<div class="cta-card reveal">
+<div class="grid-bg" aria-hidden="true"></div>
+<div class="cta-card-text">
+<div class="kicker">Comece agora</div>
+<h2 id="cta-titulo">Pronto para capacitar você e sua equipe?</h2>
+<p>Escolha o treinamento, defina os participantes e finalize em poucos passos.</p>
+</div>
+<div class="cta-card-side">
 <a class="btn btn-gold btn-lg" href="<?= e(url('/cursos')) ?>">Explorar cursos<?= icon('arrowR') ?></a>
-<a class="btn btn-line-w btn-lg" href="<?= e(url('/contato', ['assunto' => 'empresas'])) ?>">Atendimento para empresas</a>
+<a class="btn btn-line-w btn-lg" href="<?= e(url('/empresas')) ?>">Atendimento para empresas</a>
+</div>
 </div>
 </div>
 </section>

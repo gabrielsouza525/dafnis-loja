@@ -1,7 +1,7 @@
 <?php
 /**
  * NRs: um cartão por norma, com os tipos de treinamento e o menor preço; filtro por número ou nome ao digitar.
- * @var array $nrIndex nrIndex + inicial, periodico, simulador, from_price @var array $categories
+ * @var array $nrIndex @var array $categories
  */
 $courses = array_sum(array_column($nrIndex, 'count'));
 ?>
@@ -23,19 +23,7 @@ $courses = array_sum(array_column($nrIndex, 'count'));
 <p class="nr-empty" data-nr-empty hidden><?= icon('info', 'ic-sm') ?><span>Nenhuma NR encontrada com esse filtro.</span> <a href="<?= e(url('/cursos')) ?>" data-nr-search-link>Pesquisar no catálogo</a></p>
 <div class="nrc-grid">
 <?php foreach ($nrIndex as $m): ?>
-<a class="nrc" href="<?= e($m['url']) ?>" data-nr-item data-nr="<?= (int) $m['nr'] ?>" data-name="<?= e(normalize_text($m['name'])) ?>">
-<div class="nrc-top">
-<span class="nrc-badge"><small>NR</small><?= (int) $m['nr'] ?></span>
-<span class="nrc-count"><?= e(pluralize($m['count'], 'treinamento', 'treinamentos')) ?></span>
-</div>
-<h2 class="nrc-name"><?= e($m['name']) ?></h2>
-<div class="nrc-tags">
-<?php if ($m['inicial']): ?><span>Formação inicial<b><?= $m['inicial'] ?></b></span><?php endif; ?>
-<?php if ($m['periodico']): ?><span>Reciclagem<b><?= $m['periodico'] ?></b></span><?php endif; ?>
-<?php if ($m['simulador']): ?><span>Simulador<b><?= $m['simulador'] ?></b></span><?php endif; ?>
-</div>
-<div class="nrc-foot"><span><?php if ($m['from_price'] !== null): ?>a partir de <strong><?= e(money($m['from_price'])) ?></strong><?php else: ?>Sob consulta<?php endif; ?></span><?= icon('arrowR', 'ic-sm') ?></div>
-</a>
+<?= partial('nr-card', ['m' => $m]) ?>
 <?php endforeach; ?>
 </div>
 <p class="demo-note"><?= icon('info') ?><span>Não encontrou a norma que procura? <a href="<?= e(url('/contato', ['assunto' => 'curso'])) ?>">Fale com a nossa equipe</a>.</span></p>

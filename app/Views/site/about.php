@@ -110,9 +110,9 @@ $steps = [
 
 <section class="sec about-end" aria-labelledby="fale-titulo">
 <div class="wrap">
-<div class="about-cta reveal">
+<div class="cta-card reveal">
 <div class="grid-bg" aria-hidden="true"></div>
-<div class="about-cta-text">
+<div class="cta-card-text">
 <div class="kicker">Fale com a gente</div>
 <h2 id="fale-titulo">Vamos capacitar a sua equipe?</h2>
 <p>Conte quais treinamentos você procura e quantas pessoas vão participar. A nossa equipe responde pelo e-mail ou telefone que você informar.</p>
@@ -123,7 +123,7 @@ $steps = [
 </ul>
 <?php endif; ?>
 </div>
-<div class="about-cta-side">
+<div class="cta-card-side">
 <a class="btn btn-gold btn-lg" href="<?= e(url('/empresas')) ?>#proposta">Solicitar proposta<?= icon('arrowR') ?></a>
 <a class="btn btn-line-w btn-lg" href="<?= e(url('/contato')) ?>">Enviar uma mensagem</a>
 <?php if ($whatsapp || $phone || $email): ?>
