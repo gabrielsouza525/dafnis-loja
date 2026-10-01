@@ -1,4 +1,5 @@
 <?php /** @var array $enrollment @var string|null $accessUrl @var string $accountUrl */ ?>
+<?= App\Core\View::file('emails/title', ['kicker' => 'Acesso liberado', 'title' => 'Seu treinamento já está disponível', 'color' => '#174BB0']) ?>
 <p style="margin:0 0 12px">Olá, <?= e(first_name((string) $enrollment['participant_name'])) ?>!</p>
 <p style="margin:0 0 12px">Seu acesso ao treinamento <strong><?= e(($enrollment['course_code'] ? $enrollment['course_code'] . ' — ' : '') . $enrollment['course_title']) ?></strong> foi liberado.</p>
 <?php if ($accessUrl): ?>

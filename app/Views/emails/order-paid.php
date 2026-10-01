@@ -1,4 +1,5 @@
 <?php /** @var array $order @var array $items @var int $awaiting @var string $url */ ?>
+<?= App\Core\View::file('emails/title', ['kicker' => 'Pagamento confirmado', 'title' => 'Tudo certo com o pedido ' . $order['number'], 'color' => '#0F6A32']) ?>
 <p style="margin:0 0 12px">Olá, <?= e(first_name($order['buyer_name'])) ?>.</p>
 <p style="margin:0 0 12px">O pagamento do pedido <strong><?= e($order['number']) ?></strong> foi confirmado. Obrigado!</p>
 <?= App\Core\View::file('emails/items', ['order' => $order, 'items' => $items]) ?>

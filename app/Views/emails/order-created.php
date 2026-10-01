@@ -1,4 +1,5 @@
 <?php /** @var array $order @var array $items @var bool $online @var string $url */ ?>
+<?= App\Core\View::file('emails/title', ['kicker' => 'Pedido recebido', 'title' => 'Pedido ' . $order['number'] . ' aguardando pagamento', 'color' => '#7F5A10']) ?>
 <p style="margin:0 0 12px">Olá, <?= e(first_name($order['buyer_name'])) ?>.</p>
 <p style="margin:0 0 12px">Recebemos o seu pedido <strong><?= e($order['number']) ?></strong>. Ele está <strong>aguardando pagamento</strong>.</p>
 <?= App\Core\View::file('emails/items', ['order' => $order, 'items' => $items]) ?>

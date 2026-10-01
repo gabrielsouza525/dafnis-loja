@@ -1,4 +1,5 @@
 <?php /** @var array $enrollment @var string $url */ ?>
+<?= App\Core\View::file('emails/title', ['kicker' => 'Treinamento concluído', 'title' => 'Seu certificado está disponível', 'color' => '#7F5A10']) ?>
 <p style="margin:0 0 12px">Parabéns, <?= e(first_name((string) $enrollment['participant_name'])) ?>!</p>
 <p style="margin:0 0 12px">O certificado do treinamento <strong><?= e(($enrollment['course_code'] ? $enrollment['course_code'] . ' — ' : '') . $enrollment['course_title']) ?></strong> está disponível.</p>
 <?= App\Core\View::file('emails/button', ['url' => $url, 'label' => 'Baixar certificado', 'color' => '#15803D']) ?>

@@ -31,7 +31,8 @@ $contact = Settings::get('business.whatsapp') ?: Settings::get('business.phone')
 </td></tr>
 <tr><td style="padding:18px 28px;background:#F5F7FA;border-top:1px solid #E2E7EE;font-size:12px;color:#566074;line-height:1.5">
 <?= e($name) ?><?= $contact ? ' · ' . e(phone_display($contact)) : '' ?><br>
-Você recebeu este e-mail por causa de uma conta, um pedido ou um treinamento na loja <?= e(absolute_url('/')) ?>.
+Você recebeu este e-mail por causa de uma conta, um pedido ou um treinamento na loja <?= e(absolute_url('/')) ?>.<br>
+Dúvidas? <a href="<?= e(absolute_url('/contato')) ?>" style="color:#174BB0">Fale com a nossa equipe</a>.
 </td></tr>
 </table>
 </td></tr>
