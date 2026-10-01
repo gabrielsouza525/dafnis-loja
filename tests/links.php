@@ -60,11 +60,17 @@ echo "Rastreando links em $base\n";
 crawl(new Client($base), 'visitante', ['/']);
 
 $client = new Client($base);
-$client->login('ana@example.com', 'dafnis123');
+if (!$client->login('ana@example.com', 'dafnis123')) {
+    fwrite(STDERR, "Login de cliente falhou: os links das páginas internas não seriam conferidos.\n");
+    exit(1);
+}
 crawl($client, 'cliente', ['/minha-conta']);
 
 $admin = new Client($base);
-$admin->login('admin@dafnis.test', 'dafnis123');
+if (!$admin->login('admin@dafnis.test', 'dafnis123', DEMO_ADMIN_TOTP)) {
+    fwrite(STDERR, "Login de equipe falhou: os links das páginas internas não seriam conferidos.\n");
+    exit(1);
+}
 crawl($admin, 'admin', ['/admin'], 600);
 
 echo "\n$visited páginas, $failures link(s) quebrado(s).\n";

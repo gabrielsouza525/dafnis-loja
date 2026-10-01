@@ -1,5 +1,5 @@
 <?php
-/** @var string[] $codes @var string $reason enabled|regenerated */
+/** @var string[] $codes @var string $reason enabled|regenerated @var bool $toPanel equipe volta ao painel */
 $crumbs = [['Início', '/'], ['Minha conta', '/minha-conta'], ['Meus dados', '/minha-conta/dados'], ['Códigos de recuperação', null]];
 $text = App\Services\TwoFactor::issuer() . " — códigos de recuperação\n" . $user['email'] . "\n\n" . implode("\n", $codes) . "\n\nCada código vale uma vez.\n";
 ?>
@@ -19,7 +19,11 @@ $text = App\Services\TwoFactor::issuer() . " — códigos de recuperação\n" . 
 <button class="btn btn-outline btn-sm" type="button" data-copy="tf-codes" data-copied="Códigos copiados." hidden><?= icon('clipboard', 'ic-sm') ?>Copiar</button>
 <button class="btn btn-outline btn-sm" type="button" data-download-text="<?= e($text) ?>" data-filename="codigos-de-recuperacao-dafnis.txt" hidden><?= icon('download', 'ic-sm') ?>Baixar .txt</button>
 <button class="btn btn-outline btn-sm" type="button" data-print hidden><?= icon('file', 'ic-sm') ?>Imprimir</button>
+<?php if ($toPanel): ?>
+<a class="btn btn-primary btn-sm tf-done" href="<?= e(url('/admin')) ?>">Já guardei, ir para o painel<?= icon('arrowR', 'ic-sm') ?></a>
+<?php else: ?>
 <a class="btn btn-primary btn-sm tf-done" href="<?= e(url('/minha-conta/dados')) ?>#duas-etapas">Já guardei os códigos<?= icon('arrowR', 'ic-sm') ?></a>
+<?php endif; ?>
 </div>
 </div>
 <?= partial('account-shell-close') ?>

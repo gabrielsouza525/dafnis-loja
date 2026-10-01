@@ -13,6 +13,8 @@ use App\Services\Orders;
 final class DemoSeeder
 {
     public const PASSWORD = 'dafnis123';
+    /** Chave da verificação em duas etapas da equipe de exemplo (só demonstração; os testes geram o código com ela). */
+    public const ADMIN_TOTP_SECRET = 'DAFNISDEMOADMIN2FAKEY234567DAFNI';
 
     public static function run(?callable $out = null): void
     {
@@ -23,6 +25,12 @@ final class DemoSeeder
         $ana = self::user('Ana Souza', 'ana@example.com', 'student', $hash, '18900000002', '52998224725');
         $rh = self::user('Carlos Lima', 'rh@example.com', 'student', $hash, '18900000003');
         $out('Usuários de teste: admin@dafnis.test, ana@example.com, rh@example.com (senha ' . self::PASSWORD . ').');
+        Database::update('users', [
+            'two_factor_secret' => \App\Services\Crypto::encrypt(self::ADMIN_TOTP_SECRET),
+            'two_factor_enabled_at' => date('Y-m-d H:i:s'),
+            'two_factor_recovery' => json_encode([]),
+        ], ['email' => 'admin@dafnis.test']);
+        $out('Equipe de exemplo com verificação em duas etapas: chave ' . trim(chunk_split(self::ADMIN_TOTP_SECRET, 4, ' ')) . ' (adicione no aplicativo autenticador).');
 
         $nr10 = self::course('nr-10-seguranca-em-instalacoes-e-servicos-com-eletricidade-basico');
         $nr33 = self::course('nr-33-espacos-confinados-trabalhador-e-vigia');

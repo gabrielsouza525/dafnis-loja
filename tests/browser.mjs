@@ -431,6 +431,12 @@ await sleep(1500);
 await go('/login');
 await ev(`document.querySelector('#f-email').value = 'admin@dafnis.test'; document.querySelector('#f-password').value = 'dafnis123'; document.querySelector('.auth-form').submit(); return 1`);
 await sleep(1500);
+// A verificação em duas etapas é obrigatória para a equipe: a de exemplo usa a chave do DemoSeeder
+r = await ev(`return location.pathname`);
+check('equipe: depois da senha, pede o código do celular', r.endsWith('/login/verificacao'), r);
+await ev(`const dt = new DataTransfer(); dt.setData('text', '${totp('DAFNISDEMOADMIN2FAKEY234567DAFNI')}');
+  document.querySelector('.otp-cell').dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true })); return 1`);
+await sleep(1800);
 const admOver = [];
 for (const width of [390, 1024, 1440]) {
   for (const path of ['/admin', '/admin/pedidos', '/admin/pedidos/1', '/admin/matriculas', '/admin/matriculas/1', '/admin/cursos', '/admin/configuracoes']) {

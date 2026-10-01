@@ -23,6 +23,12 @@ final class TwoFactor
         return !empty($user['two_factor_enabled_at']);
     }
 
+    /** Obrigatória para a equipe (perfil admin): o painel só abre com ela ativa, e não dá para desativar a própria. */
+    public static function required(?array $user): bool
+    {
+        return ($user['role'] ?? null) === 'admin';
+    }
+
     public static function issuer(): string
     {
         return (string) env('APP_NAME', 'Dafnis Treinamentos');

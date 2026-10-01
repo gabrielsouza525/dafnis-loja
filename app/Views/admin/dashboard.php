@@ -6,9 +6,6 @@ use App\Models\Order;
 <div class="adm-head"><div><h1>Visão geral</h1><p><?= e(date_long(date('Y-m-d'))) ?></p></div>
 <div class="adm-actions"><a class="btn btn-navy btn-sm" href="<?= e(url('/admin/cursos/novo')) ?>"><?= icon('plus', 'ic-sm') ?>Novo curso</a></div></div>
 
-<?php if (!App\Services\TwoFactor::enabled(App\Services\Auth::user())): ?>
-<div class="note-box" style="margin:0 0 22px"><?= icon('shield') ?><span><strong>Proteja o painel.</strong> Ative a verificação em duas etapas na sua conta: além da senha, o login pede um código do celular. <a href="<?= e(url('/minha-conta/duas-etapas')) ?>">Ativar agora</a></span></div>
-<?php endif; ?>
 <?php if (!$online): ?>
 <div class="note-box" style="margin:0 0 22px"><?= icon('info') ?><span><strong>Pagamento online desativado.</strong> Os pedidos entram como "aguardando pagamento" e a baixa é feita aqui, em Pedidos. Para cobrar pelo Mercado Pago, preencha <code>MP_ACCESS_TOKEN</code> no arquivo .env (veja o README).</span></div>
 <?php endif; ?>

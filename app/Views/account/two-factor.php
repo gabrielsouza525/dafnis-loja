@@ -1,10 +1,11 @@
 <?php
-/** @var string $secret @var string $qr @var string $issuer @var array $user */
+/** @var string $secret @var string $qr @var string $issuer @var array $user @var bool $required equipe */
 $crumbs = [['Início', '/'], ['Minha conta', '/minha-conta'], ['Meus dados', '/minha-conta/dados'], ['Verificação em duas etapas', null]];
 ?>
 <div class="screen">
 <?= partial('account-shell-open', get_defined_vars()) ?>
 <div class="acc-head"><div><h1>Ativar a verificação em duas etapas</h1><p>Além da senha, pedimos um código do seu celular para entrar na conta.</p></div></div>
+<?php if ($required): ?><div class="note-box" style="margin:0 0 22px"><?= icon('shield') ?><span><strong>Obrigatória para a equipe.</strong> O painel só abre depois de ativar. Leva um minuto.</span></div><?php endif; ?>
 <div class="tf-setup">
 <form class="form-card" method="post" action="<?= e(url('/minha-conta/duas-etapas')) ?>" data-loading-form>
 <?= csrf_field() ?>
@@ -45,7 +46,11 @@ $crumbs = [['Início', '/'], ['Minha conta', '/minha-conta'], ['Meus dados', '/m
 <div class="help">
 <h3>Por que ativar?</h3>
 <p>Mesmo que alguém descubra a sua senha, não consegue entrar sem o código do seu celular.</p>
+<?php if ($required): ?>
+<a class="text-link" href="<?= e(url('/')) ?>"><?= icon('arrowL', 'ic-sm') ?>Voltar para a loja</a>
+<?php else: ?>
 <a class="text-link" href="<?= e(url('/minha-conta/dados')) ?>"><?= icon('arrowL', 'ic-sm') ?>Agora não</a>
+<?php endif; ?>
 </div>
 </aside>
 </div>

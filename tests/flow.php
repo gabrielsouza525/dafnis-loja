@@ -135,7 +135,9 @@ check('rota de pagamento sem gateway volta para o pedido', str_contains($guest->
 // 4. Admin confirma pagamento ------------------------------------------
 echo "\nPainel: pagamento, liberação e certificado\n";
 $admin = new Client($base);
-check('login do admin', $admin->login('admin@dafnis.test', 'dafnis123'));
+$noCode = new Client($base);
+check('equipe: só a senha não abre o painel', !$noCode->login('admin@dafnis.test', 'dafnis123') && $noCode->request('GET', '/admin')['status'] === 302);
+check('login do admin (senha e código do aplicativo)', $admin->login('admin@dafnis.test', 'dafnis123', DEMO_ADMIN_TOTP));
 $list = $admin->request('GET', '/admin/pedidos?q=' . $number)['body'];
 preg_match('#/admin/pedidos/(\d+)"#', $list, $m);
 $orderId = (int) ($m[1] ?? 0);
@@ -343,7 +345,29 @@ check('painel mostra a verificação ativada no usuário', str_contains($userPag
 $admin->request('POST', '/admin/usuarios/' . $userId . '/duas-etapas/desativar');
 $tf->request('POST', '/sair');
 check('depois que a equipe desativa, entra só com a senha', $tf->login($email, $tfPass));
-check('o painel lembra a equipe de ativar a verificação', str_contains($admin->request('GET', '/admin')['body'], 'Proteja o painel'));
+
+// Equipe: a verificação é obrigatória (o painel só abre com ela) e não dá para desativar a própria
+$admin->request('GET', '/admin/usuarios/' . $userId);
+$admin->request('POST', '/admin/usuarios/' . $userId, ['role' => 'admin', 'is_active' => '1']);
+$r = $tf->request('GET', '/admin');
+check('equipe sem a verificação é levada à ativação', $r['status'] === 302 && str_ends_with($r['location'], '/minha-conta/duas-etapas'), $r['location']);
+$setup = $tf->request('GET', '/minha-conta/duas-etapas');
+$secret = preg_match('/id="tf-secret" data-copy-text="([A-Z2-7]{32})"/', $setup['body'], $m) ? $m[1] : '';
+check('a ativação avisa que é obrigatória para a equipe', str_contains($setup['body'], 'Obrigatória para a equipe'));
+$tf->request('POST', '/minha-conta/duas-etapas', ['code' => $totp($secret)]);
+check('depois de ativar, a tela dos códigos leva ao painel', str_contains($tf->request('GET', '/minha-conta/duas-etapas/codigos')['body'], 'ir para o painel'));
+check('com a verificação ativa, o painel abre', $tf->request('GET', '/admin')['status'] === 200);
+$codesPage = $tf->request('GET', '/minha-conta/duas-etapas/codigos')['body'];
+$profile = $tf->request('GET', '/minha-conta/dados')['body'];
+check('Meus dados da equipe não oferece desativar', !str_contains($profile, '/duas-etapas/desativar') && str_contains($profile, 'não pode ser desativada'));
+$teamRecovery = preg_match_all('#<code>([a-z2-9]{5}-[a-z2-9]{5})</code>#', $codesPage, $m) ? $m[1] : [];
+$tf->request('POST', '/minha-conta/duas-etapas/desativar', ['_scope' => '2fa-off', 'current_password' => $tfPass, 'tf_code' => $teamRecovery[0] ?? 'x']);
+check('equipe não consegue desativar a própria verificação', $tf->request('GET', '/admin')['status'] === 200);
+$admin->request('GET', '/admin/usuarios/' . $userId);
+$admin->request('POST', '/admin/usuarios/' . $userId . '/duas-etapas/desativar');
+$r = $tf->request('GET', '/admin');
+check('desativada pela equipe, a pessoa ativa de novo para abrir o painel', $r['status'] === 302 && str_ends_with($r['location'], '/minha-conta/duas-etapas'), $r['location']);
+$admin->request('POST', '/admin/usuarios/' . $userId, ['role' => 'student', 'is_active' => '1']);
 
 echo "\n$checks verificações, $failures falha(s).\n";
 exit($failures ? 1 : 0);

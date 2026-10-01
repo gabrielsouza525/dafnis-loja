@@ -63,6 +63,11 @@ Usuários (senha `dafnis123`): `admin@dafnis.test` (equipe), `ana@example.com` (
 andamento, concluído com certificado e pedido aguardando pagamento), `rh@example.com` (empresa com
 vagas para indicar). Cupom de teste `BEMVINDO10`. Os e-mails ficam em `storage/mail` (`MAIL_DRIVER=log`).
 
+A equipe de exemplo já vem com a verificação em duas etapas ativa (obrigatória para a equipe). Para
+entrar no painel, adicione esta chave no aplicativo autenticador, como "chave de configuração", e use o
+código que ele mostrar: `DAFN ISDE MOAD MIN2 FAKE Y234 567D AFNI`. Ela só existe nos dados de
+demonstração.
+
 ### Testes
 
 Com o servidor rodando e o banco recém-criado com `db:fresh --demo`:
@@ -121,7 +126,9 @@ novos pedidos, pagamentos e contatos no `MAIL_ADMIN_ADDRESS` (ou no e-mail de co
 
 ## Verificação em duas etapas
 
-Opcional para cada conta, em *Minha conta › Meus dados*. Depois da senha, o login pede o código de 6
+**Obrigatória para a equipe** e opcional para alunos e empresas, em *Minha conta › Meus dados*. Quem
+tem perfil de equipe e ainda não ativou é levado à ativação ao abrir o painel, e não pode desativar a
+própria. Depois da senha, o login pede o código de 6
 dígitos de um aplicativo autenticador (Google Authenticator, Microsoft Authenticator...), que muda a
 cada 30 segundos. Ao ativar, a pessoa lê um QR code (gerado na própria loja, sem serviço externo) e
 recebe 10 códigos de recuperação, que valem uma vez cada, para quando perder o celular.
@@ -130,9 +137,10 @@ recebe 10 códigos de recuperação, que valem uma vez cada, para quando perder 
   `storage/app.key` (fora do Git). **Guarde essa chave com o backup do banco:** sem ela, quem ativou a
   verificação precisa ativar de novo.
 - A senha nova pelo link de "Esqueci a senha" também pede o código antes de entrar.
-- Quem perdeu o celular e os códigos: a equipe desativa em *Painel › Usuários › (pessoa)*, depois de
-  confirmar que é a própria pessoa pedindo. Ela recebe um aviso por e-mail.
-- O painel lembra a equipe de ativar a verificação na própria conta.
+- Quem perdeu o celular e os códigos: outra pessoa da equipe desativa em *Painel › Usuários › (pessoa)*,
+  depois de confirmar que é a própria pessoa pedindo. Ela recebe um aviso por e-mail e, se for da
+  equipe, ativa de novo no próximo acesso ao painel.
+- Se for a única pessoa da equipe: no servidor, `php bin/console 2fa:disable --email=...`.
 
 ## Publicação em hospedagem
 

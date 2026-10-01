@@ -133,11 +133,12 @@ final class AccountController extends Controller
     public function profile(): Response
     {
         TwoFactor::forgetFreshCodes(); // "Já guardei os códigos" volta para cá
-        $row = Database::first('SELECT two_factor_enabled_at, two_factor_recovery FROM users WHERE id = :id', ['id' => Auth::id()]) ?? [];
+        $row = Database::first('SELECT role, two_factor_enabled_at, two_factor_recovery FROM users WHERE id = :id', ['id' => Auth::id()]) ?? [];
         return $this->account('account/profile', 'dados', [
             'title' => 'Meus dados',
             'user' => Auth::user(),
             'twoFactor' => TwoFactor::enabled($row) ? ['since' => $row['two_factor_enabled_at'], 'left' => TwoFactor::recoveryLeft($row)] : null,
+            'twoFactorRequired' => TwoFactor::required($row),
         ]);
     }
 
@@ -154,6 +155,7 @@ final class AccountController extends Controller
             'secret' => $secret,
             'qr' => QrCode::svg(Totp::uri($secret, $user['email'], TwoFactor::issuer()), 'QR code para o aplicativo autenticador'),
             'issuer' => TwoFactor::issuer(),
+            'required' => TwoFactor::required($user),
         ]);
     }
 
@@ -185,6 +187,7 @@ final class AccountController extends Controller
             'title' => 'Códigos de recuperação',
             'codes' => $fresh['codes'],
             'reason' => $fresh['reason'],
+            'toPanel' => Auth::isAdmin(),
         ]);
     }
 
@@ -203,6 +206,9 @@ final class AccountController extends Controller
         $row = $this->confirmPassword('2fa-off');
         if (!TwoFactor::enabled($row)) {
             return $this->redirect('/minha-conta/dados#duas-etapas');
+        }
+        if (TwoFactor::required($row)) {
+            throw ValidationException::with('tf_code', 'Para a equipe, a verificação em duas etapas é obrigatória e não pode ser desativada.');
         }
         RateLimiter::check('2fa', 'user:' . $row['id'], $this->request->ip(), 5, 20, 15);
         if (!TwoFactor::verifyAny($row, trim((string) $this->request->input('tf_code', '')))) {

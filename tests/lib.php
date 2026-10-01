@@ -1,6 +1,9 @@
 <?php
 declare(strict_types=1);
 
+/** Chave da verificação em duas etapas da equipe de exemplo (database/seeders/DemoSeeder.php). */
+const DEMO_ADMIN_TOTP = 'DAFNISDEMOADMIN2FAKEY234567DAFNI';
+
 /** Cliente HTTP mínimo com cookies e CSRF para os testes. */
 final class Client
 {
@@ -66,10 +69,23 @@ final class Client
         return ['status' => $status, 'body' => $body, 'location' => trim($loc[1] ?? '')];
     }
 
-    public function login(string $email, string $password): bool
+    /** Com $totpSecret, passa também pela verificação em duas etapas (código gerado como o aplicativo faz). */
+    public function login(string $email, string $password, ?string $totpSecret = null): bool
     {
         $this->request('GET', '/login');
         $r = $this->request('POST', '/login', ['email' => $email, 'password' => $password]);
+        if ($totpSecret !== null && $r['status'] === 302 && str_ends_with($r['location'], '/login/verificacao')) {
+            require_once dirname(__DIR__) . '/app/Services/Totp.php';
+            $this->request('GET', '/login/verificacao');
+            // O mesmo código não vale duas vezes: se outro teste acabou de usar o atual, vale o próximo
+            foreach ([0, 1] as $offset) {
+                $code = App\Services\Totp::code($totpSecret, intdiv(time(), 30) + $offset);
+                $r = $this->request('POST', '/login/verificacao', ['code' => $code]);
+                if (!str_contains($r['location'], '/login')) {
+                    break;
+                }
+            }
+        }
         return $r['status'] === 302 && !str_contains($r['location'], '/login');
     }
 }

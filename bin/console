@@ -10,6 +10,7 @@ declare(strict_types=1);
  *   php bin/console seed             categorias, catálogo da planilha e configurações (seguro em produção)
  *   php bin/console seed:demo        usuários e pedidos fictícios para desenvolvimento (bloqueado em produção)
  *   php bin/console admin:create     cria um administrador (--name= --email= --password=)
+ *   php bin/console 2fa:disable      desativa a verificação em duas etapas de uma conta (--email=), para quem perdeu o celular e os códigos
  *   php bin/console db:fresh         APAGA o banco e recria tudo (bloqueado em produção; --demo inclui dados fictícios)
  */
 
@@ -98,6 +99,16 @@ try {
                 'password_changed_at' => date('Y-m-d H:i:s'),
             ]);
             $out("Administrador {$data['email']} criado.");
+            break;
+
+        case '2fa:disable':
+            $email = mb_strtolower(trim((string) ($options['email'] ?? '')));
+            $user = $email !== '' ? Database::first('SELECT * FROM users WHERE email = :e', ['e' => $email]) : null;
+            if (!$user) {
+                $fail('Use: php bin/console 2fa:disable --email=email@dominio (conta não encontrada)');
+            }
+            App\Services\TwoFactor::disable($user, true);
+            $out("Verificação em duas etapas desativada para {$user['email']}." . ($user['role'] === 'admin' ? ' Ela ativa de novo no próximo acesso ao painel.' : ''));
             break;
 
         case 'db:fresh':

@@ -140,7 +140,7 @@ $number = $m[1];
 $get($ana, '/pedido/' . $number);
 
 $admin = new Client($base);
-if (!$admin->login('admin@dafnis.test', 'dafnis123')) {
+if (!$admin->login('admin@dafnis.test', 'dafnis123', DEMO_ADMIN_TOTP)) {
     throw new RuntimeException('Login da equipe de exemplo falhou.');
 }
 $orderId = (int) Database::value('SELECT id FROM orders WHERE number = :n', ['n' => $number]);

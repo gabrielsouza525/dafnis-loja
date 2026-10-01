@@ -82,7 +82,7 @@ check('empresa vê as 5 vagas (3 × NR 33 + 2 × Primeiros Socorros) para indica
 
 echo "\nAdministrador\n";
 $admin = new Client($base);
-check('login', $admin->login('admin@dafnis.test', 'dafnis123'));
+check('login', $admin->login('admin@dafnis.test', 'dafnis123', DEMO_ADMIN_TOTP));
 $pages = ['/admin', '/admin/cursos', '/admin/cursos?status=inativos', '/admin/cursos?status=sem-preco', '/admin/cursos?q=nr+10', '/admin/cursos?categoria=1', '/admin/cursos/novo', '/admin/categorias', '/admin/pedidos', '/admin/pedidos?status=pending', '/admin/pedidos?q=metal', '/admin/matriculas', '/admin/matriculas?status=processing', '/admin/usuarios', '/admin/usuarios?perfil=admin', '/admin/cupons', '/admin/cupons/novo', '/admin/contatos', '/admin/contatos?status=atendidos', '/admin/configuracoes'];
 foreach ($pages as $p) {
     expect($admin, $p, 200);

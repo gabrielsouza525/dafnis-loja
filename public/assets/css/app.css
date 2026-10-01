@@ -892,6 +892,8 @@ body.lock{overflow:hidden}
 .tf-state p{color:var(--muted);font-size:14.5px;margin:4px 0 16px;max-width:620px}
 .tf-state.is-on p{margin-bottom:0}
 .tf-actions{display:flex;flex-direction:column;gap:10px;margin-top:20px}
+.tf-note{display:flex;gap:8px;align-items:flex-start;margin:0;padding:12px 14px;border-radius:10px;background:var(--gray);font-size:13.5px;line-height:1.5;color:var(--text)}
+.tf-note .ic{color:var(--blue);flex-shrink:0;margin-top:2px}
 .tf-more{border:1px solid var(--line);border-radius:12px;padding:0 16px}
 .tf-more summary{display:flex;align-items:center;gap:8px;padding:14px 0;cursor:pointer;list-style:none;font-size:14.5px;font-weight:600;color:var(--ink)}
 .tf-more summary::-webkit-details-marker{display:none}

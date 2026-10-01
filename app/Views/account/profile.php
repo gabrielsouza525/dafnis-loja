@@ -1,5 +1,5 @@
 <?php
-/** @var array $user @var array|null $twoFactor ['since', 'left'] quando ativada */
+/** @var array $user @var array|null $twoFactor ['since', 'left'] quando ativada @var bool $twoFactorRequired equipe */
 $crumbs = [['Início', '/'], ['Minha conta', '/minha-conta'], ['Meus dados', null]];
 ?>
 <div class="screen">
@@ -31,14 +31,14 @@ $crumbs = [['Início', '/'], ['Minha conta', '/minha-conta'], ['Meus dados', nul
 </div>
 </form>
 <section class="panel" id="duas-etapas">
-<div class="panel-head"><h2>Verificação em duas etapas</h2><?= partial('status', $twoFactor ? ['label' => 'Ativada', 'tone' => 'ok'] : ['label' => 'Desativada', 'tone' => 'muted']) ?></div>
+<div class="panel-head"><h2>Verificação em duas etapas</h2><?= partial('status', $twoFactor ? ['label' => 'Ativada', 'tone' => 'ok'] : ($twoFactorRequired ? ['label' => 'Obrigatória', 'tone' => 'warn'] : ['label' => 'Desativada', 'tone' => 'muted'])) ?></div>
 <div class="panel-body">
 <?php if (!$twoFactor): ?>
 <div class="tf-state">
 <span class="tf-state-ic"><?= icon('shield') ?></span>
 <div>
-<strong>Proteja a sua conta com um código do celular</strong>
-<p>Além da senha, pedimos o código de 6 dígitos de um aplicativo autenticador, como o Google Authenticator. Mesmo que alguém descubra a sua senha, não consegue entrar.</p>
+<strong><?= $twoFactorRequired ? 'Obrigatória para a equipe' : 'Proteja a sua conta com um código do celular' ?></strong>
+<p><?= $twoFactorRequired ? 'O painel só abre depois de ativar. ' : '' ?>Além da senha, pedimos o código de 6 dígitos de um aplicativo autenticador, como o Google Authenticator. Mesmo que alguém descubra a sua senha, não consegue entrar.</p>
 <a class="btn btn-primary" href="<?= e(url('/minha-conta/duas-etapas')) ?>"><?= icon('shield', 'ic-sm') ?>Ativar a verificação em duas etapas</a>
 </div>
 </div>
@@ -63,6 +63,9 @@ $crumbs = [['Início', '/'], ['Minha conta', '/minha-conta'], ['Meus dados', nul
 </div>
 </form>
 </details>
+<?php if ($twoFactorRequired): ?>
+<p class="tf-note"><?= icon('info', 'ic-sm') ?><span>Obrigatória para a equipe, por isso não pode ser desativada. Se perder o celular e os códigos, outra pessoa da equipe desativa em Painel › Usuários e você ativa de novo.</span></p>
+<?php else: ?>
 <details class="tf-more"<?= old('_scope') === '2fa-off' ? ' open' : '' ?>>
 <summary><?= icon('close', 'ic-sm') ?>Desativar a verificação em duas etapas</summary>
 <form method="post" action="<?= e(url('/minha-conta/duas-etapas/desativar')) ?>" data-loading-form>
@@ -76,6 +79,7 @@ $crumbs = [['Início', '/'], ['Minha conta', '/minha-conta'], ['Meus dados', nul
 <button class="btn btn-danger" type="submit" style="margin-top:14px">Desativar</button>
 </form>
 </details>
+<?php endif; ?>
 </div>
 <?php endif; ?>
 </div>
