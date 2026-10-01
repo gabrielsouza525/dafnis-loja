@@ -211,6 +211,14 @@ r = await ev(`const f = document.querySelector('footer.ftr');
   return { perks: f.querySelectorAll('.ftr-perk').length, nrs: f.querySelectorAll('.ftr-nrs a').length, cols: f.querySelectorAll('.ftr-top h2').length, up: f.querySelector('.ftr-up')?.getAttribute('href'), cats: !!f.querySelector('.ftr-link[href$="/categorias"]') };`);
 check('rodapé: vantagens, colunas, todas as NRs e voltar ao topo', r.perks === 3 && r.nrs >= 19 && r.cols === 4 && r.up === '#' && r.cats, r);
 
+// Termos de uso: índice com as seções, que marca a seção visível; botão de imprimir aparece com JavaScript
+await go('/termos-de-uso');
+r = await ev(`${wait} const links = [...document.querySelectorAll('[data-toc-link]')];
+  const ok = links.every(a => document.getElementById(a.getAttribute('href').slice(1)));
+  document.getElementById('cancelamento').scrollIntoView(); await w(400);
+  return { links: links.length, ok, on: document.querySelector('[data-toc-link].on')?.getAttribute('href'), print: !document.querySelector('[data-print]').hidden };`);
+check('termos: índice das seções marca a seção visível e botão de imprimir', r.links === 7 && r.ok && r.on === '#cancelamento' && r.print, r);
+
 // Sobre nós: página própria (antes era um trecho da home)
 await go('/sobre');
 r = await ev(`const n = [...document.querySelectorAll('.about-stats .stat-n')].map(e => e.textContent);
@@ -290,7 +298,7 @@ await sleep(1500);
 // (carrosséis, abas) e desenhos decorativos (aria-hidden, svg) podem passar.
 const overflow = [];
 for (const width of [360, 768, 960, 1024, 1180, 1280, 1440]) {
-  for (const path of ['/', '/cursos', '/cursos/nr-33-espacos-confinados-trabalhador-e-vigia', '/carrinho', '/login', '/cadastro', '/esqueci-senha', '/contato', '/sobre', '/empresas', '/categorias', '/nrs']) {
+  for (const path of ['/', '/cursos', '/cursos/nr-33-espacos-confinados-trabalhador-e-vigia', '/carrinho', '/login', '/cadastro', '/esqueci-senha', '/contato', '/sobre', '/empresas', '/categorias', '/nrs', '/termos-de-uso']) {
     await go(path, width);
     const o = await ev(outside);
     const at = await ev(`return location.pathname`);

@@ -1055,6 +1055,61 @@ body.lock{overflow:hidden}
   .is-compact .nrc-foot .ic{display:none}
 }
 
+/* Páginas legais (termos, privacidade): índice fixo ao lado e o texto em um cartão com seções numeradas */
+.legal-head{align-items:flex-end}
+.phead-dark .legal-meta{display:flex;align-items:center;gap:8px;margin-top:16px;font-size:13.5px;color:#9FB3CF}
+.legal-meta .ic{color:#E6C567}
+.legal-actions{display:flex;gap:10px;flex-wrap:wrap}
+.legal-actions .btn-line-w{border-color:rgba(255,255,255,.3)}
+.legal{display:grid;grid-template-columns:260px minmax(0,1fr);gap:40px;align-items:start;padding-top:40px;padding-bottom:100px}
+.legal-aside{position:sticky;top:96px;display:flex;flex-direction:column;gap:14px}
+.legal-toc{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 12px}
+.legal-toc h2{font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:0 8px 10px}
+.legal-toc ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.legal-toc a{display:flex;align-items:center;gap:10px;padding:8px;border-radius:9px;font-size:14px;font-weight:500;color:var(--text);text-decoration:none;transition:background .15s,color .15s}
+.legal-toc a span{width:22px;height:22px;border-radius:50%;background:var(--gray);color:var(--muted);display:grid;place-items:center;font-family:var(--mono);font-size:11px;font-weight:600;flex-shrink:0;transition:background .15s,color .15s}
+.legal-toc a:hover{background:var(--gray);color:var(--navy-ink)}
+.legal-toc a.on{background:var(--blue-tint);color:var(--navy-ink);font-weight:600}
+.legal-toc a.on span{background:var(--navy);color:#E6C567}
+.legal-help{margin-top:0}
+.legal-doc{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:44px 48px}
+.legal-doc > *{max-width:760px}
+.legal-intro{font-size:17px;line-height:1.65;color:var(--ink);padding-bottom:28px;border-bottom:1px solid var(--line)}
+.legal-sec{max-width:none;scroll-margin-top:96px;padding-top:30px}
+.legal-sec + .legal-sec{margin-top:30px;border-top:1px solid var(--line-2)}
+.legal-sec h2{display:flex;align-items:center;gap:12px;font-size:21px;letter-spacing:-.01em;margin:0 0 14px}
+.legal-sec h2 span{width:32px;height:32px;border-radius:9px;background:var(--navy);color:#E6C567;display:grid;place-items:center;font-family:var(--mono);font-size:13px;font-weight:600;flex-shrink:0}
+.legal-sec p,.legal-sec li{line-height:1.7}
+.legal-note{display:flex;gap:12px;align-items:flex-start;padding:16px 18px;border-radius:12px;background:#FCF6E6;border:1px solid #EEDBA8;color:#5E430C}
+.legal-note .ic{color:#9A6B12;flex-shrink:0;margin-top:3px}
+.legal-note a{color:#5E430C;font-weight:600}
+[data-theme="dark"] .legal-note{background:rgba(213,161,59,.12);border-color:rgba(213,161,59,.32);color:#EED68E}
+[data-theme="dark"] .legal-note .ic,[data-theme="dark"] .legal-note a{color:#E6C567}
+@media (max-width: 940px){
+  .legal{grid-template-columns:minmax(0,1fr);gap:20px;padding-top:24px}
+  .legal-aside{position:static}
+  .legal-toc ol{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .legal-help{display:none}
+}
+@media (max-width: 760px){
+  .legal-head{align-items:flex-start}
+  .legal-toc ol{grid-template-columns:minmax(0,1fr)}
+  .legal-doc{padding:26px 20px;border-radius:16px}
+  .legal-intro{font-size:16px;padding-bottom:22px}
+  .legal-sec{padding-top:24px}
+  .legal-sec + .legal-sec{margin-top:24px}
+  .legal-sec h2{font-size:18px}
+  .legal{padding-bottom:64px}
+}
+@media print{
+  .ftr,.legal-aside,.legal-actions{display:none !important}
+  .phead-dark{background:none;padding:0 0 16px}
+  .phead-dark .grid-bg,.phead-dark .crumbs{display:none}
+  .phead-dark h1,.phead-dark p{color:#000}
+  .legal{display:block;padding:0}
+  .legal-doc{border:0;padding:0;max-width:none}
+}
+
 /* Empresas: prévia de um pedido com vagas no topo e formulário de proposta */
 .intro-points{list-style:none;margin:22px 0 0;padding:0;display:flex;flex-direction:column;gap:10px}
 .intro-points li{display:flex;align-items:center;gap:10px;font-size:15.5px;color:#DCE5F2}

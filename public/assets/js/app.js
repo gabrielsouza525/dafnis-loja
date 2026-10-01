@@ -467,6 +467,24 @@
     if (nrFilter.value) filterNrs();
   }
 
+  /* ---------- páginas legais: índice marca a seção visível; botão de imprimir ---------- */
+  var tocLinks = $all('[data-toc-link]');
+  if (tocLinks.length && 'IntersectionObserver' in window) {
+    var tocById = {};
+    tocLinks.forEach(function (a) { tocById[a.getAttribute('href').slice(1)] = a; });
+    var tocSpy = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        tocLinks.forEach(function (a) { a.classList.toggle('on', a === tocById[entry.target.id]); });
+      });
+    }, { rootMargin: '-100px 0px -60% 0px' });
+    Object.keys(tocById).forEach(function (id) { var el = doc.getElementById(id); if (el) tocSpy.observe(el); });
+  }
+  $all('[data-print]').forEach(function (btn) {
+    btn.hidden = false;
+    btn.addEventListener('click', function () { window.print(); });
+  });
+
   /* ---------- pedido: abre o Mercado Pago logo após o checkout ---------- */
   var autopay = $('[data-autopay="1"]');
   if (autopay) {
