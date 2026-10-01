@@ -376,10 +376,15 @@ function checked(mixed $value): string
 function normalize_text(?string $text): string
 {
     $text = mb_strtolower((string) $text);
-    $converted = class_exists(Normalizer::class)
-        ? preg_replace('/\p{Mn}+/u', '', (string) Normalizer::normalize($text, Normalizer::FORM_D))
-        : iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $text);
-    return (string) $converted;
+    if (class_exists(Normalizer::class)) {
+        return (string) preg_replace('/\p{Mn}+/u', '', (string) Normalizer::normalize($text, Normalizer::FORM_D));
+    }
+    // Sem a extensão intl (ex.: PHP do XAMPP): o iconv do Windows troca "ê" por "^e", então os acentos saem por tabela
+    return strtr($text, [
+        'á' => 'a', 'à' => 'a', 'â' => 'a', 'ã' => 'a', 'ä' => 'a', 'é' => 'e', 'è' => 'e', 'ê' => 'e', 'ë' => 'e',
+        'í' => 'i', 'ì' => 'i', 'î' => 'i', 'ï' => 'i', 'ó' => 'o', 'ò' => 'o', 'ô' => 'o', 'õ' => 'o', 'ö' => 'o',
+        'ú' => 'u', 'ù' => 'u', 'û' => 'u', 'ü' => 'u', 'ç' => 'c', 'ñ' => 'n',
+    ]);
 }
 
 function slugify(string $text): string

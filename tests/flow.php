@@ -68,6 +68,8 @@ $json = json($guest->request('GET', '/cursos?pagina=2&append=1', [], $fetch));
 check('"carregar mais" devolve a página 2', substr_count($json['items'] ?? '', 'class="card"') === 12 && ($json['has_more'] ?? false));
 check('página de NR', $guest->request('GET', '/nr/33')['status'] === 200);
 check('página de categoria', $guest->request('GET', '/categorias/brigada-de-incendio')['status'] === 200);
+$count = static fn (string $q) => preg_match('/results-count[^<]*<strong>(\d+)/', $guest->request('GET', '/cursos?q=' . rawurlencode($q))['body'], $m) ? (int) $m[1] : -1;
+check('busca igual com e sem acento (incêndio/incendio, elétrica/eletrica)', $count('incêndio') > 0 && $count('incêndio') === $count('incendio') && $count('elétrica') === $count('eletrica'), implode(' / ', [$count('incêndio'), $count('incendio'), $count('elétrica'), $count('eletrica')]));
 $r = $guest->request('GET', '/categorias');
 check('página de categorias: um cartão por área, com o link de cada uma', $r['status'] === 200 && substr_count($r['body'], 'class="catx') >= 8 && str_contains($r['body'], 'href="/categorias/brigada-de-incendio"'));
 
