@@ -22,6 +22,7 @@ return static function (Router $r): void {
     $r->get('/cursos', [CatalogController::class, 'index']);
     $r->get('/cursos/{slug:[a-z0-9-]+}', [CourseController::class, 'show']);
     $r->get('/curso/{slug:[a-z0-9-]+}', [CourseController::class, 'legacy']);
+    $r->get('/categorias', [CatalogController::class, 'categories']);
     $r->get('/categorias/{slug:[a-z0-9-]+}', [CatalogController::class, 'category']);
     $r->get('/nr/{nr:\d{1,2}}', [CatalogController::class, 'nr']);
     $r->get('/nrs', [CatalogController::class, 'nrs']);

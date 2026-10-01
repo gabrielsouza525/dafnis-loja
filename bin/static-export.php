@@ -98,7 +98,7 @@ mkdir($out, 0775, true);
 
 // Páginas públicas ----------------------------------------------------------
 $guest = new Client($base);
-$public = ['/', '/cursos', '/nrs', '/empresas', '/sobre', '/contato', '/termos-de-uso', '/politica-de-privacidade', '/login', '/cadastro', '/esqueci-senha', '/sitemap.xml', '/robots.txt'];
+$public = ['/', '/cursos', '/categorias', '/nrs', '/empresas', '/sobre', '/contato', '/termos-de-uso', '/politica-de-privacidade', '/login', '/cadastro', '/esqueci-senha', '/sitemap.xml', '/robots.txt'];
 foreach (Course::nrIndex() as $nr) {
     $public[] = '/nr/' . $nr['nr'];
 }

@@ -24,6 +24,33 @@ final class CatalogController extends Controller
         ]);
     }
 
+    /** Todas as áreas, cada uma com alguns treinamentos (destaques e mais vendidos primeiro) e o menor preço. */
+    public function categories(): Response
+    {
+        $byCat = [];
+        foreach (Course::allActive() as $c) {
+            $byCat[$c['category_id']][] = $c;
+        }
+        $cards = [];
+        foreach (Category::active() as $cat) {
+            $list = $byCat[$cat['id']] ?? [];
+            $rank = static fn ($c) => [$c['featured_order'] ?? PHP_INT_MAX, $c['is_bestseller'] ? 0 : 1];
+            usort($list, static fn ($a, $b) => $rank($a) <=> $rank($b));
+            $prices = array_filter(array_map(static fn ($c) => $c['has_price'] ? (float) $c['final_price'] : null, $list), static fn ($p) => $p !== null);
+            $cards[] = $cat + ['sample' => array_slice($list, 0, 3), 'from_price' => $prices ? min($prices) : null];
+        }
+        return $this->view('site/categories', [
+            'nav' => 'categorias',
+            'title' => 'Categorias de treinamento',
+            'description' => 'Treinamentos por área: Normas Regulamentadoras, segurança do trabalho, primeiros socorros, brigada de incêndio, operação de máquinas e mais.',
+            'canonical' => '/categorias',
+            'cards' => $cards,
+            'total' => count(Course::allActive()),
+            'nrIndex' => Course::nrIndex(),
+            'jsonLd' => [Seo::breadcrumbs([['Início', '/'], ['Categorias', '/categorias']])],
+        ]);
+    }
+
     public function category(string $slug): Response
     {
         $cat = Category::findActiveBySlug($slug);
@@ -34,10 +61,10 @@ final class CatalogController extends Controller
             'heading' => $cat['name'],
             'lead' => $cat['description'],
             'canonical' => '/categorias/' . $slug,
-            'crumbs' => [['Início', '/'], ['Cursos', '/cursos'], [$cat['name'], null]],
+            'crumbs' => [['Início', '/'], ['Categorias', '/categorias'], [$cat['name'], null]],
             'title' => $cat['name'] . ' — treinamentos',
             'description' => $cat['description'] . ' Treinamentos com certificado de conclusão na Dafnis.',
-        ]);
+        ], 'categorias');
     }
 
     public function nr(int $nr): Response

@@ -209,6 +209,15 @@ r = await ev(`const n = [...document.querySelectorAll('.about-stats .stat-n')].m
   return { n, nav: document.querySelector('.nav-link[aria-current="page"]')?.textContent, steps: document.querySelectorAll('.how-step').length, areas: document.querySelectorAll('.area').length, whys: document.querySelectorAll('.why-item').length, link: document.querySelector('.ftr-link[href$="/sobre"]') !== null };`);
 check('sobre nós: números do catálogo no topo, menu marcado, passos, áreas e diferenciais', r.n[0] === '119' && r.nav === 'Sobre nós' && r.steps === 4 && r.areas > 0 && r.whys === 6 && r.link, r);
 
+// Categorias: um cartão por área, com atalhos no topo e o menu marcado
+await go('/categorias');
+r = await ev(`const cards = [...document.querySelectorAll('.catx')];
+  return { nav: document.querySelector('.nav-link[aria-current="page"]')?.textContent, cards: cards.length, jump: document.querySelectorAll('.cat-jump a').length, withList: cards.filter(c => c.querySelectorAll('.catx-list li').length === 3).length, firstMeta: cards[0]?.querySelector('.catx-meta')?.textContent };`);
+check('categorias: cartões com 3 treinamentos, atalhos no topo e menu marcado', r.nav === 'Categorias' && r.cards >= 8 && r.jump >= 8 && r.withList >= 8 && /treinamentos/.test(r.firstMeta), r);
+await go('/categorias/primeiros-socorros');
+r = await ev(`return { crumb: [...document.querySelectorAll('.crumbs a')].map(a => a.textContent).join(' › '), nav: document.querySelector('.nav-link[aria-current="page"]')?.textContent };`);
+check('página de uma categoria: caminho por Categorias e menu marcado', r.crumb === 'Início › Categorias' && r.nav === 'Categorias', r);
+
 // Empresas: página própria com a prévia do pedido e o formulário de proposta
 await go('/empresas');
 r = await ev(`const f = document.querySelector('#proposta form');
@@ -264,7 +273,7 @@ await sleep(1500);
 // (carrosséis, abas) e desenhos decorativos (aria-hidden, svg) podem passar.
 const overflow = [];
 for (const width of [360, 768, 960, 1024, 1180, 1280, 1440]) {
-  for (const path of ['/', '/cursos', '/cursos/nr-33-espacos-confinados-trabalhador-e-vigia', '/carrinho', '/login', '/cadastro', '/esqueci-senha', '/contato', '/sobre', '/empresas']) {
+  for (const path of ['/', '/cursos', '/cursos/nr-33-espacos-confinados-trabalhador-e-vigia', '/carrinho', '/login', '/cadastro', '/esqueci-senha', '/contato', '/sobre', '/empresas', '/categorias']) {
     await go(path, width);
     const o = await ev(outside);
     const at = await ev(`return location.pathname`);

@@ -68,6 +68,8 @@ $json = json($guest->request('GET', '/cursos?pagina=2&append=1', [], $fetch));
 check('"carregar mais" devolve a página 2', substr_count($json['items'] ?? '', 'class="card"') === 12 && ($json['has_more'] ?? false));
 check('página de NR', $guest->request('GET', '/nr/33')['status'] === 200);
 check('página de categoria', $guest->request('GET', '/categorias/brigada-de-incendio')['status'] === 200);
+$r = $guest->request('GET', '/categorias');
+check('página de categorias: um cartão por área, com o link de cada uma', $r['status'] === 200 && substr_count($r['body'], 'class="catx') >= 8 && str_contains($r['body'], 'href="/categorias/brigada-de-incendio"'));
 
 // 2. Curso e carrinho ----------------------------------------------------
 echo "\nCurso e carrinho\n";

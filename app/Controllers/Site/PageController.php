@@ -136,7 +136,7 @@ final class PageController extends Controller
 
     public function sitemap(): Response
     {
-        $urls = [['/', '1.0'], ['/cursos', '0.9'], ['/nrs', '0.8'], ['/empresas', '0.6'], ['/sobre', '0.5'], ['/contato', '0.5'], ['/termos-de-uso', '0.2'], ['/politica-de-privacidade', '0.2']];
+        $urls = [['/', '1.0'], ['/cursos', '0.9'], ['/categorias', '0.8'], ['/nrs', '0.8'], ['/empresas', '0.6'], ['/sobre', '0.5'], ['/contato', '0.5'], ['/termos-de-uso', '0.2'], ['/politica-de-privacidade', '0.2']];
         foreach (Category::active() as $cat) {
             if ($cat['course_count'] > 0) {
                 $urls[] = ['/categorias/' . $cat['slug'], '0.8'];
