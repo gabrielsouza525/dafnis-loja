@@ -1,5 +1,6 @@
 <?php
 /** @var array $u @var array $orders @var array $courses @var bool $isSelf */
+$teamRequired = App\Services\TwoFactor::teamRequired();
 use App\Models\Enrollment;
 use App\Models\Order;
 ?>
@@ -29,13 +30,13 @@ use App\Models\Order;
 <dt>Telefone</dt><dd><?= e($u['phone'] ? phone_display($u['phone']) : '—') ?></dd>
 <dt>CPF</dt><dd><?= e($u['document'] ? document_display($u['document']) : '—') ?></dd>
 <dt>Último acesso</dt><dd><?= e($u['last_login_at'] ? date_br($u['last_login_at'], true) : 'Nunca entrou') ?></dd>
-<dt>Duas etapas</dt><dd><?= $u['two_factor_enabled_at'] ? 'Ativada em ' . e(date_br($u['two_factor_enabled_at'])) : ($u['role'] === 'admin' ? 'Pendente (obrigatória para a equipe)' : 'Desativada') ?></dd>
+<dt>Duas etapas</dt><dd><?= $u['two_factor_enabled_at'] ? 'Ativada em ' . e(date_br($u['two_factor_enabled_at'])) : ($u['role'] === 'admin' && $teamRequired ? 'Pendente (obrigatória para a equipe)' : 'Desativada') ?></dd>
 </dl>
 <?php if ($u['two_factor_enabled_at'] && !$isSelf): ?>
 <form method="post" action="<?= e(url('/admin/usuarios/' . $u['id'] . '/duas-etapas/desativar')) ?>" data-confirm="Desativar a verificação em duas etapas desta conta? Faça isso só depois de confirmar que é a própria pessoa pedindo (ela perdeu o celular e os códigos de recuperação)." style="margin-top:14px">
 <?= csrf_field() ?>
 <button class="btn btn-outline btn-xs" type="submit"><?= icon('shield', 'ic-sm') ?>Desativar a verificação em duas etapas</button>
-<p class="hint">Para quem perdeu o celular e os códigos. A pessoa recebe um aviso por e-mail.<?= $u['role'] === 'admin' ? ' Por ser da equipe, ela ativa de novo no próximo acesso ao painel.' : '' ?></p>
+<p class="hint">Para quem perdeu o celular e os códigos. A pessoa recebe um aviso por e-mail.<?= $u['role'] === 'admin' && $teamRequired ? ' Por ser da equipe, ela ativa de novo no próximo acesso ao painel.' : '' ?></p>
 </form>
 <?php endif; ?>
 </div></div>
@@ -44,7 +45,7 @@ use App\Models\Order;
 <div class="panel-head"><h2>Acesso</h2></div>
 <div class="panel-body">
 <?php if ($isSelf): ?><p class="hint" style="margin:0">Esta é a sua conta: o perfil e o status não podem ser alterados por você.</p><?php else: ?>
-<?= partial('field', ['name' => 'role', 'label' => 'Perfil', 'type' => 'select', 'value' => $u['role'], 'options' => ['student' => 'Aluno / comprador', 'admin' => 'Equipe (acesso ao painel)'], 'hint' => 'A equipe precisa ativar a verificação em duas etapas para abrir o painel.']) ?>
+<?= partial('field', ['name' => 'role', 'label' => 'Perfil', 'type' => 'select', 'value' => $u['role'], 'options' => ['student' => 'Aluno / comprador', 'admin' => 'Equipe (acesso ao painel)'], 'hint' => $teamRequired ? 'A equipe precisa ativar a verificação em duas etapas para abrir o painel.' : null]) ?>
 <label class="switch" style="margin-top:10px"><input type="hidden" name="is_active" value="0"><input type="checkbox" name="is_active" value="1"<?= checked((int) $u['is_active']) ?>><span>Conta ativa<small>Desativar encerra as sessões e impede o login.</small></span></label>
 <button class="btn btn-navy btn-sm" type="submit" style="margin-top:14px">Salvar acesso</button>
 <?php endif; ?>

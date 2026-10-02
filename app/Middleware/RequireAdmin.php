@@ -18,7 +18,7 @@ final class RequireAdmin
             throw new HttpException(404);
         }
         // Equipe sem a verificação em duas etapas: o painel só abre depois de ativar
-        if (!TwoFactor::enabled(Auth::user())) {
+        if (TwoFactor::required(Auth::user()) && !TwoFactor::enabled(Auth::user())) {
             if ($request->wantsJson()) {
                 throw new HttpException(403, 'Ative a verificação em duas etapas para usar o painel.');
             }

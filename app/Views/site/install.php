@@ -22,7 +22,7 @@
 <?php if ($done): ?>
 <div class="recover-head">
 <span class="recover-ic is-ok"><?= icon('check') ?></span>
-<div><h2>Instalação concluída</h2><p>Banco criado, catálogo importado e administrador cadastrado. Por segurança, remova o INSTALL_TOKEN do arquivo .env. No primeiro acesso ao painel, você ativa a verificação em duas etapas (obrigatória para a equipe).</p></div>
+<div><h2>Instalação concluída</h2><p>Banco criado, catálogo importado e administrador cadastrado. Por segurança, remova o INSTALL_TOKEN do arquivo .env.<?= App\Services\TwoFactor::teamRequired() ? ' No primeiro acesso ao painel, você ativa a verificação em duas etapas (obrigatória para a equipe).' : '' ?></p></div>
 </div>
 <div class="recover-actions"><a class="btn btn-primary btn-lg btn-block" href="<?= e(url('/login')) ?>">Entrar no painel<?= icon('arrowR') ?></a></div>
 <?php else: ?>

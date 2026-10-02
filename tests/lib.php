@@ -4,6 +4,13 @@ declare(strict_types=1);
 /** Chave da verificação em duas etapas da equipe de exemplo (database/seeders/DemoSeeder.php). */
 const DEMO_ADMIN_TOTP = 'DAFNISDEMOADMIN2FAKEY234567DAFNI';
 
+/** TWO_FACTOR_TEAM_REQUIRED do .env da loja (os testes rodam na mesma máquina); sem a linha, vale true. */
+function team_2fa_required(): bool
+{
+    $env = (string) @file_get_contents(dirname(__DIR__) . '/.env');
+    return !preg_match('/^TWO_FACTOR_TEAM_REQUIRED\s*=\s*"?false"?/mi', $env);
+}
+
 /** Cliente HTTP mínimo com cookies e CSRF para os testes. */
 final class Client
 {

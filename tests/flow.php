@@ -136,7 +136,11 @@ check('rota de pagamento sem gateway volta para o pedido', str_contains($guest->
 echo "\nPainel: pagamento, liberação e certificado\n";
 $admin = new Client($base);
 $noCode = new Client($base);
-check('equipe: só a senha não abre o painel', !$noCode->login('admin@dafnis.test', 'dafnis123') && $noCode->request('GET', '/admin')['status'] === 302);
+if (team_2fa_required()) {
+    check('equipe: só a senha não abre o painel', !$noCode->login('admin@dafnis.test', 'dafnis123') && $noCode->request('GET', '/admin')['status'] === 302);
+} else {
+    check('equipe com a verificação opcional (TWO_FACTOR_TEAM_REQUIRED=false): entra só com a senha', $noCode->login('admin@dafnis.test', 'dafnis123') && $noCode->request('GET', '/admin')['status'] === 200);
+}
 check('login do admin (senha e código do aplicativo)', $admin->login('admin@dafnis.test', 'dafnis123', DEMO_ADMIN_TOTP));
 $list = $admin->request('GET', '/admin/pedidos?q=' . $number)['body'];
 preg_match('#/admin/pedidos/(\d+)"#', $list, $m);
@@ -348,6 +352,13 @@ check('depois que a equipe desativa, entra só com a senha', $tf->login($email, 
 
 // Equipe: a verificação é obrigatória (o painel só abre com ela) e não dá para desativar a própria
 $admin->request('GET', '/admin/usuarios/' . $userId);
+if (!team_2fa_required()) {
+    $admin->request('POST', '/admin/usuarios/' . $userId, ['role' => 'admin', 'is_active' => '1']);
+    $dash = $tf->request('GET', '/admin');
+    check('verificação opcional: equipe sem ela abre o painel, com o lembrete de ativar', $dash['status'] === 200 && str_contains($dash['body'], 'Proteja o painel'));
+    $admin->request('GET', '/admin/usuarios/' . $userId);
+    $admin->request('POST', '/admin/usuarios/' . $userId, ['role' => 'student', 'is_active' => '1']);
+} else {
 $admin->request('POST', '/admin/usuarios/' . $userId, ['role' => 'admin', 'is_active' => '1']);
 $r = $tf->request('GET', '/admin');
 check('equipe sem a verificação é levada à ativação', $r['status'] === 302 && str_ends_with($r['location'], '/minha-conta/duas-etapas'), $r['location']);
@@ -368,6 +379,7 @@ $admin->request('POST', '/admin/usuarios/' . $userId . '/duas-etapas/desativar')
 $r = $tf->request('GET', '/admin');
 check('desativada pela equipe, a pessoa ativa de novo para abrir o painel', $r['status'] === 302 && str_ends_with($r['location'], '/minha-conta/duas-etapas'), $r['location']);
 $admin->request('POST', '/admin/usuarios/' . $userId, ['role' => 'student', 'is_active' => '1']);
+}
 
 echo "\n$checks verificações, $failures falha(s).\n";
 exit($failures ? 1 : 0);

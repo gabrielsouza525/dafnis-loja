@@ -23,10 +23,18 @@ final class TwoFactor
         return !empty($user['two_factor_enabled_at']);
     }
 
-    /** Obrigatória para a equipe (perfil admin): o painel só abre com ela ativa, e não dá para desativar a própria. */
+    /**
+     * Obrigatória para a equipe (perfil admin): o painel só abre com ela ativa, e não dá para desativar a própria.
+     * TWO_FACTOR_TEAM_REQUIRED=false no .env deixa opcional também para a equipe (ex.: no computador de desenvolvimento).
+     */
+    public static function teamRequired(): bool
+    {
+        return filter_var(env('TWO_FACTOR_TEAM_REQUIRED', true), FILTER_VALIDATE_BOOL);
+    }
+
     public static function required(?array $user): bool
     {
-        return ($user['role'] ?? null) === 'admin';
+        return ($user['role'] ?? null) === 'admin' && self::teamRequired();
     }
 
     public static function issuer(): string

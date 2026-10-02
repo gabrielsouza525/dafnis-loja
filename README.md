@@ -66,7 +66,8 @@ vagas para indicar). Cupom de teste `BEMVINDO10`. Os e-mails ficam em `storage/m
 A equipe de exemplo já vem com a verificação em duas etapas ativa (obrigatória para a equipe). Para
 entrar no painel, adicione esta chave no aplicativo autenticador, como "chave de configuração", e use o
 código que ele mostrar: `DAFN ISDE MOAD MIN2 FAKE Y234 567D AFNI`. Ela só existe nos dados de
-demonstração.
+demonstração. Para desenvolver sem o celular, coloque `TWO_FACTOR_TEAM_REQUIRED=false` no `.env` e rode
+o `db:fresh --demo` de novo: a equipe de exemplo passa a entrar só com a senha.
 
 ### Testes
 
@@ -128,7 +129,8 @@ novos pedidos, pagamentos e contatos no `MAIL_ADMIN_ADDRESS` (ou no e-mail de co
 
 **Obrigatória para a equipe** e opcional para alunos e empresas, em *Minha conta › Meus dados*. Quem
 tem perfil de equipe e ainda não ativou é levado à ativação ao abrir o painel, e não pode desativar a
-própria. Depois da senha, o login pede o código de 6
+própria. Com `TWO_FACTOR_TEAM_REQUIRED=false` no `.env`, fica opcional também para a equipe (o painel
+mostra um lembrete para ativar); em produção, deixe `true`. Depois da senha, o login pede o código de 6
 dígitos de um aplicativo autenticador (Google Authenticator, Microsoft Authenticator...), que muda a
 cada 30 segundos. Ao ativar, a pessoa lê um QR code (gerado na própria loja, sem serviço externo) e
 recebe 10 códigos de recuperação, que valem uma vez cada, para quando perder o celular.

@@ -2,10 +2,15 @@
 // Requer o Chrome instalado (CHROME_PATH para outro caminho) e o banco recém-criado com db:fresh --demo.
 //   node tests/browser.mjs http://localhost:8000
 import { spawn } from 'node:child_process';
-import { mkdtempSync } from 'node:fs';
+import { mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createHmac } from 'node:crypto';
+
+// TWO_FACTOR_TEAM_REQUIRED do .env da loja (o teste roda na mesma máquina); sem a linha, vale true
+const teamRequired = (() => {
+  try { return !/^TWO_FACTOR_TEAM_REQUIRED\s*=\s*"?false"?/mi.test(readFileSync(new URL('../.env', import.meta.url), 'utf8')); } catch { return true; }
+})();
 
 const totp = (secret, offset = 0) => {
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
@@ -436,10 +441,14 @@ await ev(`document.querySelector('#f-email').value = 'admin@dafnis.test'; docume
 await sleep(1500);
 // A verificação em duas etapas é obrigatória para a equipe: a de exemplo usa a chave do DemoSeeder
 r = await ev(`return location.pathname`);
-check('equipe: depois da senha, pede o código do celular', r.endsWith('/login/verificacao'), r);
-await ev(`const dt = new DataTransfer(); dt.setData('text', '${totp('DAFNISDEMOADMIN2FAKEY234567DAFNI')}');
-  document.querySelector('.otp-cell').dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true })); return 1`);
-await sleep(1800);
+if (teamRequired) {
+  check('equipe: depois da senha, pede o código do celular', r.endsWith('/login/verificacao'), r);
+  await ev(`const dt = new DataTransfer(); dt.setData('text', '${totp('DAFNISDEMOADMIN2FAKEY234567DAFNI')}');
+    document.querySelector('.otp-cell').dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true })); return 1`);
+  await sleep(1800);
+} else {
+  check('equipe com a verificação opcional: entra só com a senha', r.endsWith('/admin'), r);
+}
 const admOver = [];
 for (const width of [390, 1024, 1440]) {
   for (const path of ['/admin', '/admin/pedidos', '/admin/pedidos/1', '/admin/matriculas', '/admin/matriculas/1', '/admin/cursos', '/admin/configuracoes']) {
