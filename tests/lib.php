@@ -11,6 +11,14 @@ function team_2fa_required(): bool
     return !preg_match('/^TWO_FACTOR_TEAM_REQUIRED\s*=\s*"?false"?/mi', $env);
 }
 
+/** Mercado Pago configurado no .env da loja (token preenchido e gateway mercadopago)? */
+function mp_configured(): bool
+{
+    $env = (string) @file_get_contents(dirname(__DIR__) . '/.env');
+    $gateway = preg_match('/^PAYMENT_GATEWAY=([^\s#]*)/m', $env, $m) ? $m[1] : 'mercadopago';
+    return $gateway === 'mercadopago' && preg_match('/^MP_ACCESS_TOKEN=([^\s#]+)/m', $env) === 1;
+}
+
 /** Cliente HTTP mínimo com cookies e CSRF para os testes. */
 final class Client
 {

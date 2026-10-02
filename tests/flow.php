@@ -130,7 +130,12 @@ $orderPage = $guest->request('GET', "/pedido/$number")['body'];
 check('confirmação diz "aguardando pagamento" e não finge aprovação', str_contains($orderPage, 'aguardando pagamento') && !str_contains($orderPage, 'Pagamento confirmado'));
 check('carrinho esvaziado depois do pedido', (bool) preg_match('/data-cart-count hidden>0</', $orderPage));
 check('pedido aparece em Minha conta', str_contains($guest->request('GET', '/minha-conta/pedidos')['body'], $number));
-check('rota de pagamento sem gateway volta para o pedido', str_contains($guest->request('GET', "/pedido/$number/pagar")['location'], "/pedido/$number"));
+if (mp_configured()) {
+    $pay = $guest->request('GET', "/pedido/$number/pagar")['location'];
+    check('pagar leva ao checkout do Mercado Pago', (bool) preg_match('#^https://(sandbox|www)\.mercadopago\.com\.br/#', $pay), $pay);
+} else {
+    check('rota de pagamento sem gateway volta para o pedido', str_contains($guest->request('GET', "/pedido/$number/pagar")['location'], "/pedido/$number"));
+}
 
 // 4. Admin confirma pagamento ------------------------------------------
 echo "\nPainel: pagamento, liberação e certificado\n";
@@ -203,7 +208,8 @@ check('Ana vê o próprio certificado de teste', str_contains($ana->request('GET
 // 6. Webhook, contato, admin de cursos ----------------------------------
 echo "\nWebhook, contato e catálogo pelo painel\n";
 $r = (new Client($base))->request('POST', '/webhooks/mercadopago?type=payment&data.id=123', [], ['Content-Type: application/json']);
-check('webhook sem gateway configurado responde 200 e ignora', $r['status'] === 200 && str_contains($r['body'], 'ignored'));
+check(mp_configured() ? 'webhook de pagamento inexistente responde 200 sem confirmar nada' : 'webhook sem gateway configurado responde 200 e ignora',
+    $r['status'] === 200 && (mp_configured() ? str_contains($r['body'], '"ok":true') : str_contains($r['body'], 'ignored')));
 $c = new Client($base);
 $c->request('GET', '/contato?assunto=empresas');
 $r = $c->request('POST', '/contato', ['subject' => 'empresas', 'name' => 'Contato Teste', 'email' => 'contato.teste@example.com', 'participants' => 12, 'message' => 'Teste automatizado']);
