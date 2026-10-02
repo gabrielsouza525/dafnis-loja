@@ -155,8 +155,8 @@ final class MercadoPagoGateway implements PaymentGateway
     private function excludedFor(string $method): array
     {
         $types = match ($method) {
-            'pix' => ['credit_card', 'debit_card', 'ticket', 'atm'],
-            'boleto' => ['credit_card', 'debit_card', 'bank_transfer'],
+            'pix' => ['credit_card', 'debit_card', 'prepaid_card', 'ticket', 'atm'],
+            'boleto' => ['credit_card', 'debit_card', 'prepaid_card', 'bank_transfer'],
             'card' => ['ticket', 'atm', 'bank_transfer'],
             default => [],
         };
