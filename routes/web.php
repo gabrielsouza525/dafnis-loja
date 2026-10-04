@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 use App\Controllers\Account\AccountController;
+use App\Controllers\Account\StudyController;
 use App\Controllers\Admin;
 use App\Controllers\Auth\AuthController;
 use App\Controllers\Auth\PasswordController;
@@ -70,6 +71,10 @@ return static function (Router $r): void {
     $r->group('/minha-conta', ['auth'], static function (Router $r): void {
         $r->get('', [AccountController::class, 'dashboard']);
         $r->get('/cursos', [AccountController::class, 'courses']);
+        $r->get('/cursos/{id:\d+}/estudar', [StudyController::class, 'show']);
+        $r->get('/cursos/{id:\d+}/pacote/{package:\d+}/{path:.+}', [StudyController::class, 'asset']);
+        $r->post('/cursos/{id:\d+}/scorm', [StudyController::class, 'commit']);
+        $r->post('/cursos/{id:\d+}/presenca', [StudyController::class, 'heartbeat']);
         $r->get('/certificados', [AccountController::class, 'certificates']);
         $r->get('/certificados/{id:\d+}/baixar', [AccountController::class, 'downloadCertificate']);
         $r->get('/pedidos', [AccountController::class, 'orders']);
@@ -96,6 +101,11 @@ return static function (Router $r): void {
         $r->post('/cursos/{id:\d+}', [Admin\CourseController::class, 'update']);
         $r->post('/cursos/{id:\d+}/alternar', [Admin\CourseController::class, 'toggle']);
         $r->post('/cursos/{id:\d+}/excluir', [Admin\CourseController::class, 'destroy']);
+        $r->post('/cursos/{id:\d+}/pacotes', [Admin\CoursePackageController::class, 'store']);
+        $r->post('/cursos/{id:\d+}/pacotes/{package:\d+}/usar', [Admin\CoursePackageController::class, 'activate']);
+        $r->post('/cursos/{id:\d+}/pacotes/{package:\d+}/excluir', [Admin\CoursePackageController::class, 'destroy']);
+        $r->get('/cursos/{id:\d+}/pacotes/{package:\d+}/previa', [Admin\CoursePackageController::class, 'preview']);
+        $r->get('/cursos/{id:\d+}/pacotes/{package:\d+}/arquivos/{path:.+}', [Admin\CoursePackageController::class, 'asset']);
 
         $r->get('/categorias', [Admin\CategoryController::class, 'index']);
         $r->post('/categorias', [Admin\CategoryController::class, 'store']);

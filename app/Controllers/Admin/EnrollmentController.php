@@ -9,6 +9,7 @@ use App\Core\Validator;
 use App\Models\Enrollment;
 use App\Services\Activity;
 use App\Services\Enrollments;
+use App\Services\Scorm\Tracker;
 use App\Services\Uploads;
 
 final class EnrollmentController extends AdminController
@@ -64,6 +65,8 @@ final class EnrollmentController extends AdminController
             'order' => Database::first('SELECT * FROM orders WHERE id = :id', ['id' => $e['order_id']]),
             'accessUrl' => Enrollment::accessUrl($e),
             'activity' => Activity::forSubject('enrollment', $id),
+            'study' => Tracker::summary($id),
+            'sessions' => Tracker::sessions($id, 20),
         ]);
     }
 

@@ -25,6 +25,7 @@ final class Client
     private array $cookies = [];
     public string $csrf = '';
     private string $lastPage = '';
+    private ?string $rawBody = null;
 
     /** Subpasta da loja (ex.: "/dafnis-loja" no Apache do XAMPP); vazio quando roda na raiz. */
     private string $prefix;
@@ -53,7 +54,10 @@ final class Client
             CURLOPT_HTTPHEADER => $headers,
             CURLOPT_TIMEOUT => 30,
         ]);
-        if ($method === 'POST') {
+        if ($method === 'POST' && $this->rawBody !== null) {
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $this->rawBody);
+            $this->rawBody = null;
+        } elseif ($method === 'POST') {
             $data['_token'] ??= $this->csrf;
             $hasFile = (bool) array_filter($data, static fn ($v) => $v instanceof CURLFile);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $hasFile ? $data : http_build_query($data));
@@ -81,7 +85,22 @@ final class Client
             $this->lastPage = $this->base . $path;
         }
         preg_match('/^Location:\s*(.+)$/mi', $head, $loc);
-        return ['status' => $status, 'body' => $body, 'location' => trim($loc[1] ?? '')];
+        return ['status' => $status, 'body' => $body, 'location' => trim($loc[1] ?? ''), 'headers' => $head];
+    }
+
+    /** POST com corpo JSON e o token CSRF no cabeçalho, como o fetch() das páginas faz. */
+    public function json(string $path, array $data, array $headers = []): array
+    {
+        $this->rawBody = (string) json_encode($data);
+        $r = $this->request('POST', $path, [], array_merge(['Content-Type: application/json', 'Accept: application/json', 'X-CSRF-Token: ' . $this->csrf], $headers));
+        $r['json'] = json_decode($r['body'], true);
+        return $r;
+    }
+
+    /** Valor de um cabeçalho da resposta (o último, se vier repetido). */
+    public static function header(array $response, string $name): ?string
+    {
+        return preg_match_all('/^' . preg_quote($name, '/') . ':\s*(.*?)\s*$/mi', $response['headers'] ?? '', $m) ? end($m[1]) : null;
     }
 
     /** Com $totpSecret, passa também pela verificação em duas etapas (código gerado como o aplicativo faz). */

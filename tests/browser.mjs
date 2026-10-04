@@ -2,7 +2,8 @@
 // Requer o Chrome instalado (CHROME_PATH para outro caminho) e o banco recém-criado com db:fresh --demo.
 //   node tests/browser.mjs http://localhost:8000
 import { spawn } from 'node:child_process';
-import { mkdtempSync, readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { crc32 } from 'node:zlib';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createHmac } from 'node:crypto';
@@ -483,6 +484,72 @@ r = await ev(`${wait} document.querySelector('[data-admin-menu]').click(); await
   document.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape'})); await w(300);
   return { open, backdrop, closed: !document.querySelector('#adm-side').classList.contains('open') };`);
 check('painel no celular: menu abre com fundo escurecido e fecha com Esc', r.open && r.backdrop && r.closed, r);
+
+// Curso próprio em SCORM: a equipe envia o pacote de teste pelo painel, confere na pré-visualização,
+// e a aluna faz o curso na loja (a API do SCORM grava o andamento e a aprovação)
+const zipDir = (dir) => {
+  const files = [];
+  const walk = (d, rel) => { for (const n of readdirSync(d)) { const p = join(d, n); if (statSync(p).isDirectory()) walk(p, rel + n + '/'); else files.push([rel + n, readFileSync(p)]); } };
+  walk(dir, '');
+  const parts = []; const central = []; let offset = 0;
+  const date = ((2026 - 1980) << 9) | (1 << 5) | 1;
+  for (const [name, data] of files) {
+    const nb = Buffer.from(name); const crc = crc32(data);
+    const h = Buffer.alloc(30); h.writeUInt32LE(0x04034b50, 0); h.writeUInt16LE(20, 4); h.writeUInt16LE(0x0800, 6); h.writeUInt16LE(0, 8); h.writeUInt16LE(0, 10); h.writeUInt16LE(date, 12);
+    h.writeUInt32LE(crc, 14); h.writeUInt32LE(data.length, 18); h.writeUInt32LE(data.length, 22); h.writeUInt16LE(nb.length, 26); h.writeUInt16LE(0, 28);
+    parts.push(h, nb, data);
+    const c = Buffer.alloc(46); c.writeUInt32LE(0x02014b50, 0); c.writeUInt16LE(20, 4); c.writeUInt16LE(20, 6); c.writeUInt16LE(0x0800, 8); c.writeUInt16LE(0, 10); c.writeUInt16LE(0, 12); c.writeUInt16LE(date, 14);
+    c.writeUInt32LE(crc, 16); c.writeUInt32LE(data.length, 20); c.writeUInt32LE(data.length, 24); c.writeUInt16LE(nb.length, 28); c.writeUInt32LE(offset, 42);
+    central.push(c, nb); offset += 30 + nb.length + data.length;
+  }
+  const cd = Buffer.concat(central); const end = Buffer.alloc(22);
+  end.writeUInt32LE(0x06054b50, 0); end.writeUInt16LE(files.length, 8); end.writeUInt16LE(files.length, 10); end.writeUInt32LE(cd.length, 12); end.writeUInt32LE(offset, 16);
+  return Buffer.concat([...parts, cd, end]);
+};
+const scormZip = join(mkdtempSync(join(tmpdir(), 'scorm-')), 'curso-demo.zip');
+writeFileSync(scormZip, zipDir(new URL('./fixtures/scorm-demo', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')));
+await go('/admin/cursos?q=NR+10');
+const nr10Edit = await ev(`return [...document.querySelectorAll('a[href$="/editar"]')].find((a) => a.closest('tr')?.textContent.includes('Eletricidade — Básico'))?.getAttribute('href')`);
+await go(nr10Edit.replace(/^.*?\/admin\//, '/admin/'));
+const doc = await send('DOM.getDocument', { depth: 1 });
+const input = await send('DOM.querySelector', { nodeId: doc.result.root.nodeId, selector: '#f-package' });
+await send('DOM.setFileInputFiles', { nodeId: input.result.nodeId, files: [scormZip] });
+loaded = false;
+await ev(`document.querySelector('#f-package').form.requestSubmit(); return 1`);
+for (let i = 0; i < 80 && !loaded; i++) await sleep(100);
+await sleep(500);
+r = await ev(`return { rows: document.querySelectorAll('#conteudo tbody tr').length, current: document.querySelector('#conteudo tbody .status')?.textContent.trim(), preview: document.querySelector('#conteudo .panel-head a')?.getAttribute('href') }`);
+check('equipe envia o pacote SCORM pelo painel e ele fica em uso', r.rows === 1 && r.current === 'Em uso' && /\/previa$/.test(r.preview || ''), r);
+const frameState = `const f = document.querySelector('[data-study-frame]'); for (let i = 0; i < 50 && !(f.contentDocument && f.contentDocument.querySelector('#state') && !/Carregando/.test(f.contentDocument.querySelector('#state').textContent)); i++) await w(100);
+  return { state: f.contentDocument?.querySelector('#state')?.textContent, status: document.querySelector('[data-study-status]').textContent };`;
+await go(r.preview.replace(/^.*?\/admin\//, '/admin/'));
+r = await ev(`${wait} ${frameState}`);
+check('pré-visualização: o curso acha a API, campos só de leitura protegidos, nada é gravado', /ENTRY=ab-initio/.test(r.state) && /READONLY=true/.test(r.state) && /nada é gravado/.test(r.status), r);
+await ev(`document.querySelector('[data-study-back]').click(); return 1`);
+await sleep(1200);
+await ev(`document.querySelector('form[action$="/sair"]').submit(); return 1`);
+await sleep(1500);
+await go('/login');
+await ev(`document.querySelector('#f-email').value = 'ana@example.com'; document.querySelector('#f-password').value = 'dafnis123'; document.querySelector('.auth-form').submit(); return 1`);
+await sleep(1500);
+await go('/minha-conta/cursos');
+const study = await ev(`return document.querySelector('a[href$="/estudar"]')?.getAttribute('href')`);
+check('Meus cursos: botão para fazer o curso na loja', /\/minha-conta\/cursos\/\d+\/estudar$/.test(study || ''), study);
+await go(study.replace(/^.*?\/minha-conta\//, '/minha-conta/'));
+r = await ev(`${wait} ${frameState}`);
+check('aluna: o curso abre do começo com o nome dela', /ENTRY=ab-initio/.test(r.state) && /NAME=Souza, Ana/.test(r.state), r);
+r = await ev(`${wait} for (let i = 0; i < 40 && !/salvo/.test(document.querySelector('[data-study-status]').textContent); i++) await w(100); return document.querySelector('[data-study-status]').textContent`);
+check('o que o curso grava é salvo na loja (barra mostra a hora)', /Andamento salvo às/.test(r), r);
+r = await ev(`${wait} document.querySelector('[data-study-frame]').contentDocument.querySelector('#finish').click();
+  for (let i = 0; i < 40 && !/Aprovado/.test(document.querySelector('[data-study-status]').textContent); i++) await w(100); return document.querySelector('[data-study-status]').textContent`);
+check('prova concluída: aprovação salva', /Aprovado · Andamento salvo/.test(r), r);
+await go(study.replace(/^.*?\/minha-conta\//, '/minha-conta/'));
+r = await ev(`${wait} ${frameState}`);
+check('ao voltar, o curso continua de onde parou e numera as novas respostas', /ENTRY=resume/.test(r.state) && /LOCATION=pagina-2/.test(r.state) && /COUNT=1/.test(r.state), r);
+await go(study.replace(/^.*?\/minha-conta\//, '/minha-conta/'), 390);
+r = await ev(`const bar = document.querySelector('.study-bar').getBoundingClientRect(); const fr = document.querySelector('[data-study-frame]').getBoundingClientRect();
+  return { scroll: document.documentElement.scrollWidth - document.documentElement.clientWidth, barH: Math.round(bar.height), frameBottom: Math.round(fr.bottom), vh: innerHeight };`);
+check('curso no celular: barra fina e o curso ocupando o resto da tela', r.scroll <= 0 && r.barH <= 60 && Math.abs(r.frameBottom - r.vh) <= 1, r);
 
 check('nenhum erro de JavaScript', errors.length === 0, errors);
 console.log(fails ? `\n${fails} falha(s)` : '\nTudo certo');

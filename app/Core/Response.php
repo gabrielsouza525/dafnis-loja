@@ -10,6 +10,9 @@ class Response
 
     private ?string $filePath = null;
 
+    /** Trecho do arquivo pedido com Range (vídeos e áudios dos cursos): [início, fim] inclusivos. */
+    private ?array $range = null;
+
     public function __construct(
         protected string $body = '',
         protected int $status = 200,
@@ -53,6 +56,41 @@ class Response
         return $r;
     }
 
+    /**
+     * Arquivo com suporte a Range (206), para o navegador avançar vídeos e áudios sem baixar tudo.
+     * Cabeçalho Range inválido ou fora do arquivo responde 416.
+     */
+    public static function fileRange(string $path, string $mime, ?string $rangeHeader, array $headers = []): self
+    {
+        $size = (int) filesize($path);
+        $r = self::file($path, $mime, array_merge(['Accept-Ranges' => 'bytes'], $headers));
+        if ($rangeHeader === null || $rangeHeader === '' || $size === 0) {
+            return $r;
+        }
+        if (!preg_match('/^bytes=(\d*)-(\d*)$/', trim($rangeHeader), $m) || ($m[1] === '' && $m[2] === '')) {
+            return $r; // vários trechos ou formato desconhecido: entrega o arquivo inteiro
+        }
+        if ($m[1] === '') {
+            $start = max(0, $size - (int) $m[2]);
+            $end = $size - 1;
+        } else {
+            $start = (int) $m[1];
+            $end = $m[2] === '' ? $size - 1 : min((int) $m[2], $size - 1);
+        }
+        if ($start > $end || $start >= $size) {
+            $r->status = 416;
+            $r->filePath = null;
+            $r->headers['Content-Range'] = 'bytes */' . $size;
+            $r->headers['Content-Length'] = '0';
+            return $r;
+        }
+        $r->status = 206;
+        $r->range = [$start, $end];
+        $r->headers['Content-Range'] = sprintf('bytes %d-%d/%d', $start, $end, $size);
+        $r->headers['Content-Length'] = (string) ($end - $start + 1);
+        return $r;
+    }
+
     public static function download(string $content, string $filename, string $mime): self
     {
         $safe = preg_replace('/[^A-Za-z0-9._-]/', '_', $filename);
@@ -93,6 +131,22 @@ class Response
             foreach ($this->headers as $name => $value) {
                 header("$name: $value");
             }
+        }
+        if ($this->filePath !== null && $this->range !== null) {
+            [$start, $end] = $this->range;
+            $fh = fopen($this->filePath, 'rb');
+            fseek($fh, $start);
+            $left = $end - $start + 1;
+            while ($left > 0 && !feof($fh)) {
+                $chunk = fread($fh, min(1048576, $left));
+                if ($chunk === false) {
+                    break;
+                }
+                echo $chunk;
+                $left -= strlen($chunk);
+            }
+            fclose($fh);
+            return;
         }
         if ($this->filePath !== null) {
             readfile($this->filePath);

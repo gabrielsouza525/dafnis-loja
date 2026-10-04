@@ -12,6 +12,8 @@ $course = [
 ];
 $access = Enrollment::accessUrl($e);
 $done = $e['status'] === 'completed';
+$internal = !empty($e['has_content']); // curso próprio, feito aqui na loja
+$onlineDone = $internal && $e['online_done_at'] && !$done;
 ?>
 <article class="my-course">
 <?= partial('cover', ['course' => $course, 'variant' => 'my']) ?>
@@ -28,10 +30,15 @@ $done = $e['status'] === 'completed';
 <div class="progress<?= $done ? ' done' : '' ?>" role="progressbar" aria-valuenow="<?= (int) $e['progress'] ?>" aria-valuemin="0" aria-valuemax="100" aria-label="<?= e('Progresso em ' . $e['course_title']) ?>"><span style="width:<?= (int) $e['progress'] ?>%"></span></div>
 </div>
 <?php else: ?>
-<p class="hint" style="margin:0">Estamos cadastrando você na plataforma de ensino. O link de acesso chega por e-mail.</p>
+<p class="hint" style="margin:0"><?= $internal ? 'Estamos liberando o seu acesso. Avisaremos por e-mail.' : 'Estamos cadastrando você na plataforma de ensino. O link de acesso chega por e-mail.' ?></p>
+<?php endif; ?>
+<?php if ($onlineDone): ?>
+<p class="hint" style="margin:0"><?= $e['practical_required'] ? 'Parte on-line concluída. Nossa equipe vai combinar com você a prática presencial.' : 'Curso concluído. O certificado está em emissão.' ?></p>
 <?php endif; ?>
 <div class="my-actions">
-<?php if ($e['status'] === 'active' && $access): ?>
+<?php if ($e['status'] === 'active' && $internal): ?>
+<a class="btn btn-primary btn-sm" href="<?= e(url(Enrollment::studyPath($e))) ?>"><?= $onlineDone ? 'Rever o curso' : ((int) $e['progress'] > 0 ? 'Continuar' : 'Começar o curso') ?><?= icon('arrowR', 'ic-sm') ?></a>
+<?php elseif ($e['status'] === 'active' && $access): ?>
 <a class="btn btn-primary btn-sm" href="<?= e($access) ?>" target="_blank" rel="noopener">Continuar<?= icon('external', 'ic-sm') ?></a>
 <?php elseif ($done && $e['certificate_id']): ?>
 <a class="btn btn-buy btn-sm" href="<?= e(url('/minha-conta/certificados/' . $e['certificate_id'] . '/baixar')) ?>"><?= icon('download', 'ic-sm') ?>Certificado</a>
@@ -40,7 +47,7 @@ $done = $e['status'] === 'completed';
 <?php else: ?>
 <button class="btn btn-ghost btn-sm" type="button" disabled>Acesso em liberação</button>
 <?php endif; ?>
-<?php if ($e['course_slug']): ?><a class="btn btn-ghost btn-sm" href="<?= e(url('/cursos/' . $e['course_slug'])) ?>">Ver curso</a><?php endif; ?>
+<?php if ($done && $internal): ?><a class="btn btn-ghost btn-sm" href="<?= e(url(Enrollment::studyPath($e))) ?>">Rever o curso</a><?php elseif ($e['course_slug']): ?><a class="btn btn-ghost btn-sm" href="<?= e(url('/cursos/' . $e['course_slug'])) ?>">Ver curso</a><?php endif; ?>
 </div>
 </div>
 </article>

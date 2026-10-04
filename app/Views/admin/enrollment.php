@@ -1,6 +1,7 @@
 <?php
-/** @var array $e @var array $order @var string|null $accessUrl @var array $activity */
+/** @var array $e @var array $order @var string|null $accessUrl @var array $activity @var array|null $study @var array $sessions */
 use App\Models\Enrollment;
+use App\Services\Scorm\Tracker;
 
 $statusOptions = Enrollment::STATUS;
 ?>
@@ -9,7 +10,9 @@ $statusOptions = Enrollment::STATUS;
 <div class="adm-actions"><?= partial('status', ['label' => Enrollment::statusLabel($e['status']), 'tone' => Enrollment::STATUS_TONE[$e['status']] ?? 'muted']) ?><a class="btn btn-outline btn-sm" href="<?= e(url('/admin/matriculas')) ?>"><?= icon('arrowL', 'ic-sm') ?>Matrículas</a></div>
 </div>
 
-<?php if ($e['status'] === 'processing'): ?>
+<?php if ($e['status'] === 'processing' && $e['has_content']): ?>
+<div class="note-box info" style="margin:0 0 22px"><?= icon('info') ?><span><strong>Para liberar:</strong> este curso é feito aqui na loja. Mude a situação para "Em andamento": <?= e((string) $e['participant_name']) ?> recebe o aviso por e-mail e faz o curso em Minha conta › Meus cursos, entrando com <?= e((string) $e['participant_email']) ?>.</span></div>
+<?php elseif ($e['status'] === 'processing'): ?>
 <div class="note-box info" style="margin:0 0 22px"><?= icon('info') ?><span><strong>Para liberar:</strong> cadastre <?= e((string) $e['participant_name']) ?> (<?= e((string) $e['participant_email']) ?>) na plataforma de ensino, depois mude a situação para "Em andamento". O participante recebe o link de acesso por e-mail.</span></div>
 <?php elseif ($e['status'] === 'awaiting_participant'): ?>
 <div class="note-box" style="margin:0 0 22px"><?= icon('users') ?><span>O comprador ainda não indicou o participante desta vaga. Você pode preencher aqui se ele informou por outro canal.</span></div>
@@ -68,3 +71,37 @@ $statusOptions = Enrollment::STATUS;
 <?php endif; ?>
 </aside>
 </div>
+
+<?php if ($e['has_content']): ?>
+<?php $onlineHours = Tracker::onlineHours($e); ?>
+<div class="panel" style="margin-top:22px">
+<div class="panel-head"><h2>Curso on-line na loja</h2><?php if ($study): ?><?= partial('status', ['label' => $study['status_label'], 'tone' => $study['done'] ? 'ok' : ($study['lesson_status'] === 'failed' ? 'warn' : 'blue')]) ?><?php endif; ?></div>
+<div class="panel-body">
+<?php if (!$study): ?>
+<p class="hint" style="margin:0">O participante ainda não abriu o curso.</p>
+<?php else: ?>
+<dl class="dl">
+<dt>Situação</dt><dd><?= e($study['status_label']) ?><?= $study['passed_at'] ? ' em ' . e(date_br($study['passed_at'], true)) : '' ?><?= $study['score_raw'] !== null ? ' · nota ' . e(rtrim(rtrim((string) $study['score_raw'], '0'), '.')) . ($study['mastery_score'] !== null ? ' (mínimo ' . (int) $study['mastery_score'] . ')' : '') : '' ?></dd>
+<dt>Tempo de estudo</dt><dd><strong><?= e(Tracker::duration((int) $study['active_seconds'])) ?></strong><?= $onlineHours ? ' de ' . $onlineHours . ' h previstas na parte on-line' : '' ?> · medido pela loja (curso aberto, aba visível e com atividade)</dd>
+<dt>Tempo informado pelo curso</dt><dd><?= e(Tracker::duration((int) $study['course_seconds'])) ?></dd>
+<dt>Acessos</dt><dd><?= (int) $study['sessions'] ?> · primeiro em <?= e(date_br($study['first_access'], true)) ?> · último em <?= e(date_br($study['last_access'], true)) ?></dd>
+<?php if ($study['answers']): ?><dt>Respostas registradas</dt><dd><?= (int) $study['answers'] ?> (<?= (int) $study['answers_correct'] ?> corretas)</dd><?php endif; ?>
+<dt>Versão do conteúdo</dt><dd>v<?= (int) $study['version'] ?></dd>
+</dl>
+<?php if ($e['practical_required'] && $study['done'] && $e['status'] === 'active'): ?>
+<div class="note-box info"><?= icon('info') ?><span>Parte on-line concluída. Depois da prática presencial (<?= e((string) ($e['practical_hours'] ?: 'obrigatória')) ?>), registre o certificado: a matrícula vira "Concluído".</span></div>
+<?php endif; ?>
+<?php if ($sessions): ?>
+<div class="table-wrap" style="margin-top:16px"><table class="table">
+<thead><tr><th>Início</th><th>Último sinal</th><th class="num">Tempo de estudo</th><th class="num">Informado pelo curso</th><th>IP</th></tr></thead>
+<tbody>
+<?php foreach ($sessions as $s): ?>
+<tr><td><?= e(date_br($s['started_at'], true)) ?></td><td><?= e(date_br($s['last_seen_at'], true)) ?></td><td class="num"><?= e(Tracker::duration((int) $s['active_seconds'])) ?></td><td class="num"><?= e(Tracker::duration((int) $s['course_seconds'])) ?></td><td class="mono"><?= e((string) $s['ip']) ?></td></tr>
+<?php endforeach; ?>
+</tbody></table></div>
+<?php if ((int) $study['sessions'] > count($sessions)): ?><p class="hint">Mostrando os <?= count($sessions) ?> acessos mais recentes.</p><?php endif; ?>
+<?php endif; ?>
+<?php endif; ?>
+</div>
+</div>
+<?php endif; ?>

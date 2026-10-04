@@ -12,7 +12,9 @@ protótipo *"Dafnis Treinamentos — Loja NR"* (Claude Design).
    progresso, anexar certificado), cursos, categorias, cupons, usuários, contatos e configurações.
 
 Os cursos são feitos na **plataforma de ensino white label**: a loja vende, registra as vagas e leva o
-aluno até a plataforma pelo botão "Continuar".
+aluno até a plataforma pelo botão "Continuar". Os **cursos próprios** da Dafnis (feitos no Rise 360,
+Storyline ou outra ferramenta e exportados em SCORM 1.2) são feitos aqui mesmo, na loja (veja
+[Cursos próprios](#cursos-próprios-scorm-12)).
 
 ---
 
@@ -74,9 +76,10 @@ o `db:fresh --demo` de novo: a equipe de exemplo passa a entrar só com a senha.
 Com o servidor rodando e o banco recém-criado com `db:fresh --demo`:
 
 ```bash
-php tests/flow.php http://localhost:8000     # compra de ponta a ponta, 72 verificações
+php tests/flow.php http://localhost:8000     # compra de ponta a ponta
 php tests/smoke.php http://localhost:8000    # todas as páginas por perfil
 php tests/links.php http://localhost:8000    # rastreia links quebrados
+php tests/scorm.php http://localhost:8000    # cursos próprios: importação, página do curso, andamento e tempo
 node tests/browser.mjs http://localhost:8000 # comportamento do JavaScript no Chrome (headless)
 ```
 
@@ -104,6 +107,43 @@ Rode `db:fresh --demo` antes de cada um: eles criam pedidos e mudam o estado do 
    avisado e baixa em *Minha conta › Certificados*; a empresa compradora também vê os certificados da equipe.
 
 O participante enxerga os cursos quando entra com o **mesmo e-mail** informado na vaga.
+
+## Cursos próprios (SCORM 1.2)
+
+Curso com conteúdo próprio não depende da plataforma de ensino: o aluno faz o curso dentro da loja.
+
+1. **Exportar.** Na ferramenta de autoria, exporte para **LMS em SCORM 1.2** (no Rise 360: *Publish › LMS*,
+   formato SCORM 1.2, acompanhamento pelo resultado da prova). Envie o `.zip` como veio, sem descompactar.
+2. **Importar.** Em *Painel › Cursos › (curso) › Conteúdo on-line próprio*, envie o `.zip`. O limite de envio
+   pelo painel é o menor entre `SCORM_MAX_MB` e o `upload_max_filesize`/`post_max_size` do PHP. Pacote
+   maior (com vídeos): copie para o servidor e rode
+   `php bin/console scorm:import --course=id-ou-slug --file=pacote.zip` (`--draft` importa fora de uso).
+   A importação confere o `imsmanifest.xml`, recusa SCORM 2004 e qualquer arquivo de tipo não previsto
+   (`.php`, por exemplo) e guarda tudo em `storage/scorm`, fora da web.
+3. **Conferir.** "Pré-visualizar" abre o curso como o aluno vê, sem gravar nada.
+4. **Liberar.** Com uma versão em uso, liberar a vaga (*Matrículas › Em andamento*) já basta: o e-mail de
+   acesso e o botão de *Meus cursos* levam ao curso na loja, em `/minha-conta/cursos/{vaga}/estudar`.
+
+**O que a loja registra.** A página do curso oferece a API do SCORM 1.2 (`public/assets/js/scorm-player.js`):
+situação (`cmi.core.lesson_status`), nota, ponto de parada (`suspend_data`), respostas da prova e o tempo
+informado pelo curso. À parte, a loja mede o **tempo de estudo**: a cada minuto a página avisa se o curso está
+aberto, com a aba visível e com alguma atividade nos últimos 10 minutos (parado, o tempo pausa e aparece
+"Você ainda está aí?"). Cada abertura é um acesso, com data, IP e duração, em *Matrículas › (vaga)*.
+
+**Conclusão.** Aprovação (ou conclusão, conforme o acompanhamento escolhido na exportação) põe o progresso
+em 100% e avisa a equipe por e-mail. Sem prática obrigatória, a vaga vira "Concluído" e a equipe emite o
+certificado. Com prática obrigatória (NR 10 Básico, por exemplo), a vaga continua "Em andamento" até a equipe
+registrar o certificado depois da parte presencial. Aprovação não volta atrás: refazer a prova depois de
+aprovado não troca a situação nem a nota.
+
+**Versões.** Cada envio é uma versão nova. Quem já começou continua na versão em que começou (o ponto de
+parada de uma versão não serve para outra); os novos participantes recebem a versão em uso. Versões com
+participantes não podem ser excluídas.
+
+**Segurança.** Os arquivos só são entregues ao participante da vaga (ou à equipe, na pré-visualização) e só
+abrem dentro da loja (`frame-ancestors 'self'`). O conteúdo exportado pelas ferramentas usa scripts
+embutidos, então roda com uma CSP própria, mais aberta que a da loja, no mesmo domínio: envie só pacotes
+gerados pela própria Dafnis.
 
 ## Mercado Pago
 
@@ -199,9 +239,10 @@ app/Controllers/{Site,Auth,Account,Admin}   rotas em routes/web.php
 app/Services/Catalog.php                     busca, filtros combinados e ordenação
 app/Services/Cart.php, Orders.php            carrinho na sessão e ciclo do pedido
 app/Services/Enrollments.php                 vagas, liberação e certificados
+app/Services/Scorm/                          cursos próprios: pacotes SCORM, andamento e tempo de estudo
 app/Services/Payments/                       interface do gateway, Mercado Pago e modo manual
 app/Views/                                   layouts, loja, conta, painel e e-mails
 public/assets/{css,js}                       estilos do protótipo e JavaScript
-database/migrations/001_schema.sql           esquema do banco
+database/migrations/                         esquema do banco (001) e alterações seguintes
 database/data/cursos.json                    catálogo importado da planilha
 ```

@@ -1768,3 +1768,28 @@ html:not(.js) .pw-meter,html:not(.js) .pw-meta{display:none}
 [data-theme="dark"] .drawer{box-shadow:-20px 0 40px rgba(0,0,0,.5)}
 [data-theme="dark"] .backdrop{background:rgba(0,0,0,.6)}
 [data-theme="dark"] .form-select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2393A1B7' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")}
+
+/* Curso SCORM aberto na loja (Minha conta › Meus cursos › Estudar): barra fina e o pacote na tela toda */
+body.study{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden;background:var(--surface-2)}
+.study-bar{flex-shrink:0;display:flex;align-items:center;gap:16px;min-height:52px;padding:6px 16px;background:var(--surface);border-bottom:1px solid var(--line)}
+.study-back{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;color:var(--navy-ink);text-decoration:none;padding:6px 10px;border-radius:8px;white-space:nowrap}
+.study-back:hover{background:var(--gray)}
+.study-title{flex:1;min-width:0;display:flex;align-items:center;gap:8px}
+.study-title strong{font-family:var(--display);font-size:15px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.study-status{font-size:12.5px;color:var(--muted);white-space:nowrap}
+.study-status[data-tone="ok"]{color:var(--green)}
+.study-status[data-tone="warn"]{color:var(--red)}
+.study-alert{flex-shrink:0;background:var(--red-tint);color:var(--red);border-bottom:1px solid #F4C7C3;padding:10px 16px;font-size:14px}
+.study-alert a{color:inherit;font-weight:600}
+.study-main{position:relative;flex:1;min-height:0}
+.study-frame{display:block;width:100%;height:100%;border:0;background:#fff}
+.study-noscript{padding:40px 16px;text-align:center}
+.study-idle{position:absolute;inset:0;background:rgba(7,26,51,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:5}
+.study-idle-box{background:var(--surface);border-radius:14px;box-shadow:var(--shadow-h);padding:24px;max-width:400px;text-align:center}
+.study-idle-box h2{font-size:20px;margin-bottom:8px}
+.study-idle-box p{color:var(--muted);font-size:14.5px;margin-bottom:18px}
+@media (max-width:760px){
+  .study-bar{gap:8px;padding:6px 10px}
+  .study-back span,.study-title .nr-tag{display:none}
+  .study-status{max-width:38vw;overflow:hidden;text-overflow:ellipsis}
+}

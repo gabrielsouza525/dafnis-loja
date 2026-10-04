@@ -87,7 +87,24 @@ final class Notify
         Mailer::send($enrollment['participant_email'], 'Seu acesso ao treinamento foi liberado', 'access-released', [
             'enrollment' => $enrollment,
             'accessUrl' => Enrollment::accessUrl($enrollment),
+            'internal' => (bool) $enrollment['has_content'],
             'accountUrl' => absolute_url('/minha-conta/cursos'),
+        ]);
+    }
+
+    /** Parte on-line de um curso SCORM concluída: a equipe emite o certificado ou agenda a prática. */
+    public static function onlinePartDone(?array $enrollment, ?array $summary, bool $practical): void
+    {
+        $team = self::teamAddress();
+        if (!$enrollment || !$team) {
+            return;
+        }
+        $who = (string) ($enrollment['participant_name'] ?: $enrollment['participant_email']);
+        Mailer::send($team, ($practical ? 'Agendar prática — ' : 'Emitir certificado — ') . $who, 'team-online-done', [
+            'enrollment' => $enrollment,
+            'summary' => $summary,
+            'practical' => $practical,
+            'url' => absolute_url('/admin/matriculas/' . $enrollment['id']),
         ]);
     }
 

@@ -10,6 +10,7 @@ use App\Core\Validator;
 use App\Models\Category;
 use App\Models\Course;
 use App\Services\Activity;
+use App\Services\Scorm\Packages;
 use App\Services\Uploads;
 
 final class CourseController extends AdminController
@@ -121,6 +122,7 @@ final class CourseController extends AdminController
             'course' => $course,
             'categories' => Category::options(),
             'syllabus' => $course ? Course::syllabus($course) : [],
+            'packages' => $course ? Packages::forCourse((int) $course['id']) : [],
             'scripts' => [],
         ]);
     }

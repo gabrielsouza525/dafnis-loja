@@ -149,6 +149,16 @@ final class Request
             || str_starts_with($this->path, '/api/');
     }
 
+    /**
+     * Requisição de fundo: avisos automáticos (cabeçalho X-Background) e os arquivos dos cursos
+     * SCORM, que o navegador busca às dezenas. Não renovam a sessão nem consomem os avisos (flash).
+     */
+    public function isBackground(): bool
+    {
+        return ($this->header('X-Background') ?? '') === '1'
+            || preg_match('#^/(minha-conta/cursos/\d+/pacote|admin/cursos/\d+/pacotes/\d+/arquivos)/#', $this->path) === 1;
+    }
+
     public function ip(): string
     {
         // Sem confiar em X-Forwarded-For: pode ser forjado pelo cliente.

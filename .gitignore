@@ -4,6 +4,7 @@
 /storage/sessions/*
 /storage/cache/*
 /storage/uploads/*
+/storage/scorm/*
 /public/uploads/*
 !/storage/**/.gitkeep
 !/public/uploads/.htaccess

@@ -1,6 +1,7 @@
 <?php
-/** @var array|null $course @var array $categories @var array $syllabus */
+/** @var array|null $course @var array $categories @var array $syllabus @var array $packages */
 use App\Controllers\Admin\CourseController;
+use App\Services\Scorm\Packages;
 
 $c = $course ?? [];
 $v = static fn (string $key, mixed $default = '') => $c[$key] ?? $default;
@@ -110,6 +111,45 @@ $action = $course ? url('/admin/cursos/' . $course['id']) : url('/admin/cursos')
 </form>
 
 <?php if ($course): ?>
+<?php $limit = Packages::uploadLimitBytes(); $currentPackage = array_values(array_filter($packages, static fn ($p) => $p['is_current']))[0] ?? null; ?>
+<div class="panel" id="conteudo" style="margin-top:22px">
+<div class="panel-head"><h2>Conteúdo on-line próprio (SCORM)</h2><?php if ($currentPackage): ?><a class="btn btn-outline btn-xs" href="<?= e(url('/admin/cursos/' . $course['id'] . '/pacotes/' . $currentPackage['id'] . '/previa')) ?>" target="_blank"><?= icon('external', 'ic-sm') ?>Ver como o aluno</a><?php endif; ?></div>
+<div class="panel-body">
+<p class="hint" style="margin:0 0 14px">Para cursos feitos pela Dafnis (Rise 360, Storyline e outras ferramentas): exporte para <strong>LMS em SCORM 1.2</strong> e envie o .zip. Com um conteúdo em uso, o aluno faz o curso aqui na loja (botão "Começar o curso" em Meus cursos), em vez da plataforma de ensino; a loja registra os acessos, o tempo de estudo e a nota. Quem já começou continua na versão em que começou.</p>
+<?php if ($packages): ?>
+<div class="table-wrap" style="margin-bottom:16px"><table class="table">
+<thead><tr><th>Versão</th><th>Título no pacote</th><th>Enviado</th><th>Tamanho</th><th>Participantes</th><th></th></tr></thead>
+<tbody>
+<?php foreach ($packages as $p): ?>
+<tr>
+<td><strong>v<?= (int) $p['version'] ?></strong><?php if ($p['is_current']): ?> <?= partial('status', ['label' => 'Em uso', 'tone' => 'ok']) ?><?php endif; ?></td>
+<td><?= e((string) ($p['title'] ?: '—')) ?><br><small class="muted mono"><?= e($p['launch_path']) ?><?= $p['mastery_score'] !== null ? ' · nota mínima ' . (int) $p['mastery_score'] : '' ?></small></td>
+<td><?= e(date_br($p['created_at'], true)) ?><?php if ($p['uploaded_by_name']): ?><br><small class="muted"><?= e($p['uploaded_by_name']) ?></small><?php endif; ?></td>
+<td><?= e(number_br($p['size_bytes'] / 1048576, 1)) ?> MB<br><small class="muted"><?= (int) $p['file_count'] ?> arquivos</small></td>
+<td><?= (int) $p['attempts'] ?></td>
+<td style="white-space:nowrap">
+<a class="btn btn-outline btn-xs" href="<?= e(url('/admin/cursos/' . $course['id'] . '/pacotes/' . $p['id'] . '/previa')) ?>" target="_blank">Pré-visualizar</a>
+<?php if (!$p['is_current']): ?>
+<form method="post" action="<?= e(url('/admin/cursos/' . $course['id'] . '/pacotes/' . $p['id'] . '/usar')) ?>" style="display:inline" data-confirm="Colocar a versão <?= (int) $p['version'] ?> em uso? Novos participantes passam a receber esta versão."><?= csrf_field() ?><button class="btn btn-outline btn-xs" type="submit">Usar esta versão</button></form>
+<?php if (!(int) $p['attempts']): ?><form method="post" action="<?= e(url('/admin/cursos/' . $course['id'] . '/pacotes/' . $p['id'] . '/excluir')) ?>" style="display:inline" data-confirm="Excluir a versão <?= (int) $p['version'] ?>? Os arquivos dela são apagados."><?= csrf_field() ?><button class="btn btn-danger btn-xs" type="submit">Excluir</button></form><?php endif; ?>
+<?php endif; ?>
+</td>
+</tr>
+<?php endforeach; ?>
+</tbody></table></div>
+<?php endif; ?>
+<form method="post" action="<?= e(url('/admin/cursos/' . $course['id'] . '/pacotes')) ?>" enctype="multipart/form-data" data-loading-form>
+<?= csrf_field() ?>
+<div class="form-grid">
+<div class="field full"><label for="f-package">Pacote SCORM 1.2 <small>(.zip<?= $limit ? ', até ' . e(number_br($limit / 1048576)) . ' MB pelo painel' : '' ?>)</small></label><input class="input" style="padding:9px" type="file" id="f-package" name="package" accept=".zip,application/zip" required><?php if ($err = field_error('package')): ?><p class="field-error"><?= icon('alert') ?><?= e($err) ?></p><?php endif; ?>
+<p class="hint">Pacote maior: copie o .zip para o servidor e rode <code>php bin/console scorm:import --course=<?= (int) $course['id'] ?> --file=caminho/do/pacote.zip</code>.</p></div>
+<div class="full"><label class="switch"><input type="checkbox" name="make_current" value="1" checked><span>Colocar em uso assim que importar<small>Desmarque para conferir na pré-visualização antes de liberar aos alunos.</small></span></label></div>
+</div>
+<button class="btn btn-navy" type="submit" style="margin-top:14px"><?= icon('upload', 'ic-sm') ?>Importar pacote</button>
+</form>
+</div>
+</div>
+
 <div class="panel" style="margin-top:22px">
 <div class="panel-head"><h2>Zona de cuidado</h2></div>
 <div class="panel-body" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">

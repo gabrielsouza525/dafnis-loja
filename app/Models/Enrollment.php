@@ -26,6 +26,10 @@ final class Enrollment
 
     private const SELECT = 'SELECT e.*, i.course_title, i.course_code, i.course_hours,
                                    c.slug AS course_slug, c.nr_number, c.short_title, c.icon, c.modality, c.access_url AS course_access_url,
+                                   c.practical_required, c.practical_hours,
+                                   (EXISTS (SELECT 1 FROM course_packages p WHERE p.course_id = e.course_id AND p.is_current = 1)
+                                    OR EXISTS (SELECT 1 FROM scorm_attempts sa WHERE sa.enrollment_id = e.id)) AS has_content,
+                                   (SELECT MIN(sa.passed_at) FROM scorm_attempts sa WHERE sa.enrollment_id = e.id) AS online_done_at,
                                    k.tone, o.number AS order_number, o.status AS order_status,
                                    cert.id AS certificate_id, cert.code AS certificate_code, cert.issued_at AS certificate_issued_at,
                                    cert.file_path AS certificate_file, cert.external_url AS certificate_url
@@ -73,9 +77,20 @@ final class Enrollment
         return self::STATUS[$status] ?? $status;
     }
 
-    /** Link de acesso: o da matrícula, senão o do curso, senão o endereço geral da plataforma. */
+    /**
+     * Link de acesso: curso com conteúdo próprio (SCORM) abre na loja; os demais usam o link da
+     * matrícula, senão o do curso, senão o endereço geral da plataforma de ensino.
+     */
     public static function accessUrl(array $e): ?string
     {
+        if (!empty($e['has_content'])) {
+            return absolute_url(self::studyPath($e));
+        }
         return $e['access_url'] ?: ($e['course_access_url'] ?: (\App\Services\Settings::get('lms.url') ?: null));
+    }
+
+    public static function studyPath(array $e): string
+    {
+        return '/minha-conta/cursos/' . $e['id'] . '/estudar';
     }
 }

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Pacote mínimo em SCORM 1.2 para os testes (tests/scorm.php e tests/browser.mjs). -->
+<manifest identifier="dafnis-demo" version="1.0"
+  xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
+  xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <metadata>
+    <schema>ADL SCORM</schema>
+    <schemaversion>1.2</schemaversion>
+  </metadata>
+  <organizations default="org1">
+    <organization identifier="org1">
+      <title>Curso de demonstração</title>
+      <item identifier="item1" identifierref="res1">
+        <title>Curso de demonstração</title>
+        <adlcp:masteryscore>70</adlcp:masteryscore>
+      </item>
+    </organization>
+  </organizations>
+  <resources>
+    <resource identifier="res1" type="webcontent" adlcp:scormtype="sco" href="content/index.html">
+      <file href="content/index.html"/>
+      <file href="content/demo.js"/>
+    </resource>
+  </resources>
+</manifest>

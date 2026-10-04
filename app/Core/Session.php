@@ -43,13 +43,13 @@ final class Session
             $_SESSION = ['_expired' => true];
             session_regenerate_id(true);
         }
-        if (($request->header('X-Background') ?? '') !== '1') {
+        if (!$request->isBackground()) {
             $_SESSION['_last_activity'] = $now;
-        }
 
-        // Flash: o que foi gravado na requisição anterior fica disponível nesta.
-        $_SESSION['_flash_old'] = $_SESSION['_flash_new'] ?? [];
-        $_SESSION['_flash_new'] = [];
+            // Flash: o que foi gravado na requisição anterior fica disponível nesta.
+            $_SESSION['_flash_old'] = $_SESSION['_flash_new'] ?? [];
+            $_SESSION['_flash_new'] = [];
+        }
     }
 
     public static function get(string $key, mixed $default = null): mixed

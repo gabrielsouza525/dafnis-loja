@@ -52,27 +52,42 @@ final class App
         return $router->dispatch($request);
     }
 
+    /** Política de conteúdo padrão da loja. */
+    private const CSP = [
+        'default-src' => "'self'",
+        'img-src' => "'self' data: blob:",
+        'style-src' => "'self' 'unsafe-inline' https://fonts.googleapis.com",
+        'font-src' => "'self' https://fonts.gstatic.com",
+        'script-src' => "'self'",
+        'connect-src' => "'self'",
+        'frame-src' => "'none'",
+        'frame-ancestors' => "'none'",
+        'base-uri' => "'self'",
+        'form-action' => "'self'",
+        'object-src' => "'none'",
+    ];
+
+    /** CSP da loja com diretivas trocadas (ex.: a página do curso, que abre o pacote num iframe). */
+    public static function csp(array $overrides = []): string
+    {
+        $directives = array_merge(self::CSP, $overrides);
+        return implode('; ', array_map(static fn ($k, $v) => "$k $v", array_keys($directives), $directives));
+    }
+
+    /**
+     * Cabeçalhos de segurança. A página do curso e os arquivos do pacote SCORM definem a própria
+     * política (o curso roda num iframe da loja), então X-Frame-Options e CSP só entram quando a
+     * resposta não trouxe os seus.
+     */
     private function secureHeaders(Response $response, Request $request): void
     {
         $response
             ->withHeader('X-Content-Type-Options', 'nosniff')
-            ->withHeader('X-Frame-Options', 'DENY')
+            ->withHeader('X-Frame-Options', $response->header('X-Frame-Options') ?? 'DENY')
             ->withHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
             ->withHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()')
             ->withHeader('Cross-Origin-Opener-Policy', 'same-origin')
-            ->withHeader('Content-Security-Policy', implode('; ', [
-                "default-src 'self'",
-                "img-src 'self' data: blob:",
-                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-                "font-src 'self' https://fonts.gstatic.com",
-                "script-src 'self'",
-                "connect-src 'self'",
-                "frame-src 'none'",
-                "frame-ancestors 'none'",
-                "base-uri 'self'",
-                "form-action 'self'",
-                "object-src 'none'",
-            ]));
+            ->withHeader('Content-Security-Policy', $response->header('Content-Security-Policy') ?? self::csp());
 
         if ($request->isSecure()) {
             $response->withHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
