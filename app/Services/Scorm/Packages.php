@@ -96,7 +96,7 @@ final class Packages
 
         try {
             [$count, $bytes] = self::extract($zipPath, $target);
-            $manifest = self::readManifest($target);
+            $manifest = self::readManifest($target) + ['lessons' => RiseProgress::lessonCount($target)];
         } catch (Throwable $e) {
             self::removeDirectory($target);
             throw $e instanceof ValidationException ? $e : ValidationException::with('package', 'Não foi possível abrir o pacote: ' . $e->getMessage());
@@ -114,6 +114,7 @@ final class Packages
                 'directory' => $directory,
                 'launch_path' => $manifest['launch'],
                 'mastery_score' => $manifest['mastery'],
+                'lesson_count' => $manifest['lessons'],
                 'file_count' => $count,
                 'size_bytes' => $bytes,
                 'original_name' => $originalName !== null ? mb_substr($originalName, 0, 190) : null,

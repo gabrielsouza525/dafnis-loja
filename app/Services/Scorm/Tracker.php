@@ -136,7 +136,8 @@ final class Tracker
         }
         $newStatus = $fields['lesson_status'] ?? $current;
         if (array_key_exists('suspend_data', $fields)) {
-            $progress = RiseProgress::fromSuspendData($fields['suspend_data']);
+            $lessons = Database::value('SELECT lesson_count FROM course_packages WHERE id = :p', ['p' => $attempt['package_id']]);
+            $progress = RiseProgress::fromSuspendData($fields['suspend_data'], $lessons !== null ? (int) $lessons : null);
             if ($progress !== null) {
                 $fields['progress'] = $progress;
             }

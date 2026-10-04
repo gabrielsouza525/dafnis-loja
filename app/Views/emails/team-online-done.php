@@ -7,7 +7,8 @@ use App\Services\Scorm\Tracker;
 <?php if ($summary): ?>
 <p style="margin:0 0 12px;background:#F5F7FA;padding:12px;border-radius:8px">
 Situação: <?= e($summary['status_label']) ?><?= $summary['score_raw'] !== null ? ' · nota ' . e(rtrim(rtrim((string) $summary['score_raw'], '0'), '.')) : '' ?><br>
-Tempo de estudo medido pela loja: <?= e(Tracker::duration((int) $summary['active_seconds'])) ?> em <?= (int) $summary['sessions'] ?> acesso(s)
+<?php if ($summary['progress'] !== null): ?>Lições vistas: <?= (int) $summary['progress'] ?>% do conteúdo<br><?php endif; ?>
+Tempo de estudo medido pela loja: <?= e(Tracker::duration((int) $summary['active_seconds'])) ?> em <?= (int) $summary['sessions'] ?> acesso(s)<?php if ($hours = Tracker::onlineHours($enrollment)): ?> (parte on-line: <?= $hours ?> h)<?php endif; ?>
 </p>
 <?php endif; ?>
 <p style="margin:0 0 12px"><?= $practical

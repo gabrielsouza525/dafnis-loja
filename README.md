@@ -126,7 +126,8 @@ Curso com conteúdo próprio não depende da plataforma de ensino: o aluno faz o
 
 **O que a loja registra.** A página do curso oferece a API do SCORM 1.2 (`public/assets/js/scorm-player.js`):
 situação (`cmi.core.lesson_status`), nota, ponto de parada (`suspend_data`), respostas da prova e o tempo
-informado pelo curso. À parte, a loja mede o **tempo de estudo**: a cada minuto a página avisa se o curso está
+informado pelo curso. Nos cursos do Rise 360, o percentual de lições vistas sai do `suspend_data` (o SCORM 1.2
+não tem campo de progresso) e alimenta a barra de progresso do aluno. À parte, a loja mede o **tempo de estudo**: a cada minuto a página avisa se o curso está
 aberto, com a aba visível e com alguma atividade nos últimos 10 minutos (parado, o tempo pausa e aparece
 "Você ainda está aí?"). Cada abertura é um acesso, com data, IP e duração, em *Matrículas › (vaga)*.
 
@@ -134,7 +135,9 @@ aberto, com a aba visível e com alguma atividade nos últimos 10 minutos (parad
 em 100% e avisa a equipe por e-mail. Sem prática obrigatória, a vaga vira "Concluído" e a equipe emite o
 certificado. Com prática obrigatória (NR 10 Básico, por exemplo), a vaga continua "Em andamento" até a equipe
 registrar o certificado depois da parte presencial. Aprovação não volta atrás: refazer a prova depois de
-aprovado não troca a situação nem a nota.
+aprovado não troca a situação nem a nota. Se o aluno passou com lições por ver ou com tempo de estudo abaixo
+da carga horária on-line, a matrícula mostra "Confira antes do certificado". No Rise, a navegação
+"Restrita" (*Configurações do curso › Navegação*) obriga a seguir as lições em ordem até a prova.
 
 **Versões.** Cada envio é uma versão nova. Quem já começou continua na versão em que começou (o ponto de
 parada de uma versão não serve para outra); os novos participantes recebem a versão em uso. Versões com

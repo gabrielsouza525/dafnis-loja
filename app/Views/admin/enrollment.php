@@ -82,14 +82,22 @@ $statusOptions = Enrollment::STATUS;
 <?php else: ?>
 <dl class="dl">
 <dt>Situação</dt><dd><?= e($study['status_label']) ?><?= $study['passed_at'] ? ' em ' . e(date_br($study['passed_at'], true)) : '' ?><?= $study['score_raw'] !== null ? ' · nota ' . e(rtrim(rtrim((string) $study['score_raw'], '0'), '.')) . ($study['mastery_score'] !== null ? ' (mínimo ' . (int) $study['mastery_score'] . ')' : '') : '' ?></dd>
+<?php if ($study['progress'] !== null): ?><dt>Lições vistas</dt><dd><?= (int) $study['progress'] ?>% do conteúdo</dd><?php endif; ?>
 <dt>Tempo de estudo</dt><dd><strong><?= e(Tracker::duration((int) $study['active_seconds'])) ?></strong><?= $onlineHours ? ' de ' . $onlineHours . ' h previstas na parte on-line' : '' ?> · medido pela loja (curso aberto, aba visível e com atividade)</dd>
 <dt>Tempo informado pelo curso</dt><dd><?= e(Tracker::duration((int) $study['course_seconds'])) ?></dd>
 <dt>Acessos</dt><dd><?= (int) $study['sessions'] ?> · primeiro em <?= e(date_br($study['first_access'], true)) ?> · último em <?= e(date_br($study['last_access'], true)) ?></dd>
 <?php if ($study['answers']): ?><dt>Respostas registradas</dt><dd><?= (int) $study['answers'] ?> (<?= (int) $study['answers_correct'] ?> corretas)</dd><?php endif; ?>
 <dt>Versão do conteúdo</dt><dd>v<?= (int) $study['version'] ?></dd>
 </dl>
+<?php
+$shortContent = $study['done'] && $study['progress'] !== null && (int) $study['progress'] < 100;
+$shortTime = $study['done'] && $onlineHours > 0 && (int) $study['active_seconds'] < $onlineHours * 3600;
+?>
+<?php if ($shortContent || $shortTime): ?>
+<div class="note-box err"><?= icon('alert') ?><span><strong>Confira antes do certificado:</strong> aprovado<?= $shortContent ? ' com ' . (int) $study['progress'] . '% das lições vistas' : '' ?><?= $shortContent && $shortTime ? ' e' : '' ?><?= $shortTime ? ' com ' . e(Tracker::duration((int) $study['active_seconds'])) . ' de estudo, abaixo das ' . $onlineHours . ' h da parte on-line' : '' ?>.</span></div>
+<?php endif; ?>
 <?php if ($e['practical_required'] && $study['done'] && $e['status'] === 'active'): ?>
-<div class="note-box info"><?= icon('info') ?><span>Parte on-line concluída. Depois da prática presencial (<?= e((string) ($e['practical_hours'] ?: 'obrigatória')) ?>), registre o certificado: a matrícula vira "Concluído".</span></div>
+<div class="note-box info"><?= icon('info') ?><span>Parte on-line concluída. Depois da prática presencial, registre o certificado: a matrícula vira "Concluído".<?= $e['practical_hours'] ? ' Prática: ' . e((string) $e['practical_hours']) . '.' : '' ?></span></div>
 <?php endif; ?>
 <?php if ($sessions): ?>
 <div class="table-wrap" style="margin-top:16px"><table class="table">

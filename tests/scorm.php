@@ -194,6 +194,7 @@ check('login da equipe', $admin->login('admin@dafnis.test', 'dafnis123', team_2f
 $r = $admin->request('GET', "/admin/matriculas/$enrollmentId");
 check('matrícula mostra o curso on-line, a situação e o tempo', $r['status'] === 200 && str_contains($r['body'], 'Curso on-line na loja') && str_contains($r['body'], 'Aprovado') && str_contains($r['body'], 'Tempo de estudo'));
 check('matrícula lista os acessos', substr_count($r['body'], '<td class="mono">') >= 2);
+check('aprovação com tempo abaixo da carga on-line pede conferência', str_contains($r['body'], 'Confira antes do certificado') && str_contains($r['body'], 'abaixo das 32 h'));
 $r = $admin->request('GET', "/admin/cursos/$courseId/editar");
 check('curso mostra as versões do conteúdo', str_contains($r['body'], 'Conteúdo on-line próprio') && str_contains($r['body'], 'Curso de demonstração'));
 $r = $admin->request('GET', "/admin/cursos/$courseId/pacotes/{$package['id']}/previa");
@@ -222,6 +223,45 @@ $admin->request('GET', "/admin/cursos/$courseId/editar");
 $r = $admin->request('POST', "/admin/cursos/$courseId/pacotes", ['package' => new CURLFile($bad, 'application/zip', 'quebrado.zip'), 'make_current' => '1']);
 $r = $admin->request('GET', "/admin/cursos/$courseId/editar");
 check('pacote inválido pelo painel volta com o erro', str_contains($r['body'], 'não é um .zip válido'));
+
+echo "
+Andamento do Rise 360
+";
+/** Comprime como o Rise (LZW com dicionário inicial de 256 caracteres) para montar um suspend_data. */
+function rise_suspend(array $data): string
+{
+    $text = (string) json_encode($data);
+    $dict = [];
+    for ($i = 0; $i < 256; $i++) {
+        $dict[chr($i)] = $i;
+    }
+    $next = 256;
+    $w = '';
+    $codes = [];
+    foreach (str_split($text) as $c) {
+        if (isset($dict[$w . $c])) {
+            $w .= $c;
+            continue;
+        }
+        $codes[] = $dict[$w];
+        $dict[$w . $c] = $next++;
+        $w = $c;
+    }
+    $codes[] = $dict[$w];
+    return (string) json_encode(['v' => 3, 'd' => $codes]);
+}
+$suspend = rise_suspend(['cpv' => 'x', 'progress' => ['lessons' => ['0' => ['p' => 100, 'i' => []], '1' => ['p' => 50, 'i' => []], '7' => ['p' => 30]]]]);
+check('suspend_data do Rise vira percentual (100 + 50 + 30 em 8 lições = 22%)', App\Services\Scorm\RiseProgress::fromSuspendData($suspend, 8) === 22);
+check('lição fora do total é ignorada (índice 7 com 4 lições: 150 / 4 = 37%)', App\Services\Scorm\RiseProgress::fromSuspendData($suspend, 4) === 37);
+check('formato desconhecido não inventa percentual', App\Services\Scorm\RiseProgress::fromSuspendData('parou-na-pagina-2', 4) === null && App\Services\Scorm\RiseProgress::fromSuspendData($suspend, null) === null);
+$riseDir = sys_get_temp_dir() . '/dafnis-rise-' . bin2hex(random_bytes(3));
+mkdir($riseDir . '/scormcontent', 0777, true);
+$runtime = ['course' => ['lessons' => [['type' => 'blocks'], ['type' => 'section'], ['type' => 'blocks'], ['type' => 'quiz']]]];
+file_put_contents($riseDir . '/scormcontent/runtime-data.js', '__jsonp("runtime-data.js","' . base64_encode((string) json_encode($runtime)) . '");');
+check('total de lições lido do pacote do Rise, sem os títulos de seção', App\Services\Scorm\RiseProgress::lessonCount($riseDir) === 3);
+@unlink($riseDir . '/scormcontent/runtime-data.js');
+@rmdir($riseDir . '/scormcontent');
+@rmdir($riseDir);
 
 foreach ([$zip, $bad, $evil, $zipNoManifest] as $f) {
     @unlink($f);
