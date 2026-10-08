@@ -1,0 +1,8 @@
+# Fora do pacote de publicação (git archive, ver docs/hostgator.md): testes, documentação interna
+# e ferramentas de desenvolvimento.
+/tests export-ignore
+/docs export-ignore
+/bin/static-export.php export-ignore
+/database/data/build_catalog.py export-ignore
+/.gitattributes export-ignore
+/.gitignore export-ignore

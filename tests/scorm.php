@@ -219,6 +219,18 @@ $admin->request('POST', "/admin/cursos/$courseId/pacotes/{$package['id']}/usar")
 $admin->request('GET', "/admin/cursos/$courseId/editar");
 $admin->request('POST', "/admin/cursos/$courseId/pacotes/{$v2['id']}/excluir");
 check('versão sem participantes e fora de uso é excluída com os arquivos', !Database::first('SELECT id FROM course_packages WHERE id = :id', ['id' => $v2['id']]) && !is_dir(BASE_PATH . '/storage/scorm/' . $v2['directory']));
+copy($zip, BASE_PATH . '/storage/scorm/entrada/curso-grande.zip');
+$r = $admin->request('GET', "/admin/cursos/$courseId/editar");
+check('painel lista os pacotes da pasta de entrada do servidor', str_contains($r['body'], 'curso-grande.zip') && str_contains($r['body'], 'Importar do servidor'));
+$r = $admin->request('POST', "/admin/cursos/$courseId/pacotes/servidor", ['arquivo' => 'curso-grande.zip']);
+$fromInbox = Database::first('SELECT * FROM course_packages WHERE course_id = :c AND original_name = :n', ['c' => $courseId, 'n' => 'curso-grande.zip']);
+check('pacote da pasta de entrada é importado (fora de uso) e sai da pasta', $r['status'] === 302 && $fromInbox && !$fromInbox['is_current'] && !is_file(BASE_PATH . '/storage/scorm/entrada/curso-grande.zip'));
+$admin->request('GET', "/admin/cursos/$courseId/editar");
+$r = $admin->request('POST', "/admin/cursos/$courseId/pacotes/servidor", ['arquivo' => '../../.env']);
+check('pasta de entrada não aceita caminho fora dela', $r['status'] === 302 && is_file(BASE_PATH . '/.env'));
+if ($fromInbox) {
+    App\Services\Scorm\Packages::delete($fromInbox);
+}
 $admin->request('GET', "/admin/cursos/$courseId/editar");
 $r = $admin->request('POST', "/admin/cursos/$courseId/pacotes", ['package' => new CURLFile($bad, 'application/zip', 'quebrado.zip'), 'make_current' => '1']);
 $r = $admin->request('GET', "/admin/cursos/$courseId/editar");

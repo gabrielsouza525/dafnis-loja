@@ -5,6 +5,8 @@
 /storage/cache/*
 /storage/uploads/*
 /storage/scorm/*
+!/storage/scorm/entrada/
+/storage/scorm/entrada/*
 /public/uploads/*
 !/storage/**/.gitkeep
 !/public/uploads/.htaccess

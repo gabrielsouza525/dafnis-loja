@@ -33,6 +33,12 @@ final class App
 
     private function handle(Request $request): Response
     {
+        // Em produção com APP_URL em https, quem chega por http vai para o mesmo endereço em https.
+        // Fica no .env (e não no .htaccess) para só valer depois que o certificado SSL estiver ativo.
+        $appUrl = (string) env('APP_URL', '');
+        if ($request->method === 'GET' && !$request->isSecure() && str_starts_with($appUrl, 'https://') && env('APP_ENV', 'local') === 'production') {
+            return Response::redirect(rtrim($appUrl, '/') . $request->fullUrl(), 301);
+        }
         if ($request->method === 'POST') {
             $limit = ini_bytes((string) ini_get('post_max_size'));
             if ($limit > 0 && $request->contentLength() > $limit) {

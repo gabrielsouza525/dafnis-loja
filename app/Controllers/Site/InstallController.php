@@ -9,7 +9,9 @@ use App\Core\HttpException;
 use App\Core\Response;
 use App\Core\ValidationException;
 use App\Core\View;
+use App\Services\Activity;
 use App\Services\Migrator;
+use App\Services\Requirements;
 use Database\Seeders\BaseSeeder;
 
 /**
@@ -24,7 +26,7 @@ final class InstallController extends Controller
     public function form(): Response
     {
         $this->guard();
-        return Response::html(View::file('site/install', ['done' => false]));
+        return Response::html(View::file('site/install', ['done' => false, 'checks' => Requirements::check()]));
     }
 
     public function install(): Response
@@ -32,6 +34,9 @@ final class InstallController extends Controller
         $this->guard();
         if (!hash_equals((string) env('INSTALL_TOKEN'), (string) $this->request->input('install_token'))) {
             throw ValidationException::with('install_token', 'Token de instalação incorreto.');
+        }
+        if (!Requirements::passes(Requirements::check())) {
+            throw ValidationException::with('install_token', 'O servidor ainda não atende aos requisitos marcados como "falta" no topo da página.');
         }
         $data = $this->validate([
             'name' => 'required|min:3|max:120',
@@ -54,6 +59,34 @@ final class InstallController extends Controller
         }
         file_put_contents(BASE_PATH . self::LOCK, date('c'));
         return Response::html(View::file('site/install', ['done' => true]));
+    }
+
+    /**
+     * Atualização do banco pela web, para quem publica novas versões da loja sem SSH: aplica as
+     * migrations pendentes. Também exige o INSTALL_TOKEN do .env (coloque só para atualizar e tire depois).
+     */
+    public function updateForm(): Response
+    {
+        $this->guardUpdate();
+        return Response::html(View::file('site/update', ['pending' => array_map('basename', Migrator::pending()), 'checks' => Requirements::check(), 'done' => null]));
+    }
+
+    public function update(): Response
+    {
+        $this->guardUpdate();
+        if (!hash_equals((string) env('INSTALL_TOKEN'), (string) $this->request->input('install_token'))) {
+            throw ValidationException::with('install_token', 'Token incorreto.');
+        }
+        $done = Migrator::run();
+        Activity::log('system.migrate', null, null, $done ? implode(', ', $done) : 'nada pendente');
+        return Response::html(View::file('site/update', ['pending' => [], 'checks' => Requirements::check(), 'done' => $done]));
+    }
+
+    private function guardUpdate(): void
+    {
+        if ((string) env('INSTALL_TOKEN', '') === '') {
+            throw new HttpException(404);
+        }
     }
 
     private function guard(): void

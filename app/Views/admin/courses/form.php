@@ -142,11 +142,21 @@ $action = $course ? url('/admin/cursos/' . $course['id']) : url('/admin/cursos')
 <?= csrf_field() ?>
 <div class="form-grid">
 <div class="field full"><label for="f-package">Pacote SCORM 1.2 <small>(.zip<?= $limit ? ', até ' . e(number_br($limit / 1048576)) . ' MB pelo painel' : '' ?>)</small></label><input class="input" style="padding:9px" type="file" id="f-package" name="package" accept=".zip,application/zip" required><?php if ($err = field_error('package')): ?><p class="field-error"><?= icon('alert') ?><?= e($err) ?></p><?php endif; ?>
-<p class="hint">Pacote maior: copie o .zip para o servidor e rode <code>php bin/console scorm:import --course=<?= (int) $course['id'] ?> --file=caminho/do/pacote.zip</code>.</p></div>
+<p class="hint">Pacote maior: copie o .zip para a pasta <code>storage/scorm/entrada</code> do servidor (Gerenciador de Arquivos do cPanel ou FTP) e importe abaixo, ou rode <code>php bin/console scorm:import --course=<?= (int) $course['id'] ?> --file=caminho/do/pacote.zip</code>.</p></div>
 <div class="full"><label class="switch"><input type="checkbox" name="make_current" value="1" checked><span>Colocar em uso assim que importar<small>Desmarque para conferir na pré-visualização antes de liberar aos alunos.</small></span></label></div>
 </div>
 <button class="btn btn-navy" type="submit" style="margin-top:14px"><?= icon('upload', 'ic-sm') ?>Importar pacote</button>
 </form>
+<?php if ($inbox = Packages::inbox()): ?>
+<form method="post" action="<?= e(url('/admin/cursos/' . $course['id'] . '/pacotes/servidor')) ?>" data-loading-form style="margin-top:22px;padding-top:18px;border-top:1px solid var(--line)">
+<?= csrf_field() ?>
+<div class="form-grid">
+<div class="full"><?= partial('field', ['name' => 'arquivo', 'label' => 'Ou importe um pacote da pasta de entrada do servidor', 'type' => 'select', 'value' => $inbox[0]['name'], 'options' => array_combine(array_column($inbox, 'name'), array_map(static fn ($f) => $f['name'] . ' (' . number_br($f['size'] / 1048576, 1) . ' MB, ' . date('d/m/Y H:i', $f['modified']) . ')', $inbox)), 'hint' => 'Depois de importado, o .zip sai da pasta de entrada.']) ?></div>
+<div class="full"><label class="switch"><input type="checkbox" name="make_current" value="1" checked><span>Colocar em uso assim que importar</span></label></div>
+</div>
+<button class="btn btn-outline" type="submit" style="margin-top:14px"><?= icon('upload', 'ic-sm') ?>Importar do servidor</button>
+</form>
+<?php endif; ?>
 </div>
 </div>
 

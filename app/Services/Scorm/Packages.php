@@ -67,6 +67,37 @@ final class Packages
         );
     }
 
+    /**
+     * Pasta de entrada: pacotes grandes demais para o envio pelo navegador são copiados para cá
+     * (Gerenciador de Arquivos do cPanel, FTP) e importados pelo painel.
+     */
+    public static function inboxDir(): string
+    {
+        return self::root() . '/entrada';
+    }
+
+    /** @return list<array{name:string,size:int,modified:int}> */
+    public static function inbox(): array
+    {
+        $files = glob(self::inboxDir() . '/*.zip') ?: [];
+        $list = array_map(static fn ($f) => ['name' => basename($f), 'size' => (int) filesize($f), 'modified' => (int) filemtime($f)], $files);
+        usort($list, static fn ($a, $b) => $b['modified'] <=> $a['modified']);
+        return $list;
+    }
+
+    /** Importa um .zip da pasta de entrada e o apaga de lá (a cópia extraída fica na versão). */
+    public static function importFromInbox(int $courseId, string $name, ?int $userId, bool $makeCurrent): array
+    {
+        $match = array_values(array_filter(self::inbox(), static fn ($f) => $f['name'] === $name));
+        if (!$match) {
+            throw ValidationException::with('package', 'Arquivo não encontrado na pasta de entrada.');
+        }
+        $path = self::inboxDir() . '/' . $match[0]['name'];
+        $package = self::import($courseId, $path, $match[0]['name'], $userId, $makeCurrent);
+        @unlink($path);
+        return $package;
+    }
+
     /** Tamanho máximo de envio pelo painel (o menor entre o .env e os limites do PHP). */
     public static function uploadLimitBytes(): int
     {

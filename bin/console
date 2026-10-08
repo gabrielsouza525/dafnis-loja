@@ -5,6 +5,7 @@ declare(strict_types=1);
 /**
  * Dafnis Treinamentos — comandos de manutenção.
  *
+ *   php bin/console check            confere o servidor: PHP, extensões, pastas, banco, HTTPS e limites de envio
  *   php bin/console db:create        cria o banco definido no .env (se não existir)
  *   php bin/console migrate          aplica as migrations pendentes
  *   php bin/console seed             categorias, catálogo da planilha e configurações (seguro em produção)
@@ -60,6 +61,21 @@ $createDatabase = static function () use ($out): void {
 
 try {
     switch ($command) {
+        case 'check':
+            $results = App\Services\Requirements::check();
+            $group = '';
+            foreach ($results as $r) {
+                if ($r['group'] !== $group) {
+                    $group = $r['group'];
+                    $out(PHP_EOL . $group);
+                }
+                $mark = ['ok' => '  ok    ', 'aviso' => '  AVISO ', 'falta' => '  FALTA '][$r['status']];
+                $out($mark . $r['label'] . ($r['detail'] !== '' ? PHP_EOL . '         ' . $r['detail'] : ''));
+            }
+            $passes = App\Services\Requirements::passes($results);
+            $out(PHP_EOL . ($passes ? 'Tudo o que é obrigatório está ok.' : 'Há itens obrigatórios faltando (FALTA).'));
+            exit($passes ? 0 : 1);
+
         case 'db:create':
             $createDatabase();
             break;

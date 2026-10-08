@@ -53,6 +53,8 @@ return static function (Router $r): void {
 
     $r->get('/instalar', [InstallController::class, 'form']);
     $r->post('/instalar', [InstallController::class, 'install']);
+    $r->get('/atualizar', [InstallController::class, 'updateForm']);
+    $r->post('/atualizar', [InstallController::class, 'update']);
 
     // Conta -----------------------------------------------------------------
     $r->get('/login', [AuthController::class, 'loginForm'], ['guest']);
@@ -102,6 +104,7 @@ return static function (Router $r): void {
         $r->post('/cursos/{id:\d+}/alternar', [Admin\CourseController::class, 'toggle']);
         $r->post('/cursos/{id:\d+}/excluir', [Admin\CourseController::class, 'destroy']);
         $r->post('/cursos/{id:\d+}/pacotes', [Admin\CoursePackageController::class, 'store']);
+        $r->post('/cursos/{id:\d+}/pacotes/servidor', [Admin\CoursePackageController::class, 'storeFromServer']);
         $r->post('/cursos/{id:\d+}/pacotes/{package:\d+}/usar', [Admin\CoursePackageController::class, 'activate']);
         $r->post('/cursos/{id:\d+}/pacotes/{package:\d+}/excluir', [Admin\CoursePackageController::class, 'destroy']);
         $r->get('/cursos/{id:\d+}/pacotes/{package:\d+}/previa', [Admin\CoursePackageController::class, 'preview']);

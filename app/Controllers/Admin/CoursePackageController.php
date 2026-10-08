@@ -34,6 +34,15 @@ final class CoursePackageController extends AdminController
         return $this->success($package['is_current'] ? $message . ' Novos participantes já recebem esta versão.' : $message, '/admin/cursos/' . $course['id'] . '/editar#conteudo');
     }
 
+    /** Pacote copiado para storage/scorm/entrada (pelo cPanel ou FTP), sem o limite de envio do navegador. */
+    public function storeFromServer(int $id): Response
+    {
+        $this->findOr404(Course::find($id), 'Curso não encontrado.');
+        $package = Packages::importFromInbox($id, (string) $this->request->input('arquivo', ''), Auth::id(), $this->request->bool('make_current'));
+        $message = 'Versão ' . $package['version'] . ' importada da pasta de entrada: ' . $package['file_count'] . ' arquivos.';
+        return $this->success($package['is_current'] ? $message . ' Novos participantes já recebem esta versão.' : $message, '/admin/cursos/' . $id . '/editar#conteudo');
+    }
+
     public function activate(int $id, int $package): Response
     {
         $row = $this->package($id, $package);

@@ -1,4 +1,4 @@
-<?php /** @var bool $done */ ?>
+<?php /** @var bool $done @var array $checks */ ?>
 <!doctype html>
 <html lang="pt-BR">
 <head>
@@ -30,6 +30,17 @@
 <span class="recover-ic"><?= icon('settings') ?></span>
 <div><h2>Instalar a loja</h2><p>Cria as tabelas, importa o catálogo e cadastra o primeiro administrador.</p></div>
 </div>
+<?php $problems = array_values(array_filter($checks ?? [], static fn ($c) => $c['status'] !== 'ok')); $blocking = array_filter($problems, static fn ($c) => $c['status'] === 'falta'); ?>
+<?php if ($problems): ?>
+<div class="note-box<?= $blocking ? ' err' : '' ?>" style="margin:0 0 18px;display:block">
+<strong><?= $blocking ? 'Antes de instalar, resolva o que falta no servidor:' : 'Servidor pronto. Pontos de atenção:' ?></strong>
+<ul style="margin:8px 0 0;padding-left:18px;list-style:disc">
+<?php foreach ($problems as $c): ?><li style="margin:4px 0"><strong><?= e($c['label']) ?></strong><?= $c['status'] === 'falta' ? ' (obrigatório)' : '' ?><?= $c['detail'] !== '' ? ' — ' . e($c['detail']) : '' ?></li><?php endforeach; ?>
+</ul>
+</div>
+<?php else: ?>
+<div class="note-box ok" style="margin:0 0 18px"><?= icon('check') ?><span>Servidor pronto: PHP, extensões, pastas e banco conferidos.</span></div>
+<?php endif; ?>
 <form class="auth-form" method="post" action="<?= e(url('/instalar')) ?>" data-loading-form>
 <?= csrf_field() ?>
 <p class="install-sec"><span>1</span>Acesso</p>

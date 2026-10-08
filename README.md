@@ -189,12 +189,21 @@ recebe 10 códigos de recuperação, que valem uma vez cada, para quando perder 
 
 ## Publicação em hospedagem
 
+**HostGator (cPanel):** passo a passo completo em [docs/hostgator.md](docs/hostgator.md): PHP, banco,
+envio dos arquivos, `.env`, HTTPS, instalação pela web, e-mail, curso próprio e como atualizar.
+
+`php bin/console check` (ou o topo da página `/instalar`) confere o servidor: versão do PHP, extensões,
+pastas graváveis, banco, HTTPS e limites de envio. Para enviar só o que vai para o servidor:
+`git archive --format=zip -o ../dafnis-loja-publicacao.zip HEAD` (testes e documentação ficam de fora).
+
 1. Envie os arquivos e aponte o domínio para a pasta **`public/`** (se não der, o `.htaccess` da raiz
    redireciona para ela e bloqueia o resto).
 2. Crie o banco e o `.env` com `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://...`,
-   `SESSION_SECURE=true` e uma `APP_KEY` (`php -r "echo base64_encode(random_bytes(32));"`).
+   `SESSION_SECURE=true` e uma `APP_KEY` (`php -r "echo base64_encode(random_bytes(32));"`). Com `APP_URL`
+   em `https://` e `APP_ENV=production`, quem chega por `http://` é levado para `https://`.
 3. Com SSH: `php bin/console migrate && php bin/console seed && php bin/console admin:create ...`.
-   Sem SSH: defina `INSTALL_TOKEN` no `.env`, abra `/instalar`, e depois apague o token.
+   Sem SSH: defina `INSTALL_TOKEN` no `.env`, abra `/instalar`, e depois apague o token. Nas atualizações
+   que mudam o banco, o mesmo token abre `/atualizar`, que aplica as migrations pendentes.
 4. Em *Painel › Configurações*, preencha contatos, CNPJ, redes sociais, link da plataforma de ensino e
    os indicadores reais da empresa (campos vazios não aparecem na loja).
 

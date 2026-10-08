@@ -40,7 +40,7 @@ $guest = new Client($base);
 foreach (['/', '/cursos', '/cursos?ordem=menor-preco', '/cursos?ordem=maior-preco', '/cursos?ordem=carga-horaria', '/cursos?ordem=nome', '/cursos?ordem=nr', '/cursos?pagina=3', '/cursos?nr[]=10&nr[]=33', '/nrs', '/nr/1', '/nr/23', '/categorias', '/categorias/primeiros-socorros', '/categorias/simuladores-e-jogos', '/carrinho', '/login', '/cadastro', '/esqueci-senha', '/sobre', '/empresas', '/empresas?enviado=1', '/contato', '/contato?assunto=conteudo&curso=nr-10-seguranca-em-instalacoes-e-servicos-com-eletricidade-basico', '/termos-de-uso', '/politica-de-privacidade', '/sitemap.xml', '/robots.txt'] as $p) {
     expect($guest, $p, 200);
 }
-foreach (['/nr/99', '/cursos/nao-existe', '/categorias/nao-existe', '/pagina-que-nao-existe', '/instalar'] as $p) {
+foreach (['/nr/99', '/cursos/nao-existe', '/categorias/nao-existe', '/pagina-que-nao-existe', '/instalar', '/atualizar'] as $p) {
     expect($guest, $p, 404);
 }
 foreach (['/checkout', '/minha-conta', '/minha-conta/cursos', '/admin', '/pedido/DF000001'] as $p) {
