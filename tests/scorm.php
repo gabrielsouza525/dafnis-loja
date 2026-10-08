@@ -265,6 +265,7 @@ function rise_suspend(array $data): string
 $suspend = rise_suspend(['cpv' => 'x', 'progress' => ['lessons' => ['0' => ['p' => 100, 'i' => []], '1' => ['p' => 50, 'i' => []], '7' => ['p' => 30]]]]);
 check('suspend_data do Rise vira percentual (100 + 50 + 30 em 8 lições = 22%)', App\Services\Scorm\RiseProgress::fromSuspendData($suspend, 8) === 22);
 check('lição fora do total é ignorada (índice 7 com 4 lições: 150 / 4 = 37%)', App\Services\Scorm\RiseProgress::fromSuspendData($suspend, 4) === 37);
+check('player próprio da Dafnis informa o percentual direto', App\Services\Scorm\RiseProgress::fromSuspendData('{"dafnis":1,"progress":36,"done":{}}', null) === 36);
 check('formato desconhecido não inventa percentual', App\Services\Scorm\RiseProgress::fromSuspendData('parou-na-pagina-2', 4) === null && App\Services\Scorm\RiseProgress::fromSuspendData($suspend, null) === null);
 $riseDir = sys_get_temp_dir() . '/dafnis-rise-' . bin2hex(random_bytes(3));
 mkdir($riseDir . '/scormcontent', 0777, true);

@@ -11,9 +11,16 @@ namespace App\Services\Scorm;
  */
 final class RiseProgress
 {
-    /** Percentual do curso (0 a 100): média das lições, contando como 0 as que não foram abertas. */
+    /**
+     * Percentual do curso (0 a 100). Cursos com o player próprio da Dafnis gravam {"dafnis":1,"progress":N};
+     * nos do Rise é a média das lições, contando como 0 as que não foram abertas.
+     */
     public static function fromSuspendData(?string $data, ?int $lessonCount): ?int
     {
+        if ($data !== null && str_starts_with($data, '{"dafnis":')) {
+            $own = json_decode($data, true);
+            return is_array($own) && is_int($own['progress'] ?? null) ? max(0, min(100, $own['progress'])) : null;
+        }
         if (!$lessonCount || $data === null || !str_starts_with($data, '{"v":')) {
             return null;
         }
