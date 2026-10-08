@@ -6,3 +6,4 @@
 /database/data/build_catalog.py export-ignore
 /.gitattributes export-ignore
 /.gitignore export-ignore
+/.cpanel.yml export-ignore

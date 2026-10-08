@@ -139,6 +139,13 @@ Siga a seção "Mercado Pago" do README: `MP_ACCESS_TOKEN` de produção no `.en
 
 ## 12. Atualizar a loja depois
 
+**Pelo Git do cPanel (como a loja da Dafnis está publicada):** *cPanel › Git Version Control › dafnis-loja ›
+Manage › Pull or Deploy*: **Update from Remote** e depois **Deploy HEAD Commit**. O `.cpanel.yml` copia a
+loja para o `public_html` sem tocar no `.env` nem em `storage/`. Se a versão trouxer mudanças de banco, use
+o `/atualizar` (item 2 abaixo).
+
+**Pelo pacote zip:**
+
 1. Gere o pacote novo (`git archive`, passo 1) e extraia por cima, **sem apagar** o `.env` nem a pasta
    `storage/` (cadastros enviados, certificados, cursos e sessões ficam ali). Depois, confira a versão do
    PHP no **MultiPHP Manager** (o `.htaccess` é substituído a cada atualização).

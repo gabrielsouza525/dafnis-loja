@@ -1,0 +1,10 @@
+# Publicação pelo cPanel (Git Version Control › Pull or Deploy › Deploy HEAD Commit): copia a loja
+# para o public_html do domínio principal. Não toca no .env nem no que já está em storage/
+# (cadastros enviados, certificados, cursos SCORM, sessões); da pasta storage só cria o que faltar.
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=$HOME/public_html
+    - /bin/cp -R app bin database public routes .htaccess $DEPLOYPATH/
+    - /bin/mkdir -p $DEPLOYPATH/storage
+    - /bin/cp -Rn storage/. $DEPLOYPATH/storage/
