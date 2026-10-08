@@ -33,6 +33,8 @@ final class OrderController extends Controller
             'order' => $order,
             'items' => $items,
             'awaiting' => count(array_filter($seats, static fn ($s) => $s['status'] === 'awaiting_participant')),
+            // Curso na loja liberado na hora para o próprio comprador: a página leva direto ao curso.
+            'ready' => array_values(array_filter($seats, static fn ($s) => $s['status'] === 'active' && $s['has_content'] && $s['participant_email'] === mb_strtolower($order['buyer_email']))),
             // Pessoa física com uma vaga por curso já é a participante (Orders::createSeats)
             'needsParticipants' => $order['buyer_type'] === 'pj' || array_filter($items, static fn ($i) => (int) $i['quantity'] > 1) !== [],
             'online' => Payments::isOnline(),

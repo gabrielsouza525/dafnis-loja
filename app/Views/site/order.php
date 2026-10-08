@@ -1,7 +1,7 @@
 <?php
 /**
  * Pedido depois do checkout: situação, próximos passos e o resumo.
- * @var array $order @var array $items (+ course) @var int $awaiting @var bool $needsParticipants @var bool $online @var bool $autoPay
+ * @var array $order @var array $items (+ course) @var int $awaiting @var array $ready vagas do comprador já liberadas (curso na loja) @var bool $needsParticipants @var bool $online @var bool $autoPay
  * @var string|null $gatewayStatus @var string|null $whatsapp @var string|null $contactEmail
  */
 use App\Models\Order;
@@ -18,7 +18,9 @@ if ($status === 'paid') {
     $next = [
         ['Pagamento confirmado', $order['paid_at'] ? 'Recebido em ' . date_br($order['paid_at'], true) . '.' : 'Recebemos o pagamento.', 'done'],
         ['Indicar os participantes', $awaiting > 0 ? ucfirst(pluralize($awaiting, 'vaga aguarda', 'vagas aguardam')) . ' o nome, o e-mail e o CPF de quem vai fazer o curso.' : 'Os participantes já estão definidos.', $awaiting > 0 ? 'on' : 'done'],
-        ['Acesso à plataforma de ensino', 'Cada participante recebe o link por e-mail, e o curso aparece em Minha conta › Meus cursos.', $awaiting > 0 ? 'todo' : 'on'],
+        $ready
+            ? ['Acesso liberado', 'O curso já está em Minha conta › Meus cursos e é feito aqui no site.', 'done']
+            : ['Acesso à plataforma de ensino', 'Cada participante recebe o link por e-mail, e o curso aparece em Minha conta › Meus cursos.', $awaiting > 0 ? 'todo' : 'on'],
         ['Certificado', 'Ao concluir o curso e cumprir os critérios de aprovação, o certificado fica em Minha conta.', 'todo'],
     ];
 } elseif ($status === 'pending') {
@@ -49,10 +51,13 @@ if ($status === 'paid') {
 <?php if ($status === 'paid'): ?>
 <span class="success-ic"><?= icon('check') ?></span>
 <div><div class="kicker">Pagamento confirmado</div>
-<h2>Tudo certo com o seu pedido</h2>
-<p><?php if ($awaiting > 0): ?>Agora indique quem vai fazer cada treinamento: <?= e(pluralize($awaiting, 'vaga aguarda', 'vagas aguardam')) ?> o participante. Assim que você informar, liberamos o acesso na plataforma de ensino.<?php else: ?>Estamos liberando o acesso na plataforma de ensino. O participante recebe o link por e-mail e o curso aparece em Minha conta › Meus cursos.<?php endif; ?></p>
+<h2><?= $ready ? 'Seu acesso já está liberado' : 'Tudo certo com o seu pedido' ?></h2>
+<p><?php if ($ready): ?>O curso é feito aqui no nosso site e já está em Minha conta › Meus cursos. Pode começar agora mesmo.<?= $awaiting > 0 ? ' Falta indicar quem vai fazer ' . e(pluralize($awaiting, 'vaga', 'vagas')) . '.' : '' ?><?php elseif ($awaiting > 0): ?>Agora indique quem vai fazer cada treinamento: <?= e(pluralize($awaiting, 'vaga aguarda', 'vagas aguardam')) ?> o participante. Assim que você informar, liberamos o acesso na plataforma de ensino.<?php else: ?>Estamos liberando o acesso na plataforma de ensino. O participante recebe o link por e-mail e o curso aparece em Minha conta › Meus cursos.<?php endif; ?></p>
 <div class="btns">
-<?php if ($awaiting > 0): ?>
+<?php if ($ready): ?>
+<a class="btn btn-buy btn-lg" href="<?= e(url(App\Models\Enrollment::studyPath($ready[0]))) ?>">Começar o curso<?= icon('arrowR') ?></a>
+<?php if ($awaiting > 0): ?><a class="btn btn-outline btn-lg" href="<?= e(url('/minha-conta/pedidos/' . $order['number'])) ?>#vagas">Indicar participantes</a><?php endif; ?>
+<?php elseif ($awaiting > 0): ?>
 <a class="btn btn-buy btn-lg" href="<?= e(url('/minha-conta/pedidos/' . $order['number'])) ?>#vagas">Indicar participantes<?= icon('arrowR') ?></a>
 <?php else: ?>
 <a class="btn btn-primary btn-lg" href="<?= e(url('/minha-conta/cursos')) ?>">Ir para Meus cursos<?= icon('arrowR') ?></a>

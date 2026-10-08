@@ -153,6 +153,9 @@ final class Packages
             ]);
         });
         Activity::log('course.package', 'course', $courseId, 'Conteúdo SCORM versão ' . $version . ($makeCurrent ? ' (em uso)' : ''));
+        if ($makeCurrent) {
+            \App\Services\Enrollments::autoReleaseCourse($courseId);
+        }
         return self::find($id);
     }
 
@@ -163,6 +166,7 @@ final class Packages
             Database::update('course_packages', ['is_current' => 1], ['id' => $package['id']]);
         });
         Activity::log('course.package', 'course', (int) $package['course_id'], 'Conteúdo SCORM: versão ' . $package['version'] . ' em uso');
+        \App\Services\Enrollments::autoReleaseCourse((int) $package['course_id']);
     }
 
     /** Só versões que ninguém usou e que não estão em uso podem ser apagadas. */

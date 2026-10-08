@@ -6,6 +6,7 @@ namespace App\Services;
 use App\Core\Database;
 use App\Core\ValidationException;
 use App\Models\Enrollment;
+use App\Services\Scorm\Packages;
 
 /**
  * Operações sobre as vagas: indicar participante (comprador), liberar acesso,
@@ -13,8 +14,52 @@ use App\Models\Enrollment;
  */
 final class Enrollments
 {
-    /** O comprador indica (ou corrige) quem vai fazer o curso, enquanto o acesso não foi liberado. */
-    public static function assignParticipant(array $enrollment, array $data): void
+    /**
+     * Libera na hora a vaga de curso com conteúdo próprio na loja (SCORM em uso): não há cadastro a
+     * fazer em outra plataforma. Vale para vagas "em liberação", com participante definido.
+     * Cursos da plataforma de ensino externa continuam com a liberação feita pela equipe.
+     */
+    public static function autoRelease(int $id, bool $notify = true): bool
+    {
+        $e = Enrollment::find($id);
+        if (!$e || $e['status'] !== 'processing' || !$e['participant_email'] || !$e['course_id'] || !Packages::current((int) $e['course_id'])) {
+            return false;
+        }
+        Database::update('enrollments', ['status' => 'active', 'released_at' => $e['released_at'] ?: date('Y-m-d H:i:s')], ['id' => $id]);
+        Activity::log('enrollment.auto_release', 'enrollment', $id, 'Acesso liberado automaticamente (curso na loja)');
+        if ($notify) {
+            Notify::accessReleased(Enrollment::find($id));
+        }
+        return true;
+    }
+
+    /** Vagas de um pedido recém-pago: libera as de cursos na loja. O e-mail do pagamento já leva o acesso. */
+    public static function autoReleaseOrder(int $orderId): int
+    {
+        $n = 0;
+        foreach (Database::select("SELECT e.id, e.participant_email, o.buyer_email FROM enrollments e JOIN orders o ON o.id = e.order_id WHERE e.order_id = :o AND e.status = 'processing'", ['o' => $orderId]) as $row) {
+            // Quem comprou para si recebe o acesso no e-mail de pagamento confirmado; os demais, num e-mail próprio.
+            $isBuyer = mb_strtolower((string) $row['participant_email']) === mb_strtolower((string) $row['buyer_email']);
+            $n += self::autoRelease((int) $row['id'], !$isBuyer) ? 1 : 0;
+        }
+        return $n;
+    }
+
+    /** Conteúdo próprio colocado em uso: libera as vagas do curso que esperavam liberação. */
+    public static function autoReleaseCourse(int $courseId): int
+    {
+        $n = 0;
+        foreach (Database::select("SELECT id FROM enrollments WHERE course_id = :c AND status = 'processing' AND participant_email IS NOT NULL", ['c' => $courseId]) as $row) {
+            $n += self::autoRelease((int) $row['id']) ? 1 : 0;
+        }
+        return $n;
+    }
+
+    /**
+     * O comprador indica (ou corrige) quem vai fazer o curso, enquanto o acesso não foi liberado.
+     * @return bool true se o acesso já foi liberado (curso com conteúdo próprio na loja)
+     */
+    public static function assignParticipant(array $enrollment, array $data): bool
     {
         if (!in_array($enrollment['status'], ['awaiting_participant', 'processing'], true)) {
             throw ValidationException::with('participant_email', 'O acesso desta vaga já foi liberado. Para trocar o participante, fale com a nossa equipe.');
@@ -34,6 +79,7 @@ final class Enrollments
             'status' => 'processing',
         ], ['id' => $enrollment['id']]);
         Activity::log('enrollment.participant', 'enrollment', (int) $enrollment['id'], $data['participant_name'] . ' <' . $email . '>');
+        return self::autoRelease((int) $enrollment['id']);
     }
 
     /** Admin: atualiza a vaga. Mudança para "em andamento" avisa o participante. */

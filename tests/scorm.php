@@ -237,6 +237,55 @@ $r = $admin->request('GET', "/admin/cursos/$courseId/editar");
 check('pacote inválido pelo painel volta com o erro', str_contains($r['body'], 'não é um .zip válido'));
 
 echo "
+Liberação automática
+";
+/** Pedido direto no banco, como o DemoSeeder, para testar o que acontece no pagamento. */
+function test_order(array $user, string $type, int $courseId, int $qty): int
+{
+    $c = Database::first('SELECT * FROM courses WHERE id = :id', ['id' => $courseId]);
+    $id = Database::insert('orders', [
+        'user_id' => $user['id'], 'status' => 'pending', 'buyer_type' => $type, 'buyer_name' => $user['name'],
+        'buyer_document' => $type === 'pj' ? '11222333000181' : '52998224725', 'buyer_email' => $user['email'], 'buyer_phone' => $user['phone'],
+        'company_name' => $type === 'pj' ? 'Empresa Teste' : null, 'subtotal' => $c['price'] * $qty, 'discount' => 0, 'total' => $c['price'] * $qty,
+        'payment_method' => 'pix', 'gateway' => 'manual', 'terms_accepted_at' => date('Y-m-d H:i:s'),
+    ]);
+    Database::update('orders', ['number' => App\Services\Orders::numberFor($id)], ['id' => $id]);
+    Database::insert('order_items', [
+        'order_id' => $id, 'course_id' => $c['id'], 'course_title' => $c['title'], 'course_code' => 'NR ' . $c['nr_number'], 'course_hours' => $c['hours'],
+        'list_price' => $c['price'], 'unit_price' => $c['price'], 'quantity' => $qty, 'line_total' => $c['price'] * $qty,
+    ]);
+    return $id;
+}
+$anaUser = Database::first("SELECT * FROM users WHERE email = 'ana@example.com'");
+$rhUser = Database::first("SELECT * FROM users WHERE email = 'rh@example.com'");
+$mailBefore = glob(BASE_PATH . '/storage/mail/*') ?: [];
+$o1 = test_order($anaUser, 'pf', $courseId, 1);
+App\Services\Orders::markPaid($o1, 'admin');
+$e1 = Database::first('SELECT * FROM enrollments WHERE order_id = :o', ['o' => $o1]);
+check('compra para si de curso na loja: acesso liberado no pagamento', $e1['status'] === 'active' && $e1['released_at'] !== null);
+$newMail = array_values(array_diff(glob(BASE_PATH . '/storage/mail/*') ?: [], $mailBefore));
+$mailText = implode("
+", array_map('file_get_contents', $newMail));
+check('e-mail de pagamento confirmado já leva ao curso', str_contains($mailText, 'Seu acesso já está liberado') && str_contains($mailText, '/minha-conta/cursos/' . $e1['id'] . '/estudar'));
+check('um e-mail só para quem comprou para si (sem "acesso liberado" repetido)', !str_contains($mailText, 'Seu acesso ao treinamento foi liberado'));
+$orderNumber = Database::value('SELECT number FROM orders WHERE id = :id', ['id' => $o1]);
+$r = $ana->request('GET', '/pedido/' . $orderNumber);
+check('página do pedido: "Seu acesso já está liberado" e botão para o curso', str_contains($r['body'], 'Seu acesso já está liberado') && str_contains($r['body'], '/minha-conta/cursos/' . $e1['id'] . '/estudar'));
+
+$o2 = test_order($rhUser, 'pj', $courseId, 2);
+App\Services\Orders::markPaid($o2, 'admin');
+$seats = Database::select('SELECT * FROM enrollments WHERE order_id = :o ORDER BY id', ['o' => $o2]);
+check('compra para empresa: vagas esperam o participante', count($seats) === 2 && $seats[0]['status'] === 'awaiting_participant');
+$released = App\Services\Enrollments::assignParticipant(App\Models\Enrollment::find((int) $seats[0]['id']), ['participant_name' => 'Bruno Alves', 'participant_email' => 'bruno@example.com', 'participant_document' => '11144477735']);
+$seat = Database::first('SELECT * FROM enrollments WHERE id = :id', ['id' => $seats[0]['id']]);
+check('participante indicado: acesso liberado na hora', $released === true && $seat['status'] === 'active');
+
+$otherCourse = (int) Database::value("SELECT id FROM courses WHERE slug = 'nr-33-espacos-confinados-trabalhador-e-vigia'");
+$o3 = test_order($anaUser, 'pf', $otherCourse, 1);
+App\Services\Orders::markPaid($o3, 'admin');
+check('curso da plataforma externa continua esperando a equipe', Database::value('SELECT status FROM enrollments WHERE order_id = :o', ['o' => $o3]) === 'processing');
+
+echo "
 Andamento do Rise 360
 ";
 /** Comprime como o Rise (LZW com dicionário inicial de 256 caracteres) para montar um suspend_data. */

@@ -119,6 +119,7 @@ final class Orders
         });
 
         if ($changed) {
+            Enrollments::autoReleaseOrder($orderId);
             $order = Order::find($orderId);
             Activity::log('order.paid', 'order', $orderId, 'Pagamento confirmado (' . ($source === 'admin' ? 'baixa manual' : 'gateway') . ')');
             Notify::orderPaid($order);

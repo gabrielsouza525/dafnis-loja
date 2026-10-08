@@ -62,19 +62,27 @@ final class Notify
     public static function orderPaid(array $order): void
     {
         $items = Order::items((int) $order['id']);
-        $awaiting = array_filter(Enrollment::forOrder((int) $order['id']), static fn ($e) => $e['status'] === 'awaiting_participant');
+        $seats = Enrollment::forOrder((int) $order['id']);
+        $awaiting = array_filter($seats, static fn ($e) => $e['status'] === 'awaiting_participant');
+        $manual = array_filter($seats, static fn ($e) => $e['status'] === 'processing');
+        // Vaga do próprio comprador já liberada (curso na loja): o e-mail leva direto ao curso.
+        $ready = array_values(array_filter($seats, static fn ($e) => $e['status'] === 'active' && $e['has_content'] && mb_strtolower((string) $e['participant_email']) === mb_strtolower($order['buyer_email'])));
         Mailer::send($order['buyer_email'], 'Pagamento confirmado — pedido ' . $order['number'], 'order-paid', [
             'order' => $order,
             'items' => $items,
             'awaiting' => count($awaiting),
+            'ready' => $ready ? absolute_url(Enrollment::studyPath($ready[0])) : null,
+            'readyCount' => count($ready),
             'url' => absolute_url('/minha-conta/pedidos/' . $order['number']),
         ]);
         if ($team = self::teamAddress()) {
-            Mailer::send($team, 'Pedido ' . $order['number'] . ' pago — liberar acessos', 'team-order', [
+            Mailer::send($team, 'Pedido ' . $order['number'] . ' pago' . ($manual ? ' — liberar acessos' : ''), 'team-order', [
                 'order' => $order,
                 'items' => $items,
-                'headline' => 'Pagamento confirmado: cadastre os participantes na plataforma de ensino',
-                'url' => absolute_url('/admin/matriculas?status=processing'),
+                'headline' => $manual
+                    ? 'Pagamento confirmado: cadastre os participantes na plataforma de ensino'
+                    : ($awaiting ? 'Pagamento confirmado: aguardando o comprador indicar os participantes' : 'Pagamento confirmado: acesso liberado automaticamente (curso na loja)'),
+                'url' => absolute_url($manual ? '/admin/matriculas?status=processing' : '/admin/pedidos/' . $order['id']),
             ]);
         }
     }

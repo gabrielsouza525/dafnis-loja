@@ -121,8 +121,12 @@ Curso com conteúdo próprio não depende da plataforma de ensino: o aluno faz o
    A importação confere o `imsmanifest.xml`, recusa SCORM 2004 e qualquer arquivo de tipo não previsto
    (`.php`, por exemplo) e guarda tudo em `storage/scorm`, fora da web.
 3. **Conferir.** "Pré-visualizar" abre o curso como o aluno vê, sem gravar nada.
-4. **Liberar.** Com uma versão em uso, liberar a vaga (*Matrículas › Em andamento*) já basta: o e-mail de
-   acesso e o botão de *Meus cursos* levam ao curso na loja, em `/minha-conta/cursos/{vaga}/estudar`.
+4. **Liberação automática.** Com uma versão em uso, o acesso é liberado sem a equipe: na compra para si,
+   assim que o pagamento é confirmado (o e-mail de pagamento e a página do pedido já levam ao curso); na
+   compra para empresa, assim que o comprador indica cada participante (que recebe o link por e-mail). Ao
+   colocar um conteúdo em uso, as vagas do curso que esperavam liberação também são liberadas. O curso fica em
+   `/minha-conta/cursos/{vaga}/estudar`. Cursos da plataforma de ensino externa continuam com a liberação
+   feita pela equipe em *Matrículas*.
 
 **O que a loja registra.** A página do curso oferece a API do SCORM 1.2 (`public/assets/js/scorm-player.js`):
 situação (`cmi.core.lesson_status`), nota, ponto de parada (`suspend_data`), respostas da prova e o tempo

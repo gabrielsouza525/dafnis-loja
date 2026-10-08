@@ -126,8 +126,12 @@ final class AccountController extends Controller
             'participant_email' => 'required|email',
             'participant_document' => 'required|cpf',
         ], ['participant_name' => 'nome do participante', 'participant_email' => 'e-mail do participante', 'participant_document' => 'CPF do participante']);
-        Enrollments::assignParticipant($seat, $data);
-        return $this->success('Participante salvo. Vamos liberar o acesso e avisar ' . first_name($data['participant_name']) . ' por e-mail.', '/minha-conta/pedidos/' . $seat['order_number'] . '#vaga-' . $id);
+        $released = Enrollments::assignParticipant($seat, $data);
+        $who = first_name($data['participant_name']);
+        $message = $released
+            ? 'Participante salvo e acesso liberado: ' . $who . ' já recebeu o link do curso por e-mail.'
+            : 'Participante salvo. Vamos liberar o acesso e avisar ' . $who . ' por e-mail.';
+        return $this->success($message, '/minha-conta/pedidos/' . $seat['order_number'] . '#vaga-' . $id);
     }
 
     public function profile(): Response
