@@ -71,7 +71,7 @@ final class CertificatePdf
         $pdf->text($this->x(269.6), $this->u(74.5), 'CERTIFICADO', 'center', self::INK);
 
         if (!empty($d['nr'])) {
-            $this->badge((int) $d['nr']);
+            $this->badge((string) $d['nr']);
         }
 
         $left = $this->x(35);
@@ -133,8 +133,8 @@ final class CertificatePdf
         }
     }
 
-    /** Selo da NR (placa amarela em losango) no quadro do canto, como no modelo. */
-    private function badge(int $nr): void
+    /** Selo da NR (placa amarela em losango) no quadro do canto, como no modelo. $label: "10", "31.7"... */
+    private function badge(string $label): void
     {
         $pdf = $this->pdf;
         $pdf->rect($this->x(508.4), $this->u(26), $this->u(79.2), $this->u(59.4), [255, 255, 255], self::TEAL, $this->u(1.5));
@@ -146,10 +146,9 @@ final class CertificatePdf
         $pdf->polygon($diamond($this->u(23.4)), $this->u(3.8), [255, 204, 0]);
         $pdf->circle($cx, $cy - $this->u(17.5), $this->u(1.3), [20, 20, 20]);
         $pdf->circle($cx, $cy + $this->u(17.5), $this->u(1.3), [20, 20, 20]);
-        $label = (string) $nr;
         $pdf->font('Helvetica-Bold', $this->u(12.5));
         $pdf->text($cx, $cy - $this->u(0.8), 'NR', 'center', [20, 20, 20]);
-        $pdf->font('Helvetica-Bold', $this->u(strlen($label) > 2 ? 10.5 : 12.5));
+        $pdf->font('Helvetica-Bold', $this->u(match (true) { strlen($label) <= 2 => 12.5, strlen($label) === 3 => 10.5, default => 9 }));
         $pdf->text($cx, $cy + $this->u(10.6), $label, 'center', [214, 31, 38]);
     }
 

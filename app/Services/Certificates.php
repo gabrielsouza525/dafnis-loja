@@ -365,7 +365,7 @@ final class Certificates
             'kind' => $kind,
             'hours' => $hours,
             'hours_label' => self::hoursText($hours),
-            'nr' => !empty($course['nr_number']) ? (int) $course['nr_number'] : null,
+            'nr' => self::nrLabel($course),
             'city_date' => ($s['city'] !== '' ? $s['city'] . ', ' : '') . self::longDate($issued),
             'statement' => $statement,
             'company' => $s['company'],
@@ -428,6 +428,15 @@ final class Certificates
         }
         $when = $when ?: ($e['online_done_at'] ?? null) ?: ($e['completed_at'] ?? null) ?: 'today';
         return date('Y-m-d', strtotime((string) $when));
+    }
+
+    /** Número do selo: o do código exibido ("NR 31.7" → "31.7") ou o número da NR do curso; sem NR, sem selo. */
+    private static function nrLabel(array $course): ?string
+    {
+        if (preg_match('/^NR\s*(\d{1,2}(?:\.\d{1,2})?)$/i', trim((string) ($course['code'] ?? '')), $m)) {
+            return $m[1];
+        }
+        return !empty($course['nr_number']) ? (string) (int) $course['nr_number'] : null;
     }
 
     private static function dateOption(mixed $value): ?string

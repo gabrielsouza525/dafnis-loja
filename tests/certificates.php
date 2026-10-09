@@ -52,6 +52,17 @@ function mails(array $before, string $subject, ?string $to = null): array
     return $found;
 }
 
+/** Texto das páginas de um PDF gerado pela loja (descomprime os conteúdos). */
+function pdf_text(string $pdf): string
+{
+    preg_match_all('/<< \/Filter \/FlateDecode \/Length (\d+) >>\nstream\n/', $pdf, $m, PREG_OFFSET_CAPTURE);
+    $out = '';
+    foreach ($m[0] as $i => [$head, $offset]) {
+        $out .= (string) @gzuncompress(substr($pdf, $offset + strlen($head), (int) $m[1][$i][0]));
+    }
+    return $out;
+}
+
 function png_rgba(int $w, int $h): string
 {
     $img = imagecreatetruecolor($w, $h);
@@ -136,6 +147,9 @@ check('sem escolha no curso, assinam os marcados como padrão', array_column(Cer
 check('falta de CPF impede a geração', in_array('o CPF do participante', Certificates::missing(['participant_name' => 'Ana Souza', 'participant_document' => null], $course), true));
 $sample = Certificates::sample($course);
 check('PDF de exemplo com frente e verso', str_starts_with($sample, '%PDF') && substr_count($sample, '/Type /Page ') === 2);
+check('selo com o número da NR do curso', str_contains(pdf_text($sample), '(10) Tj'));
+check('selo segue o código exibido (NR 31.7)', str_contains(pdf_text(Certificates::sample(['code' => 'NR 31.7', 'nr_number' => 31] + $course)), '(31.7) Tj'));
+check('curso sem NR sai sem selo', !str_contains(pdf_text(Certificates::sample(['code' => null, 'nr_number' => null] + $course)), '(NR) Tj'));
 
 echo "\nEquipe: prática presencial e geração\n";
 $admin = new Client($base);
