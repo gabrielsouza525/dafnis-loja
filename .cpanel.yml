@@ -1,6 +1,7 @@
 # Publicação pelo cPanel (Git Version Control › Pull or Deploy › Deploy HEAD Commit): copia a loja
-# para o public_html do domínio principal. Não toca no .env nem no que já está em storage/
-# (cadastros enviados, certificados, cursos SCORM, sessões); da pasta storage só cria o que faltar.
+# para o public_html do domínio principal e aplica as mudanças de banco pendentes (database/migrations).
+# Não toca no .env nem no que já está em storage/ (cadastros enviados, certificados, cursos SCORM,
+# sessões); da pasta storage só cria o que faltar.
 ---
 deployment:
   tasks:
@@ -8,3 +9,4 @@ deployment:
     - /bin/cp -R app bin database public routes .htaccess $DEPLOYPATH/
     - /bin/mkdir -p $DEPLOYPATH/storage
     - /bin/cp -Rn storage/. $DEPLOYPATH/storage/
+    - 'PHPBIN=/opt/cpanel/ea-php83/root/usr/bin/php; [ -x "$PHPBIN" ] || PHPBIN=/usr/local/bin/php; "$PHPBIN" "$DEPLOYPATH/bin/console" migrate'

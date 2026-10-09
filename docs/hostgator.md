@@ -141,8 +141,8 @@ Siga a seção "Mercado Pago" do README: `MP_ACCESS_TOKEN` de produção no `.en
 
 **Pelo Git do cPanel (como a loja da Dafnis está publicada):** *cPanel › Git Version Control › dafnis-loja ›
 Manage › Pull or Deploy*: **Update from Remote** e depois **Deploy HEAD Commit**. O `.cpanel.yml` copia a
-loja para o `public_html` sem tocar no `.env` nem em `storage/`. Se a versão trouxer mudanças de banco, use
-o `/atualizar` (item 2 abaixo).
+loja para o `public_html` sem tocar no `.env` nem em `storage/` e aplica as mudanças de banco pendentes
+(`php bin/console migrate`, com o PHP 8.3 do MultiPHP). O resultado fica no log do deploy, na mesma tela.
 
 **Pelo pacote zip:**
 
