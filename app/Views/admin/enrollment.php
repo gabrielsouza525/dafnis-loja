@@ -1,5 +1,5 @@
 <?php
-/** @var array $e @var array $order @var string|null $accessUrl @var array $activity @var array|null $study @var array $sessions */
+/** @var array $e @var array $order @var string|null $accessUrl @var array $activity @var array|null $study @var array $sessions @var array $certMissing @var array $certDefaults @var bool $certGenerated */
 use App\Models\Enrollment;
 use App\Services\Scorm\Tracker;
 
@@ -36,24 +36,49 @@ $statusOptions = Enrollment::STATUS;
 </form>
 
 <aside>
-<form class="panel" method="post" action="<?= e(url('/admin/matriculas/' . $e['id'] . '/certificado')) ?>" enctype="multipart/form-data" data-loading-form>
-<?= csrf_field() ?>
-<div class="panel-head"><h2>Certificado</h2></div>
+<?php $presential = !empty($e['practical_required']) || $e['modality'] === 'presencial'; ?>
+<div class="panel" id="certificado"><div class="panel-head"><h2>Certificado</h2><?php if ($e['certificate_id']): ?><?= partial('status', ['label' => 'Emitido', 'tone' => 'ok']) ?><?php endif; ?></div>
 <div class="panel-body">
 <?php if ($e['certificate_id']): ?>
-<p style="margin-bottom:12px">Código <strong class="mono"><?= e($e['certificate_code']) ?></strong> · emitido em <?= e(date_br($e['certificate_issued_at'])) ?></p>
-<?php if ($e['certificate_file']): ?><a class="btn btn-outline btn-sm" href="<?= e(url('/admin/matriculas/' . $e['id'] . '/certificado')) ?>" target="_blank"><?= icon('file', 'ic-sm') ?>Ver PDF</a><?php endif; ?>
+<p style="margin-bottom:12px">Código <a class="mono" href="<?= e(url('/certificados/' . $e['certificate_code'])) ?>" target="_blank"><strong><?= e($e['certificate_code']) ?></strong></a> · <?= e(date_br($e['certificate_issued_at'])) ?><?= $certGenerated ? ' · gerado pela loja' : '' ?></p>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<?php if ($e['certificate_file'] || $certGenerated): ?><a class="btn btn-outline btn-sm" href="<?= e(url('/admin/matriculas/' . $e['id'] . '/certificado')) ?>" target="_blank"><?= icon('file', 'ic-sm') ?>Ver PDF</a><?php endif; ?>
 <?php if ($e['certificate_url']): ?><a class="btn btn-outline btn-sm" href="<?= e($e['certificate_url']) ?>" target="_blank" rel="noopener"><?= icon('external', 'ic-sm') ?>Link</a><?php endif; ?>
-<p class="hint">Enviar outro arquivo substitui o atual.</p>
-<?php else: ?>
-<p class="hint" style="margin:0 0 12px">Ao registrar, a matrícula vira "Concluído" e o participante recebe o aviso por e-mail.</p>
-<?php endif; ?>
-<div class="field" style="margin-top:12px"><label for="cf">PDF do certificado</label><input class="input" style="padding:9px" type="file" id="cf" name="certificate_file" accept="application/pdf"><?php if ($err = field_error('certificate_file')): ?><p class="field-error"><?= icon('alert') ?><?= e($err) ?></p><?php endif; ?></div>
-<div style="margin-top:12px"><?= partial('field', ['name' => 'external_url', 'label' => 'Ou link do certificado na plataforma', 'type' => 'url', 'value' => $e['certificate_url'], 'optional' => true]) ?></div>
-<div style="margin-top:12px"><?= partial('field', ['name' => 'issued_at', 'label' => 'Data de emissão', 'type' => 'date', 'value' => $e['certificate_issued_at'] ?: date('Y-m-d'), 'required' => true]) ?></div>
-<button class="btn btn-buy btn-block" type="submit" style="margin-top:16px"><?= icon('award') ?><?= $e['certificate_id'] ? 'Atualizar certificado' : 'Registrar certificado' ?></button>
 </div>
+<?php endif; ?>
+
+<form method="post" action="<?= e(url('/admin/matriculas/' . $e['id'] . '/certificado/gerar')) ?>" data-loading-form style="<?= $e['certificate_id'] ? 'margin-top:16px;padding-top:16px;border-top:1px solid var(--line)' : '' ?>">
+<?= csrf_field() ?>
+<input type="hidden" name="_scope" value="gerar">
+<p class="hint" style="margin:0 0 12px"><?php if ($e['certificate_id']): ?>Corrigiu o nome, o CPF ou o curso? Gere de novo: o código continua o mesmo e o participante não recebe outro e-mail.<?php elseif ($presential): ?>Depois da parte presencial, registre quando e onde ela foi: o certificado sai no modelo da Dafnis, a matrícula vira "Concluído" e o participante recebe o aviso por e-mail.<?php else: ?>Gera o certificado no modelo da Dafnis: a matrícula vira "Concluído" e o participante recebe o aviso por e-mail.<?php endif; ?></p>
+<?php if ($certMissing): ?>
+<div class="note-box err" style="margin:0 0 12px"><?= icon('alert') ?><span>Para gerar, falta: <?= e(implode(', ', $certMissing)) ?>.</span></div>
+<?php endif; ?>
+<?php if ($err = field_error('certificate')): ?><p class="field-error" style="margin:0 0 10px"><?= icon('alert') ?><?= e($err) ?></p><?php endif; ?>
+<div class="form-grid">
+<?= partial('field', ['name' => 'start', 'label' => 'Início', 'type' => 'date', 'value' => $certDefaults['start'], 'required' => true, 'scope' => 'gerar']) ?>
+<?= partial('field', ['name' => 'end', 'label' => $presential ? 'Data da prática (término)' : 'Término', 'type' => 'date', 'value' => $certDefaults['end'], 'required' => true, 'scope' => 'gerar']) ?>
+<?php if ($presential): ?>
+<div class="full"><?= partial('field', ['name' => 'practical_location', 'label' => 'Local da parte presencial', 'value' => $certDefaults['practical_location'], 'required' => true, 'placeholder' => 'Ex.: Araçatuba/SP', 'scope' => 'gerar']) ?></div>
+<?php endif; ?>
+<div class="full"><?= partial('field', ['name' => 'issued_at', 'label' => 'Data no certificado', 'type' => 'date', 'value' => $certDefaults['issued_at'], 'optional' => true, 'hint' => 'Vazio: a data do término.', 'scope' => 'gerar']) ?></div>
+</div>
+<button class="btn btn-buy btn-block" type="submit" style="margin-top:14px"<?= $certMissing ? ' disabled' : '' ?>><?= icon('award') ?><?= $e['certificate_id'] ? 'Gerar de novo' : ($presential ? 'Registrar a prática e gerar o certificado' : 'Gerar certificado') ?></button>
 </form>
+
+<details style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line)"<?= field_error('certificate_file') ? ' open' : '' ?>>
+<summary style="cursor:pointer;font-weight:600;font-size:14px">Enviar um PDF próprio ou o link da plataforma</summary>
+<form method="post" action="<?= e(url('/admin/matriculas/' . $e['id'] . '/certificado')) ?>" enctype="multipart/form-data" data-loading-form style="margin-top:12px">
+<?= csrf_field() ?>
+<p class="hint" style="margin:0 0 12px">Para certificados emitidos fora da loja (por exemplo, na plataforma de ensino). Enviar outro arquivo substitui o atual.</p>
+<div class="field"><label for="cf">PDF do certificado</label><input class="input" style="padding:9px" type="file" id="cf" name="certificate_file" accept="application/pdf"><?php if ($err = field_error('certificate_file')): ?><p class="field-error"><?= icon('alert') ?><?= e($err) ?></p><?php endif; ?></div>
+<div style="margin-top:12px"><?= partial('field', ['name' => 'external_url', 'label' => 'Ou link do certificado na plataforma', 'type' => 'url', 'value' => $e['certificate_url'], 'optional' => true]) ?></div>
+<div style="margin-top:12px"><?= partial('field', ['name' => 'issued_at', 'id' => 'f-issued-upload', 'label' => 'Data de emissão', 'type' => 'date', 'value' => $e['certificate_issued_at'] ?: date('Y-m-d'), 'required' => true]) ?></div>
+<button class="btn btn-outline btn-block" type="submit" style="margin-top:14px"><?= icon('upload', 'ic-sm') ?><?= $e['certificate_id'] ? 'Substituir pelo arquivo enviado' : 'Registrar certificado enviado' ?></button>
+</form>
+</details>
+</div>
+</div>
 
 <div class="panel"><div class="panel-head"><h2>Compra</h2></div><div class="panel-body">
 <dl class="dl">
@@ -97,7 +122,7 @@ $shortTime = $study['done'] && $onlineHours > 0 && (int) $study['active_seconds'
 <div class="note-box err"><?= icon('alert') ?><span><strong>Confira antes do certificado:</strong> aprovado<?= $shortContent ? ' com ' . (int) $study['progress'] . '% das lições vistas' : '' ?><?= $shortContent && $shortTime ? ' e' : '' ?><?= $shortTime ? ' com ' . e(Tracker::duration((int) $study['active_seconds'])) . ' de estudo, abaixo das ' . $onlineHours . ' h da parte on-line' : '' ?>.</span></div>
 <?php endif; ?>
 <?php if ($e['practical_required'] && $study['done'] && $e['status'] === 'active'): ?>
-<div class="note-box info"><?= icon('info') ?><span>Parte on-line concluída. Depois da prática presencial, registre o certificado: a matrícula vira "Concluído".<?= $e['practical_hours'] ? ' Prática: ' . e((string) $e['practical_hours']) . '.' : '' ?></span></div>
+<div class="note-box info"><?= icon('info') ?><span>Parte on-line concluída. Depois da prática presencial, registre a prática no quadro "Certificado": ele sai no modelo da Dafnis e a matrícula vira "Concluído".<?= $e['practical_hours'] ? ' Prática: ' . e((string) $e['practical_hours']) . '.' : '' ?></span></div>
 <?php endif; ?>
 <?php if ($sessions): ?>
 <div class="table-wrap" style="margin-top:16px"><table class="table">

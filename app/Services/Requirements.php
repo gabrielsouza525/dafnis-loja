@@ -36,6 +36,7 @@ final class Requirements
             'curl' => [true, 'Mercado Pago'],
             'fileinfo' => [true, 'conferência dos arquivos enviados'],
             'simplexml' => [true, 'leitura dos cursos SCORM'],
+            'zlib' => [true, 'certificados em PDF'],
             'gd' => [false, 'capas convertidas para WebP (sem ela, a capa fica no formato enviado)'],
         ];
         foreach ($extensions as $ext => [$required, $why]) {

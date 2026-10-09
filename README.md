@@ -80,6 +80,7 @@ php tests/flow.php http://localhost:8000     # compra de ponta a ponta
 php tests/smoke.php http://localhost:8000    # todas as páginas por perfil
 php tests/links.php http://localhost:8000    # rastreia links quebrados
 php tests/scorm.php http://localhost:8000    # cursos próprios: importação, página do curso, andamento e tempo
+php tests/certificates.php http://localhost:8000  # certificados: PDF, emissão automática, CPF, validação
 node tests/browser.mjs http://localhost:8000 # comportamento do JavaScript no Chrome (headless)
 ```
 
@@ -103,8 +104,10 @@ Rode `db:fresh --demo` antes de cada um: eles criam pedidos e mudam o estado do 
    *Minha conta › Pedidos e vagas*.
 5. A equipe cadastra o participante na plataforma de ensino e marca a vaga como **Em andamento**
    (*Painel › Matrículas*). O participante recebe o link por e-mail e vê o curso em *Meus cursos*.
-6. Ao concluir, a equipe anexa o **PDF do certificado** (ou o link da plataforma). O participante é
-   avisado e baixa em *Minha conta › Certificados*; a empresa compradora também vê os certificados da equipe.
+6. Ao concluir, o **certificado** sai no modelo da Dafnis (veja [Certificados](#certificados)): sozinho nos
+   cursos feitos na loja, ou gerado pela equipe na matrícula; a equipe também pode anexar um PDF próprio ou o
+   link da plataforma. O participante é avisado e baixa em *Minha conta › Certificados*; a empresa compradora
+   também vê os certificados da equipe.
 
 O participante enxerga os cursos quando entra com o **mesmo e-mail** informado na vaga.
 
@@ -136,9 +139,9 @@ aberto, com a aba visível e com alguma atividade nos últimos 10 minutos (parad
 "Você ainda está aí?"). Cada abertura é um acesso, com data, IP e duração, em *Matrículas › (vaga)*.
 
 **Conclusão.** Aprovação (ou conclusão, conforme o acompanhamento escolhido na exportação) põe o progresso
-em 100% e avisa a equipe por e-mail. Sem prática obrigatória, a vaga vira "Concluído" e a equipe emite o
-certificado. Com prática obrigatória (NR 10 Básico, por exemplo), a vaga continua "Em andamento" até a equipe
-registrar o certificado depois da parte presencial. Aprovação não volta atrás: refazer a prova depois de
+em 100% e avisa a equipe por e-mail. Sem prática obrigatória, a vaga vira "Concluído" e o certificado sai na
+hora. Com prática obrigatória (NR 10 Básico, por exemplo), a vaga continua "Em andamento" até a equipe
+registrar a parte presencial na matrícula, que gera o certificado. Aprovação não volta atrás: refazer a prova depois de
 aprovado não troca a situação nem a nota. Se o aluno passou com lições por ver ou com tempo de estudo abaixo
 da carga horária on-line, a matrícula mostra "Confira antes do certificado". No Rise, a navegação
 "Restrita" (*Configurações do curso › Navegação*) obriga a seguir as lições em ordem até a prova.
@@ -151,6 +154,36 @@ participantes não podem ser excluídas.
 abrem dentro da loja (`frame-ancestors 'self'`). O conteúdo exportado pelas ferramentas usa scripts
 embutidos, então roda com uma CSP própria, mais aberta que a da loja, no mesmo domínio: envie só pacotes
 gerados pela própria Dafnis.
+
+## Certificados
+
+A loja gera o certificado em PDF no modelo da Dafnis (A4 deitado, frente e verso), sem programa externo
+(`app/Services/CertificatePdf.php`, sobre o gerador `app/Services/Pdf/Document.php`):
+
+- **Frente:** "CERTIFICADO", selo da NR, faixa azul com o logo, cidade e data, nome do participante e o texto
+  com CPF, nome do treinamento, período, carga horária e o CNPJ da empresa; linha para o participante
+  assinar; QR code e código de validação.
+- **Verso:** razão social, site, endereço e telefone; título com a carga horária; conteúdo programático em
+  três colunas; local de realização; assinaturas dos instrutores e do responsável técnico.
+
+**Quando sai.** Curso feito na loja, sem prática: na aprovação, sozinho (a equipe recebe "Certificado
+emitido"). Curso com prática presencial: quando a equipe registra a data e o local da prática em
+*Matrículas › (vaga) › Certificado*. Qualquer outro curso: a equipe gera no mesmo quadro (ou anexa um PDF
+próprio). Gerar de novo mantém o código e não manda outro e-mail. Sem o CPF do participante o certificado
+espera: ele recebe um e-mail e informa o CPF em *Minha conta › Certificados*, e o certificado sai na hora.
+
+**Onde se configura.** *Painel › Certificados*: emissão automática (liga e desliga), empresa no texto,
+razão social, cidade da data e **quem assina** (nome, formação/função, registro e, se a pessoa autorizar, a
+imagem da assinatura, guardada em `storage/uploads/assinaturas`). CNPJ, endereço e telefone vêm de
+*Configurações*. Em cada curso (*Cursos › (curso) › Certificado*): o nome do treinamento como sai no
+certificado, o conteúdo programático do verso (um item por linha; "1." e "a)" ficam com recuo; vazio = os
+módulos da página do curso) e quem assina aquele curso (nenhum marcado = os marcados como padrão). O botão
+"Ver exemplo em PDF" mostra o modelo com um participante fictício.
+
+**Validação.** O QR code e o código (DF-XXXXXXXX) levam a `/certificados/{código}`, página pública (fora do
+Google) com nome, treinamento, carga horária, período e data, e o CPF mascarado. Sem o código, `/certificados`
+tem a busca. O que foi impresso fica guardado no registro do certificado: se o PDF sumir do servidor, ele é
+refeito igual no próximo download.
 
 ## Mercado Pago
 

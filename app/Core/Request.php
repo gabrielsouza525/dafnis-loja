@@ -92,7 +92,10 @@ final class Request
         return $file;
     }
 
-    /** Normaliza <input type=file multiple> em uma lista de arquivos. */
+    /**
+     * Normaliza <input type=file multiple> (ou vários campos name="x[]") em uma lista de arquivos.
+     * As chaves seguem a posição do campo no formulário, para casar com os demais campos da linha.
+     */
     public function files(string $key): array
     {
         $raw = $this->files[$key] ?? null;
@@ -107,7 +110,7 @@ final class Request
             if (($raw['error'][$i] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
                 continue;
             }
-            $list[] = [
+            $list[$i] = [
                 'name' => $name,
                 'type' => $raw['type'][$i],
                 'tmp_name' => $raw['tmp_name'][$i],

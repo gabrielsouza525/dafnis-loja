@@ -100,19 +100,41 @@ final class Notify
         ]);
     }
 
-    /** Parte on-line de um curso SCORM concluída: a equipe emite o certificado ou agenda a prática. */
-    public static function onlinePartDone(?array $enrollment, ?array $summary, bool $practical): void
+    /**
+     * Parte on-line de um curso da loja concluída: a equipe agenda a prática, confere o certificado
+     * emitido automaticamente ou emite o que não pôde sair sozinho.
+     * @param list<string>|null $pending o que impediu a emissão automática ([] = emitido; null = curso com prática)
+     */
+    public static function onlinePartDone(?array $enrollment, ?array $summary, bool $practical, ?array $pending = null): void
     {
         $team = self::teamAddress();
         if (!$enrollment || !$team) {
             return;
         }
         $who = (string) ($enrollment['participant_name'] ?: $enrollment['participant_email']);
-        Mailer::send($team, ($practical ? 'Agendar prática — ' : 'Emitir certificado — ') . $who, 'team-online-done', [
+        $subject = match (true) {
+            $practical => 'Agendar prática — ',
+            $pending === [] => 'Certificado emitido — ',
+            default => 'Emitir certificado — ',
+        };
+        Mailer::send($team, $subject . $who, 'team-online-done', [
             'enrollment' => $enrollment,
             'summary' => $summary,
             'practical' => $practical,
+            'pending' => $pending,
             'url' => absolute_url('/admin/matriculas/' . $enrollment['id']),
+        ]);
+    }
+
+    /** O curso foi concluído, mas o certificado precisa do CPF do participante. */
+    public static function certificateNeedsDocument(?array $enrollment): void
+    {
+        if (!$enrollment || !$enrollment['participant_email']) {
+            return;
+        }
+        Mailer::send($enrollment['participant_email'], 'Falta o seu CPF para emitir o certificado', 'certificate-document', [
+            'enrollment' => $enrollment,
+            'url' => absolute_url('/minha-conta/certificados'),
         ]);
     }
 

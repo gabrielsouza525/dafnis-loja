@@ -23,6 +23,7 @@ $items = [
     'usuarios' => ['/admin/usuarios', 'Usuários', 'users', 0],
     'contatos' => ['/admin/contatos', 'Contatos', 'message', (int) ($counts['contacts'] ?? 0)],
     'configuracoes' => ['/admin/configuracoes', 'Configurações', 'settings', 0],
+    'certificados' => ['/admin/certificados', 'Certificados', 'file', 0],
 ];
 // Menu em grupos (o primeiro não tem título)
 $groups = [
@@ -30,7 +31,7 @@ $groups = [
     'Vendas' => ['pedidos', 'matriculas', 'cupons'],
     'Catálogo' => ['cursos', 'categorias'],
     'Pessoas' => ['usuarios', 'contatos'],
-    'Sistema' => ['configuracoes'],
+    'Sistema' => ['configuracoes', 'certificados'],
 ];
 $initials = mb_strtoupper(implode('', array_map(static fn ($w) => mb_substr($w, 0, 1), array_slice(preg_split('/\s+/', trim((string) $user['name'])) ?: [], 0, 2))));
 $title = ($title ?? 'Painel') . ' — Painel';

@@ -8,6 +8,7 @@ use App\Controllers\Auth\AuthController;
 use App\Controllers\Auth\PasswordController;
 use App\Controllers\Site\CartController;
 use App\Controllers\Site\CatalogController;
+use App\Controllers\Site\CertificateController;
 use App\Controllers\Site\CheckoutController;
 use App\Controllers\Site\CourseController;
 use App\Controllers\Site\HomeController;
@@ -48,6 +49,8 @@ return static function (Router $r): void {
     $r->post('/contato', [PageController::class, 'sendContact']);
     $r->get('/termos-de-uso', [PageController::class, 'terms']);
     $r->get('/politica-de-privacidade', [PageController::class, 'privacy']);
+    $r->get('/certificados', [CertificateController::class, 'verify']);
+    $r->get('/certificados/{code:DF-[A-Za-z0-9]{8}}', [CertificateController::class, 'show']);
     $r->get('/sitemap.xml', [PageController::class, 'sitemap']);
     $r->get('/robots.txt', [PageController::class, 'robots']);
 
@@ -79,6 +82,7 @@ return static function (Router $r): void {
         $r->post('/cursos/{id:\d+}/presenca', [StudyController::class, 'heartbeat']);
         $r->get('/certificados', [AccountController::class, 'certificates']);
         $r->get('/certificados/{id:\d+}/baixar', [AccountController::class, 'downloadCertificate']);
+        $r->post('/certificados/{id:\d+}/cpf', [AccountController::class, 'certificateDocument']);
         $r->get('/pedidos', [AccountController::class, 'orders']);
         $r->get('/pedidos/{number:DF\d{6}}', [AccountController::class, 'order']);
         $r->post('/vagas/{id:\d+}', [AccountController::class, 'assignSeat']);
@@ -109,6 +113,7 @@ return static function (Router $r): void {
         $r->post('/cursos/{id:\d+}/pacotes/{package:\d+}/excluir', [Admin\CoursePackageController::class, 'destroy']);
         $r->get('/cursos/{id:\d+}/pacotes/{package:\d+}/previa', [Admin\CoursePackageController::class, 'preview']);
         $r->get('/cursos/{id:\d+}/pacotes/{package:\d+}/arquivos/{path:.+}', [Admin\CoursePackageController::class, 'asset']);
+        $r->get('/cursos/{id:\d+}/certificado-exemplo', [Admin\CertificateController::class, 'sample']);
 
         $r->get('/categorias', [Admin\CategoryController::class, 'index']);
         $r->post('/categorias', [Admin\CategoryController::class, 'store']);
@@ -127,6 +132,11 @@ return static function (Router $r): void {
         $r->post('/matriculas/{id:\d+}', [Admin\EnrollmentController::class, 'update']);
         $r->post('/matriculas/{id:\d+}/certificado', [Admin\EnrollmentController::class, 'certificate']);
         $r->get('/matriculas/{id:\d+}/certificado', [Admin\EnrollmentController::class, 'downloadCertificate']);
+        $r->post('/matriculas/{id:\d+}/certificado/gerar', [Admin\EnrollmentController::class, 'generateCertificate']);
+
+        $r->get('/certificados', [Admin\CertificateController::class, 'edit']);
+        $r->post('/certificados', [Admin\CertificateController::class, 'update']);
+        $r->get('/certificados/assinaturas/{id:[a-f0-9]{8}}', [Admin\CertificateController::class, 'signature']);
 
         $r->get('/usuarios', [Admin\UserController::class, 'index']);
         $r->get('/usuarios/{id:\d+}', [Admin\UserController::class, 'show']);

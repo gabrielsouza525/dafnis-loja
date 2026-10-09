@@ -518,7 +518,7 @@ loaded = false;
 await ev(`document.querySelector('#f-package').form.requestSubmit(); return 1`);
 for (let i = 0; i < 80 && !loaded; i++) await sleep(100);
 await sleep(500);
-r = await ev(`return { rows: document.querySelectorAll('#conteudo tbody tr').length, current: document.querySelector('#conteudo tbody .status')?.textContent.trim(), preview: document.querySelector('#conteudo .panel-head a')?.getAttribute('href') }`);
+r = await ev(`return { rows: document.querySelectorAll('#conteudo-online tbody tr').length, current: document.querySelector('#conteudo-online tbody .status')?.textContent.trim(), preview: document.querySelector('#conteudo-online .panel-head a')?.getAttribute('href') }`);
 check('equipe envia o pacote SCORM pelo painel e ele fica em uso', r.rows === 1 && r.current === 'Em uso' && /\/previa$/.test(r.preview || ''), r);
 const frameState = `const f = document.querySelector('[data-study-frame]'); for (let i = 0; i < 50 && !(f.contentDocument && f.contentDocument.querySelector('#state') && !/Carregando/.test(f.contentDocument.querySelector('#state').textContent)); i++) await w(100);
   return { state: f.contentDocument?.querySelector('#state')?.textContent, status: document.querySelector('[data-study-status]').textContent };`;

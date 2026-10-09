@@ -140,7 +140,7 @@ final class Enrollments
         } else {
             Database::insert('certificates', [
                 'enrollment_id' => $id,
-                'code' => self::newCertificateCode(),
+                'code' => Certificates::newCode(),
                 'file_path' => $filePath,
                 'external_url' => $externalUrl,
                 'issued_at' => $issuedAt,
@@ -153,17 +153,5 @@ final class Enrollments
         if (!$existing) {
             Notify::certificateIssued(Enrollment::find($id));
         }
-    }
-
-    private static function newCertificateCode(): string
-    {
-        $alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-        do {
-            $code = 'DF-';
-            for ($i = 0; $i < 8; $i++) {
-                $code .= $alphabet[random_int(0, strlen($alphabet) - 1)];
-            }
-        } while ((int) Database::value('SELECT COUNT(*) FROM certificates WHERE code = :c', ['c' => $code]) > 0);
-        return $code;
     }
 }

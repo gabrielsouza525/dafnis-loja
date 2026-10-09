@@ -13,6 +13,7 @@ use App\Models\Enrollment;
 use App\Models\Order;
 use App\Services\Activity;
 use App\Services\Auth;
+use App\Services\Certificates;
 use App\Services\Enrollments;
 use App\Services\QrCode;
 use App\Services\RateLimiter;
@@ -66,6 +67,31 @@ final class AccountController extends Controller
         ]);
     }
 
+    /** O participante informa o CPF que falta no certificado; com o curso concluído, ele sai na hora. */
+    public function certificateDocument(int $id): Response
+    {
+        $user = Auth::user();
+        $e = Enrollment::find($id);
+        if (!$e || $e['participant_email'] !== $user['email'] || $e['certificate_id']) {
+            $this->notFound('Matrícula não encontrada.');
+        }
+        $data = $this->validate(['document' => 'required|cpf'], ['document' => 'CPF']);
+        $cpf = preg_replace('/\D/', '', (string) $data['document']);
+        Database::update('enrollments', ['participant_document' => $cpf], ['id' => $id]);
+        if (empty($user['document'])) {
+            Database::update('users', ['document' => $cpf], ['id' => $user['id']]);
+        }
+        Activity::log('enrollment.document', 'enrollment', $id, 'CPF informado pelo participante para o certificado');
+        $done = $e['status'] === 'completed';
+        $missing = $done ? Certificates::autoIssue($id) : ['curso não concluído'];
+        $message = match (true) {
+            $done && $missing === [] => 'CPF salvo. Seu certificado está pronto para baixar.',
+            $done => 'CPF salvo. A nossa equipe vai emitir o certificado e você recebe o aviso por e-mail.',
+            default => 'CPF salvo. Ele vai no certificado quando você concluir o curso.',
+        };
+        return $this->success($message, '/minha-conta/certificados');
+    }
+
     public function downloadCertificate(int $id): Response
     {
         $user = Auth::user();
@@ -79,7 +105,7 @@ final class AccountController extends Controller
         if (!$allowed) {
             $this->notFound('Certificado não encontrado.');
         }
-        if ($path = Uploads::privatePath($cert['file_path'])) {
+        if ($path = Certificates::file($cert)) {
             $name = 'certificado-' . slugify($cert['course_title']) . '-' . slugify((string) $cert['participant_name']) . '.pdf';
             return \App\Core\Response::file($path, 'application/pdf', [
                 'Content-Disposition' => 'attachment; filename="' . $name . '"',

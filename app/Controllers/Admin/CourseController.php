@@ -10,6 +10,7 @@ use App\Core\Validator;
 use App\Models\Category;
 use App\Models\Course;
 use App\Services\Activity;
+use App\Services\Certificates;
 use App\Services\Scorm\Packages;
 use App\Services\Uploads;
 
@@ -123,6 +124,7 @@ final class CourseController extends AdminController
             'categories' => Category::options(),
             'syllabus' => $course ? Course::syllabus($course) : [],
             'packages' => $course ? Packages::forCourse((int) $course['id']) : [],
+            'signers' => Certificates::signers(),
             'scripts' => [],
         ]);
     }
@@ -163,10 +165,13 @@ final class CourseController extends AdminController
             'featured_order' => 'nullable|integer',
             'meta_title' => 'nullable|max:160',
             'meta_description' => 'nullable|max:255',
+            'cert_name' => 'nullable|max:255',
+            'cert_syllabus' => 'nullable|max:8000',
         ], [
             'title' => 'título', 'slug' => 'endereço (slug)', 'category_id' => 'categoria', 'nr_number' => 'número da NR',
             'hours' => 'carga horária', 'price' => 'preço', 'promo_price' => 'preço promocional', 'access_url' => 'link de acesso',
             'access_days' => 'prazo de acesso', 'featured_order' => 'ordem no destaque',
+            'cert_name' => 'nome no certificado', 'cert_syllabus' => 'conteúdo programático do certificado',
         ]);
 
         $taken = (int) Database::value('SELECT COUNT(*) FROM courses WHERE slug = :s' . ($course ? ' AND id <> :id' : ''), array_filter(['s' => $data['slug'], 'id' => $course['id'] ?? null]));
@@ -183,6 +188,9 @@ final class CourseController extends AdminController
             throw ValidationException::with('promo_price', 'O preço promocional precisa ser menor que o preço normal.');
         }
         $data['syllabus'] = $this->syllabusFromInput();
+        $known = array_column(Certificates::signers(), 'id');
+        $signers = array_values(array_intersect(array_map('strval', (array) $this->request->input('cert_signers', [])), $known));
+        $data['cert_signers'] = $signers ? json_encode($signers) : null;
         return $data;
     }
 

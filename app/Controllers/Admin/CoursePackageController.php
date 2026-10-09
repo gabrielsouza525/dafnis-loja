@@ -31,7 +31,7 @@ final class CoursePackageController extends AdminController
         }
         $package = Packages::import($id, $file['tmp_name'], (string) $file['name'], Auth::id(), $this->request->bool('make_current'));
         $message = 'Versão ' . $package['version'] . ' importada: ' . $package['file_count'] . ' arquivos.';
-        return $this->success($package['is_current'] ? $message . ' Novos participantes já recebem esta versão.' : $message, '/admin/cursos/' . $course['id'] . '/editar#conteudo');
+        return $this->success($package['is_current'] ? $message . ' Novos participantes já recebem esta versão.' : $message, '/admin/cursos/' . $course['id'] . '/editar#conteudo-online');
     }
 
     /** Pacote copiado para storage/scorm/entrada (pelo cPanel ou FTP), sem o limite de envio do navegador. */
@@ -40,21 +40,21 @@ final class CoursePackageController extends AdminController
         $this->findOr404(Course::find($id), 'Curso não encontrado.');
         $package = Packages::importFromInbox($id, (string) $this->request->input('arquivo', ''), Auth::id(), $this->request->bool('make_current'));
         $message = 'Versão ' . $package['version'] . ' importada da pasta de entrada: ' . $package['file_count'] . ' arquivos.';
-        return $this->success($package['is_current'] ? $message . ' Novos participantes já recebem esta versão.' : $message, '/admin/cursos/' . $id . '/editar#conteudo');
+        return $this->success($package['is_current'] ? $message . ' Novos participantes já recebem esta versão.' : $message, '/admin/cursos/' . $id . '/editar#conteudo-online');
     }
 
     public function activate(int $id, int $package): Response
     {
         $row = $this->package($id, $package);
         Packages::makeCurrent($row);
-        return $this->success('Versão ' . $row['version'] . ' em uso para novos participantes.', '/admin/cursos/' . $id . '/editar#conteudo');
+        return $this->success('Versão ' . $row['version'] . ' em uso para novos participantes.', '/admin/cursos/' . $id . '/editar#conteudo-online');
     }
 
     public function destroy(int $id, int $package): Response
     {
         $row = $this->package($id, $package);
         Packages::delete($row);
-        return $this->success('Versão ' . $row['version'] . ' excluída.', '/admin/cursos/' . $id . '/editar#conteudo');
+        return $this->success('Versão ' . $row['version'] . ' excluída.', '/admin/cursos/' . $id . '/editar#conteudo-online');
     }
 
     /** O curso como o aluno vê, sem gravar nada. */
@@ -65,7 +65,7 @@ final class CoursePackageController extends AdminController
         return StudyController::playerResponse([
             'title' => $course['title'],
             'code' => $course['code'] ?: ($course['nr_number'] ? 'NR ' . $course['nr_number'] : null),
-            'backUrl' => url('/admin/cursos/' . $id . '/editar#conteudo'),
+            'backUrl' => url('/admin/cursos/' . $id . '/editar#conteudo-online'),
             'config' => [
                 'launch' => url('/admin/cursos/' . $id . '/pacotes/' . $row['id'] . '/arquivos/' . $row['launch_path']),
                 'preview' => true,

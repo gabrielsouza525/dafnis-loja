@@ -7,6 +7,7 @@ use App\Core\Database;
 use App\Core\Request;
 use App\Models\Enrollment;
 use App\Services\Activity;
+use App\Services\Certificates;
 use App\Services\Notify;
 
 /**
@@ -266,8 +267,9 @@ final class Tracker
 
     /**
      * Leva o andamento para a matrícula. Ao concluir a parte on-line: sem prática obrigatória, a
-     * matrícula fica "Concluído" (a equipe emite o certificado); com prática, continua "Em andamento"
-     * até a equipe registrar a parte presencial. Nos dois casos a equipe recebe o aviso.
+     * matrícula fica "Concluído" e o certificado sai na hora (Certificates::autoIssue); com prática,
+     * continua "Em andamento" até a equipe registrar a parte presencial. Nos dois casos a equipe
+     * recebe o aviso.
      */
     private static function syncEnrollment(array $attempt, array $enrollment, bool $justDone): void
     {
@@ -290,7 +292,8 @@ final class Tracker
         if ($justDone) {
             $score = $attempt['score_raw'] !== null ? ' · nota ' . self::number($attempt['score_raw']) : '';
             Activity::log('enrollment.online_done', 'enrollment', (int) $enrollment['id'], 'Parte on-line: ' . (self::STATUS[$attempt['lesson_status']] ?? $attempt['lesson_status']) . $score);
-            Notify::onlinePartDone(Enrollment::find((int) $enrollment['id']), self::summary((int) $enrollment['id']), $practical);
+            $pending = $practical ? null : Certificates::autoIssue((int) $enrollment['id']);
+            Notify::onlinePartDone(Enrollment::find((int) $enrollment['id']), self::summary((int) $enrollment['id']), $practical, $pending);
         }
     }
 

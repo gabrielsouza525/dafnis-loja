@@ -9,6 +9,7 @@ use App\Core\ValidationException;
  * Arquivos enviados pelo admin.
  * - Capas de curso: públicas em public/uploads/cursos, convertidas para WebP quando a GD permite.
  * - Certificados: privados em storage/uploads/certificados, entregues só ao participante.
+ * - Assinaturas dos certificados: privadas em storage/uploads/assinaturas, usadas só pelo gerador.
  */
 final class Uploads
 {
@@ -82,6 +83,54 @@ final class Uploads
             throw ValidationException::with('certificate_file', 'Não foi possível salvar o certificado.');
         }
         return "certificados/$name";
+    }
+
+    /**
+     * Imagem da assinatura de quem assina os certificados: privada em storage/uploads/assinaturas.
+     * Com a GD, é refeita como PNG (fundo transparente preservado, até 900 px de largura).
+     * @return string caminho relativo a storage/uploads
+     */
+    public static function signature(array $file, string $field): string
+    {
+        self::assertOk($file, $field);
+        $mime = self::mime($file['tmp_name']);
+        if (!in_array($mime, ['image/png', 'image/jpeg'], true) || !@getimagesize($file['tmp_name'])) {
+            throw ValidationException::with($field, 'Envie a assinatura em PNG (de preferência com fundo transparente) ou JPG.');
+        }
+        $data = (string) file_get_contents($file['tmp_name']);
+        if (function_exists('imagecreatefromstring') && ($src = @imagecreatefromstring($data))) {
+            if (!imageistruecolor($src)) {
+                imagepalettetotruecolor($src);
+            }
+            $w = imagesx($src);
+            $h = imagesy($src);
+            $nw = min($w, 900);
+            $nh = max(1, (int) round($h * $nw / $w));
+            $dst = imagecreatetruecolor($nw, $nh);
+            imagealphablending($dst, false);
+            imagesavealpha($dst, true);
+            imagefill($dst, 0, 0, imagecolorallocatealpha($dst, 255, 255, 255, 127));
+            imagecopyresampled($dst, $src, 0, 0, 0, 0, $nw, $nh, $w, $h);
+            ob_start();
+            imagepng($dst, null, 9);
+            $data = (string) ob_get_clean();
+            imagedestroy($src);
+            imagedestroy($dst);
+        }
+        try {
+            \App\Services\Pdf\Document::assertImage($data);
+        } catch (\RuntimeException $e) {
+            throw ValidationException::with($field, $e->getMessage());
+        }
+        $dir = BASE_PATH . '/storage/uploads/assinaturas';
+        if (!is_dir($dir)) {
+            mkdir($dir, 0775, true);
+        }
+        $name = bin2hex(random_bytes(12)) . (substr($data, 1, 3) === 'PNG' ? '.png' : '.jpg');
+        if (file_put_contents("$dir/$name", $data) === false) {
+            throw ValidationException::with($field, 'Não foi possível salvar a assinatura.');
+        }
+        return "assinaturas/$name";
     }
 
     public static function privatePath(?string $relative): ?string

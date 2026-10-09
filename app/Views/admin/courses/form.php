@@ -1,6 +1,7 @@
 <?php
-/** @var array|null $course @var array $categories @var array $syllabus @var array $packages */
+/** @var array|null $course @var array $categories @var array $syllabus @var array $packages @var array $signers */
 use App\Controllers\Admin\CourseController;
+use App\Services\Certificates;
 use App\Services\Scorm\Packages;
 
 $c = $course ?? [];
@@ -66,6 +67,28 @@ $action = $course ? url('/admin/cursos/' . $course['id']) : url('/admin/cursos')
 </div>
 </div></div>
 
+<?php
+$chosenSigners = json_decode((string) $v('cert_signers'), true) ?: [];
+$defaultName = Certificates::courseName(['cert_name' => '', 'code' => $v('code') ?: null, 'nr_number' => $v('nr_number') ?: null, 'title' => $v('title') ?: 'Título do curso']);
+?>
+<div class="panel" id="certificado"><div class="panel-head"><h2>Certificado</h2><?php if ($course): ?><a class="btn btn-outline btn-xs" href="<?= e(url('/admin/cursos/' . $course['id'] . '/certificado-exemplo')) ?>" target="_blank"><?= icon('file', 'ic-sm') ?>Ver exemplo em PDF</a><?php endif; ?></div><div class="panel-body">
+<p class="hint" style="margin:0 0 12px">Como o curso aparece no certificado gerado pela loja. Empresa, cidade e quem assina ficam em <a href="<?= e(url('/admin/certificados')) ?>">Certificados</a>.</p>
+<div class="form-grid">
+<div class="full"><?= partial('field', ['name' => 'cert_name', 'label' => 'Nome do treinamento no certificado', 'value' => $v('cert_name'), 'optional' => true, 'placeholder' => $defaultName, 'hint' => 'Frente: "concluiu o Treinamento de Formação em NR 10 – SEGURANÇA…". Verso: "Treinamento de NR 10 – Segurança…". Vazio: código e título do curso.']) ?></div>
+<div class="full"><?= partial('field', ['name' => 'cert_syllabus', 'label' => 'Conteúdo programático (verso)', 'type' => 'textarea', 'value' => $v('cert_syllabus'), 'optional' => true, 'hint' => 'Um item por linha. Linhas que começam com "1." ou "a)" ficam alinhadas com recuo. Vazio: usa os módulos do conteúdo programático da página.', 'attrs' => ['rows' => 10, 'style' => 'min-height:220px;font-family:var(--font-mono, monospace);font-size:13px']]) ?></div>
+</div>
+<?php if ($signers): ?>
+<fieldset class="field" style="margin-top:14px;border:0;padding:0"><legend style="font-weight:600;font-size:14px;margin-bottom:8px">Quem assina este curso</legend>
+<?php foreach ($signers as $sg): ?>
+<label class="switch"><input type="checkbox" name="cert_signers[]" value="<?= e($sg['id']) ?>"<?= checked(in_array($sg['id'], $chosenSigners, true)) ?>><span><?= e($sg['name']) ?><small><?= e(trim($sg['role'] . ($sg['registry'] ? ' · ' . $sg['registry'] : ''))) ?><?= !empty($sg['default']) ? ' · padrão' : '' ?></small></span></label>
+<?php endforeach; ?>
+<p class="hint">Nenhum marcado: assinam os marcados como padrão em Certificados.</p>
+</fieldset>
+<?php else: ?>
+<p class="hint" style="margin-top:12px">Cadastre quem assina em <a href="<?= e(url('/admin/certificados')) ?>">Certificados</a>.</p>
+<?php endif; ?>
+</div></div>
+
 <div class="panel"><div class="panel-head"><h2>SEO e busca</h2></div><div class="panel-body">
 <div class="form-grid">
 <?= partial('field', ['name' => 'meta_title', 'label' => 'Título para o Google', 'value' => $v('meta_title'), 'optional' => true]) ?>
@@ -112,7 +135,7 @@ $action = $course ? url('/admin/cursos/' . $course['id']) : url('/admin/cursos')
 
 <?php if ($course): ?>
 <?php $limit = Packages::uploadLimitBytes(); $currentPackage = array_values(array_filter($packages, static fn ($p) => $p['is_current']))[0] ?? null; ?>
-<div class="panel" id="conteudo" style="margin-top:22px">
+<div class="panel" id="conteudo-online" style="margin-top:22px">
 <div class="panel-head"><h2>Conteúdo on-line próprio (SCORM)</h2><?php if ($currentPackage): ?><a class="btn btn-outline btn-xs" href="<?= e(url('/admin/cursos/' . $course['id'] . '/pacotes/' . $currentPackage['id'] . '/previa')) ?>" target="_blank"><?= icon('external', 'ic-sm') ?>Ver como o aluno</a><?php endif; ?></div>
 <div class="panel-body">
 <p class="hint" style="margin:0 0 14px">Para cursos feitos pela Dafnis (Rise 360, Storyline e outras ferramentas): exporte para <strong>LMS em SCORM 1.2</strong> e envie o .zip. Com um conteúdo em uso, o aluno faz o curso aqui na loja (botão "Começar o curso" em Meus cursos), em vez da plataforma de ensino; a loja registra os acessos, o tempo de estudo e a nota. Quem já começou continua na versão em que começou.</p>

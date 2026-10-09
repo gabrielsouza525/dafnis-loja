@@ -5,9 +5,11 @@ namespace App\Controllers\Admin;
 
 use App\Core\Database;
 use App\Core\Response;
+use App\Core\ValidationException;
 use App\Core\Validator;
 use App\Models\Enrollment;
 use App\Services\Activity;
+use App\Services\Certificates;
 use App\Services\Enrollments;
 use App\Services\Scorm\Tracker;
 use App\Services\Uploads;
@@ -67,6 +69,9 @@ final class EnrollmentController extends AdminController
             'activity' => Activity::forSubject('enrollment', $id),
             'study' => Tracker::summary($id),
             'sessions' => Tracker::sessions($id, 20),
+            'certMissing' => Certificates::missing($e, $e['course_id'] ? Database::first('SELECT * FROM courses WHERE id = :id', ['id' => $e['course_id']]) : null),
+            'certDefaults' => Certificates::defaults($e),
+            'certGenerated' => (bool) Database::value('SELECT data IS NOT NULL FROM certificates WHERE enrollment_id = :e', ['e' => $id]),
         ]);
     }
 
@@ -98,10 +103,37 @@ final class EnrollmentController extends AdminController
         return $this->success('Certificado registrado. O participante foi avisado por e-mail.', '/admin/matriculas/' . $id);
     }
 
+    /** Gera o certificado no modelo da Dafnis (ou gera de novo, com o mesmo código). */
+    public function generateCertificate(int $id): Response
+    {
+        $e = $this->findOr404(Enrollment::find($id), 'Matrícula não encontrada.');
+        $data = Validator::validate($this->request->all(), [
+            'start' => 'required|date',
+            'end' => 'required|date',
+            'issued_at' => 'nullable|date',
+            'practical_location' => 'nullable|max:160',
+        ], ['start' => 'início', 'end' => 'término', 'issued_at' => 'data do certificado', 'practical_location' => 'local da prática']);
+        if ($data['end'] < $data['start']) {
+            throw ValidationException::with('end', 'O término não pode ser antes do início.');
+        }
+        $presential = !empty($e['practical_required']) || $e['modality'] === 'presencial';
+        if ($presential && !$data['practical_location']) {
+            throw ValidationException::with('practical_location', 'Informe onde foi a parte presencial (cidade/UF ou endereço).');
+        }
+        $had = (bool) $e['certificate_id'];
+        Certificates::generate($id, [
+            'start' => $data['start'],
+            'end' => $data['end'],
+            'issued_at' => $data['issued_at'] ?: $data['end'],
+            'practical_location' => $data['practical_location'],
+        ]);
+        return $this->success($had ? 'Certificado gerado de novo, com o mesmo código.' : 'Certificado emitido. O participante foi avisado por e-mail.', '/admin/matriculas/' . $id);
+    }
+
     public function downloadCertificate(int $id): Response
     {
         $cert = $this->findOr404(Database::first('SELECT * FROM certificates WHERE enrollment_id = :e', ['e' => $id]), 'Certificado não encontrado.');
-        $path = Uploads::privatePath($cert['file_path']);
+        $path = Certificates::file($cert);
         if (!$path) {
             $this->notFound('Arquivo do certificado não encontrado.');
         }

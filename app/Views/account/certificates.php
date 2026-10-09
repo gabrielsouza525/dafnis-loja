@@ -28,6 +28,13 @@ $crumbs = [['Início', '/'], ['Minha conta', '/minha-conta'], ['Certificados', n
 </dl>
 <?php if ($ready): ?>
 <a class="btn btn-buy btn-sm btn-block" href="<?= e(url('/minha-conta/certificados/' . $e['certificate_id'] . '/baixar')) ?>"><?= icon('download', 'ic-sm') ?>Baixar certificado</a>
+<?php elseif (!$showName && strlen(preg_replace('/\D/', '', (string) $e['participant_document'])) !== 11): ?>
+<form class="cert-card-doc" method="post" action="<?= e(url('/minha-conta/certificados/' . $e['id'] . '/cpf')) ?>" data-loading-form>
+<?= csrf_field() ?>
+<input type="hidden" name="_scope" value="cpf-<?= (int) $e['id'] ?>">
+<?= partial('field', ['name' => 'document', 'id' => 'cpf-' . $e['id'], 'label' => 'Seu CPF, para o certificado', 'value' => '', 'mask' => 'cpf', 'required' => true, 'scope' => 'cpf-' . $e['id']]) ?>
+<button class="btn btn-buy btn-sm btn-block" type="submit"><?= icon('award', 'ic-sm') ?>Salvar e emitir o certificado</button>
+</form>
 <?php else: ?>
 <span class="cert-card-wait"><?= icon('clock', 'ic-sm') ?>Certificado em emissão</span>
 <?php endif; ?>

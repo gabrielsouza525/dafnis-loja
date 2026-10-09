@@ -35,6 +35,8 @@
       if (!rows.length) return;
       var clone = rows[rows.length - 1].cloneNode(true);
       Array.prototype.forEach.call(clone.querySelectorAll('input, textarea'), function (el) { el.value = ''; });
+      Array.prototype.forEach.call(clone.querySelectorAll('select'), function (el) { el.selectedIndex = 0; });
+      Array.prototype.forEach.call(clone.querySelectorAll('[data-repeater-drop]'), function (el) { el.remove(); });
       list.appendChild(clone);
       var first = clone.querySelector('input, textarea');
       if (first) first.focus();
@@ -50,6 +52,15 @@
         Array.prototype.forEach.call(row.querySelectorAll('input, textarea'), function (el) { el.value = ''; });
       }
     }
+  });
+
+  // Certificados: marcar "remover a assinatura" preenche o campo da linha (o formulário manda uma linha por pessoa).
+  doc.addEventListener('change', function (e) {
+    var box = e.target.closest ? e.target.closest('[data-remove-signature-toggle]') : null;
+    if (!box) return;
+    var row = box.closest('[data-repeater-row]');
+    var input = row ? row.querySelector('[data-remove-signature]') : null;
+    if (input) input.value = box.checked ? '1' : '0';
   });
 
   var source = doc.querySelector('[data-slug-source]');

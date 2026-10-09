@@ -67,6 +67,11 @@ body.admin{background:var(--gray)}
 .repeater-row + .repeater-row{margin-top:10px}
 .repeater-row .full{grid-column:1 / -1}
 .repeater-row.faq{grid-template-columns:minmax(0,1fr) auto}
+.repeater-row.signer{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto}
+.sig-current{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.sig-thumb{max-height:48px;max-width:180px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:4px}
+.link-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.link-list a{display:inline-flex;gap:8px;align-items:center}
 .kpis-admin{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:22px}
 .kpis-admin .kpi{transition:border-color .2s,box-shadow .2s}
 .kpis-admin .kpi:hover{border-color:var(--line-strong);box-shadow:var(--shadow)}
