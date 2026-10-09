@@ -116,6 +116,7 @@ check('documento começa e termina como PDF', str_starts_with($pdf, '%PDF-1.4') 
 check('tabela de referências no lugar indicado', preg_match('/startxref\n(\d+)\n/', $pdf, $m) === 1 && substr($pdf, (int) $m[1], 4) === 'xref');
 check('PNG com transparência entra com máscara', str_contains($pdf, '/SMask'));
 check('largura do texto pelas métricas da fonte (Helvetica: "ação")', abs((new Document(10, 10))->font('Helvetica', 10)->textWidth('ação') - 21.68) < 0.001);
+check('caracteres invisíveis de texto colado somem (não viram "?")', Document::encode("Relembrar\u{200B} o conteúdo") === Document::encode('Relembrar o conteúdo'));
 check('quebra de linha respeita a largura', count((new Document(10, 10))->font('Times-Roman', 10)->wrap(str_repeat('palavra ', 30), 100)) > 5);
 check('período no mesmo mês', Certificates::periodText('2026-09-07', '2026-09-11') === 'de 07 a 11/09/2026');
 check('período num dia só', Certificates::periodText('2026-09-11', '2026-09-11') === 'em 11/09/2026');

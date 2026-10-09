@@ -388,7 +388,11 @@ final class Document
     /** UTF-8 para WinAnsi (Windows-1252); o que não existe nela vira "?". */
     public static function encode(string $text): string
     {
-        $text = strtr($text, ["\u{2010}" => '-', "\u{2011}" => '-', "\u{2012}" => '-', "\u{2212}" => '-', "\u{202F}" => ' ', "\t" => ' ']);
+        $text = strtr($text, [
+            "\u{2010}" => '-', "\u{2011}" => '-', "\u{2012}" => '-', "\u{2212}" => '-', "\u{202F}" => ' ', "\t" => ' ',
+            // Caracteres invisíveis que vêm em textos colados (viravam "?").
+            "\u{200B}" => '', "\u{200C}" => '', "\u{200D}" => '', "\u{2060}" => '', "\u{FEFF}" => '',
+        ]);
         return (string) mb_convert_encoding($text, 'Windows-1252', 'UTF-8');
     }
 
