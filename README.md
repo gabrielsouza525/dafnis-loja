@@ -172,6 +172,11 @@ emitido"). Curso com prática presencial: quando a equipe registra a data e o lo
 próprio). Gerar de novo mantém o código e não manda outro e-mail. Sem o CPF do participante o certificado
 espera: ele recebe um e-mail e informa o CPF em *Minha conta › Certificados*, e o certificado sai na hora.
 
+**NR-33.** Nas capacitações de espaços confinados (NR 33 com prática), o quadro da prática pede também o
+tipo de espaço confinado, as atividades e o responsável técnico que dá a anuência (com a qualificação),
+como exige o item 33.6.5. Os dados ficam na matrícula e saem no verso, abaixo do local de realização; sem
+eles, o certificado não é gerado.
+
 **Onde se configura.** *Painel › Certificados*: emissão automática (liga e desliga), empresa no texto,
 razão social, cidade da data e **quem assina** (nome, formação/função, registro e, se a pessoa autorizar, a
 imagem da assinatura, guardada em `storage/uploads/assinaturas`). CNPJ, endereço e telefone vêm de

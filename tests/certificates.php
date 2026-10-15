@@ -18,6 +18,7 @@ use App\Core\Database;
 use App\Services\Certificates;
 use App\Services\Pdf\Document;
 use App\Services\Settings;
+use App\Services\Uploads;
 
 $base = rtrim($argv[1] ?? 'http://localhost:8000', '/');
 $failures = 0;
@@ -286,6 +287,48 @@ $left = Certificates::signers();
 clearstatcache();
 check('remover a pessoa e a assinatura apaga a imagem', count($left) === 1 && empty($left[0]['signature']) && !is_file(BASE_PATH . '/storage/uploads/' . $oldSignature), json_encode($left) . ' ' . $oldSignature);
 @unlink($sig);
+
+echo "\nNR-33 (item 33.6.5)\n";
+$nr33 = Database::first('SELECT * FROM courses WHERE nr_number = 33 AND practical_required = 1 ORDER BY id LIMIT 1');
+if (!$nr33) {
+    check('há um curso da NR-33 com prática no catálogo', false);
+} else {
+    $nr33Syllabus = $nr33['cert_syllabus'];
+    Database::update('courses', ['cert_syllabus' => "1. Definições.\n2. Reconhecimento, avaliação e controle de riscos."], ['id' => $nr33['id']]);
+    $nr33 = Database::first('SELECT * FROM courses WHERE id = :id', ['id' => $nr33['id']]);
+    $simulator = ['practical_required' => 0] + $nr33;
+    check('só a capacitação com prática pede os dados (simulador não)', Certificates::needsDetails($nr33) && !Certificates::needsDetails($simulator));
+    $text = pdf_text(Certificates::sample($nr33));
+    check('exemplo da NR-33 traz espaço confinado e anuência do responsável técnico', str_contains($text, Document::encode('Espaço confinado:')) && str_contains($text, Document::encode('Nome do Responsável Técnico')));
+    check('outros cursos não ganham a linha da NR-33', !str_contains(pdf_text($sample), Document::encode('Espaço confinado:')));
+
+    $e33 = clone_enrollment($enrollmentId, '52998224725');
+    Database::update('enrollments', ['course_id' => $nr33['id']], ['id' => $e33]);
+    $r = $admin->request('GET', "/admin/matriculas/$e33");
+    check('formulário da prática pede os dados da NR-33', $r['status'] === 200 && str_contains($r['body'], 'name="space_type"') && str_contains($r['body'], 'name="rt_name"'));
+    $form = ['_scope' => 'gerar', 'start' => date('Y-m-d', strtotime('-3 days')), 'end' => date('Y-m-d'), 'practical_location' => 'Araçatuba/SP'];
+    $r = $admin->request('POST', "/admin/matriculas/$e33/certificado/gerar", $form);
+    check('sem os dados da NR-33 o certificado não sai', !Database::value('SELECT id FROM certificates WHERE enrollment_id = :e', ['e' => $e33]));
+    $admin->request('GET', "/admin/matriculas/$e33");
+    $r = $admin->request('POST', "/admin/matriculas/$e33/certificado/gerar", $form + [
+        'space_type' => 'Tanque TQ-07 de água industrial', 'activities' => 'Limpeza e inspeção interna',
+        'rt_name' => 'Responsável Exemplo', 'rt_title' => 'Eng. de Segurança do Trabalho – CREA/SP 000000',
+    ]);
+    $cert33 = Database::first('SELECT * FROM certificates WHERE enrollment_id = :e', ['e' => $e33]);
+    $stored = json_decode((string) Database::value('SELECT cert_details FROM enrollments WHERE id = :e', ['e' => $e33]), true);
+    check('com os dados, o certificado sai e os dados ficam na matrícula', $cert33 && ($stored['space_type'] ?? '') === 'Tanque TQ-07 de água industrial' && ($stored['rt_name'] ?? '') === 'Responsável Exemplo');
+    $pdf33 = $cert33 ? (string) file_get_contents((string) Certificates::file($cert33)) : '';
+    check('PDF traz o espaço confinado e o responsável técnico', str_contains(pdf_text($pdf33), Document::encode('TQ-07')) && str_contains(pdf_text($pdf33), Document::encode('Responsável Exemplo')));
+    $r = $admin->request('GET', "/admin/matriculas/$e33");
+    check('ao gerar de novo, o formulário vem preenchido', str_contains($r['body'], 'value="Tanque TQ-07 de água industrial"'));
+
+    if ($cert33) {
+        Uploads::deletePrivate($cert33['file_path']);
+        Database::delete('certificates', ['id' => $cert33['id']]);
+    }
+    Database::delete('enrollments', ['id' => $e33]);
+    Database::update('courses', ['cert_syllabus' => $nr33Syllabus], ['id' => $nr33['id']]);
+}
 
 echo "\n" . ($failures ? "$failures de $checks verificações falharam." : "Tudo certo: $checks verificações.") . "\n";
 exit($failures ? 1 : 0);

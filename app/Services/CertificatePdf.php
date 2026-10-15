@@ -210,10 +210,17 @@ final class CertificatePdf
         $pdf->font('Times-Bold', $this->u(16));
         $pdf->text($center, $this->u(84.6), 'Conteúdo Programático:', 'center', self::INK);
 
-        $this->syllabus($d['syllabus'], $this->x(83.2), $this->u(99), $this->u(553.6), $this->u(286));
+        // Com os dados exigidos pela NR (NR-33, item 33.6.5), o conteúdo programático encolhe para abrir espaço
+        // abaixo do local de realização, sem invadir as assinaturas.
+        $details = (string) ($d['details_text'] ?? '');
+        $this->syllabus($d['syllabus'], $this->x(83.2), $this->u(99), $this->u(553.6), $this->u($details !== '' ? 250 : 286));
 
         $pdf->font('Times-Bold', $this->u(9));
-        $pdf->paragraph($this->x(90), $this->u(406), $this->u(540), 'Local de realização: ' . $d['location'], $this->u(11), 'center', self::INK);
+        $y = $pdf->paragraph($this->x(90), $this->u($details !== '' ? 368 : 406), $this->u(540), 'Local de realização: ' . $d['location'], $this->u(11), 'center', self::INK);
+        if ($details !== '') {
+            $pdf->font('Times-Roman', $this->u(8));
+            $pdf->paragraph($this->x(90), $y + $this->u(2), $this->u(540), $details, $this->u(10), 'center', self::INK);
+        }
 
         $this->signatures($d['signers']);
 

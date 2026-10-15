@@ -120,12 +120,27 @@ final class EnrollmentController extends AdminController
         if ($presential && !$data['practical_location']) {
             throw ValidationException::with('practical_location', 'Informe onde foi a parte presencial (cidade/UF ou endereço).');
         }
+        // NR-33 (item 33.6.5): tipo de espaço confinado, atividades e anuência do responsável técnico.
+        $details = [];
+        if (Certificates::needsDetails($e)) {
+            foreach (Certificates::DETAIL_FIELDS as $key => $field) {
+                $value = trim((string) $this->request->input($key, ''));
+                if ($field['required'] && $value === '') {
+                    throw ValidationException::with($key, 'Informe: ' . mb_strtolower($field['label']) . ' (exigido pela NR-33 no certificado).');
+                }
+                if (mb_strlen($value) > $field['max']) {
+                    throw ValidationException::with($key, 'Use no máximo ' . $field['max'] . ' caracteres.');
+                }
+                $details[$key] = $value;
+            }
+        }
         $had = (bool) $e['certificate_id'];
         Certificates::generate($id, [
             'start' => $data['start'],
             'end' => $data['end'],
             'issued_at' => $data['issued_at'] ?: $data['end'],
             'practical_location' => $data['practical_location'],
+            'details' => $details,
         ]);
         return $this->success($had ? 'Certificado gerado de novo, com o mesmo código.' : 'Certificado emitido. O participante foi avisado por e-mail.', '/admin/matriculas/' . $id);
     }

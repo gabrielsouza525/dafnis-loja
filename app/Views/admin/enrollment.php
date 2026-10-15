@@ -61,6 +61,12 @@ $statusOptions = Enrollment::STATUS;
 <?php if ($presential): ?>
 <div class="full"><?= partial('field', ['name' => 'practical_location', 'label' => 'Local da parte presencial', 'value' => $certDefaults['practical_location'], 'required' => true, 'placeholder' => 'Ex.: Araçatuba/SP', 'scope' => 'gerar']) ?></div>
 <?php endif; ?>
+<?php if (\App\Services\Certificates::needsDetails($e)): ?>
+<p class="hint full" style="margin:4px 0 0">A NR-33 (item 33.6.5) exige no certificado o tipo de espaço confinado e as atividades, com a anuência do responsável técnico pelos espaços confinados da empresa do participante. Peça esses dados à empresa.</p>
+<?php foreach (\App\Services\Certificates::DETAIL_FIELDS as $key => $field): ?>
+<div class="full"><?= partial('field', ['name' => $key, 'label' => $field['label'], 'value' => $certDefaults['details'][$key] ?? '', 'required' => $field['required'], 'optional' => !$field['required'], 'attrs' => ['maxlength' => $field['max']], 'placeholder' => ['space_type' => 'Ex.: tanques de armazenamento e poços de visita', 'activities' => 'Ex.: limpeza, inspeção e manutenção', 'rt_name' => 'Nome completo', 'rt_title' => 'Ex.: Engenheiro de Segurança do Trabalho – CREA/SP 000000'][$key] ?? '', 'scope' => 'gerar']) ?></div>
+<?php endforeach; ?>
+<?php endif; ?>
 <div class="full"><?= partial('field', ['name' => 'issued_at', 'label' => 'Data no certificado', 'type' => 'date', 'value' => $certDefaults['issued_at'], 'optional' => true, 'hint' => 'Vazio: a data do término.', 'scope' => 'gerar']) ?></div>
 </div>
 <button class="btn btn-buy btn-block" type="submit" style="margin-top:14px"<?= $certMissing ? ' disabled' : '' ?>><?= icon('award') ?><?= $e['certificate_id'] ? 'Gerar de novo' : ($presential ? 'Registrar a prática e gerar o certificado' : 'Gerar certificado') ?></button>

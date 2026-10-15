@@ -93,6 +93,47 @@ final class Certificates
         return implode("\n", $lines);
     }
 
+    /**
+     * Dados extras que a NR exige no certificado, informados ao registrar a prática e guardados na
+     * matrícula (cert_details). NR-33, item 33.6.5: tipo de espaço confinado, atividades desenvolvidas
+     * e anuência do responsável técnico pelos espaços confinados (item 33.3.2), com a qualificação.
+     */
+    public const DETAIL_FIELDS = [
+        'space_type' => ['label' => 'Tipo de espaço confinado', 'max' => 120, 'required' => true],
+        'activities' => ['label' => 'Atividades desenvolvidas', 'max' => 160, 'required' => true],
+        'rt_name' => ['label' => 'Responsável técnico que dá a anuência', 'max' => 90, 'required' => true],
+        'rt_title' => ['label' => 'Qualificação e registro do responsável técnico', 'max' => 90, 'required' => false],
+    ];
+
+    /** Capacitações da NR-33 (com prática presencial): o certificado leva os dados do item 33.6.5. */
+    public static function needsDetails(array $course): bool
+    {
+        return (int) ($course['nr_number'] ?? 0) === 33 && !empty($course['practical_required']);
+    }
+
+    /** Dados extras guardados na matrícula, só os campos conhecidos. */
+    public static function details(array $enrollment): array
+    {
+        $stored = json_decode((string) ($enrollment['cert_details'] ?? ''), true);
+        $out = [];
+        foreach (array_keys(self::DETAIL_FIELDS) as $key) {
+            $out[$key] = is_array($stored) ? trim((string) ($stored[$key] ?? '')) : '';
+        }
+        return $out;
+    }
+
+    /** Campos obrigatórios que faltam nos dados extras (nomes para a mensagem). */
+    public static function missingDetails(array $details): array
+    {
+        $out = [];
+        foreach (self::DETAIL_FIELDS as $key => $field) {
+            if ($field['required'] && trim((string) ($details[$key] ?? '')) === '') {
+                $out[] = mb_strtolower($field['label']);
+            }
+        }
+        return $out;
+    }
+
     /** O que falta para gerar o certificado desta matrícula (lista vazia = pode gerar). */
     public static function missing(array $enrollment, ?array $course): array
     {
@@ -120,7 +161,7 @@ final class Certificates
 
     /**
      * Gera (ou gera de novo, com o mesmo código) o certificado e conclui a matrícula.
-     * $options: start, end, issued_at (Y-m-d), practical_location, location.
+     * $options: start, end, issued_at (Y-m-d), practical_location, location, details (DETAIL_FIELDS).
      */
     public static function generate(int $enrollmentId, array $options = [], bool $notify = true): array
     {
@@ -131,6 +172,20 @@ final class Certificates
         $course = $e['course_id'] ? Database::first('SELECT * FROM courses WHERE id = :id', ['id' => $e['course_id']]) : null;
         if ($missing = self::missing($e, $course)) {
             throw ValidationException::with('certificate', 'Para gerar o certificado, falta ' . self::listText($missing) . '.');
+        }
+        // Dados da NR-33: os informados agora completam (ou corrigem) os guardados na matrícula.
+        $details = null;
+        if (self::needsDetails($course)) {
+            $details = self::details($e);
+            foreach ((array) ($options['details'] ?? []) as $key => $value) {
+                if (isset(self::DETAIL_FIELDS[$key])) {
+                    $details[$key] = mb_substr(trim(preg_replace('/\s+/u', ' ', (string) $value)), 0, self::DETAIL_FIELDS[$key]['max']);
+                }
+            }
+            if ($lack = self::missingDetails($details)) {
+                throw ValidationException::with('certificate', 'Para o certificado da NR-33 (item 33.6.5), falta ' . self::listText($lack) . '.');
+            }
+            $options['details'] = $details;
         }
         $existing = Database::first('SELECT * FROM certificates WHERE enrollment_id = :e', ['e' => $enrollmentId]);
         $code = $existing['code'] ?? self::newCode();
@@ -157,6 +212,9 @@ final class Certificates
         }
         if (!empty($e['practical_required']) && !empty($options['practical_location'])) {
             $fields += ['practical_done_at' => $data['end'], 'practical_location' => mb_substr((string) $options['practical_location'], 0, 160)];
+        }
+        if ($details !== null) {
+            $fields['cert_details'] = self::json($details);
         }
         if ($fields) {
             Database::update('enrollments', $fields, ['id' => $enrollmentId]);
@@ -195,6 +253,10 @@ final class Certificates
             }
             return $missing;
         }
+        if (self::needsDetails($course) && ($lack = self::missingDetails(self::details($e)))) {
+            Activity::log('certificate.pending', 'enrollment', $enrollmentId, 'Certificado não emitido: falta ' . self::listText($lack) . ' (NR-33)');
+            return $lack;
+        }
         try {
             self::generate($enrollmentId);
             return [];
@@ -214,6 +276,7 @@ final class Certificates
                 'end' => $stored['end'],
                 'issued_at' => $stored['issued_at'] ?? $stored['end'],
                 'practical_location' => (string) ($e['practical_location'] ?? ''),
+                'details' => self::details($e),
             ];
         }
         $end = $e['practical_done_at'] ?: (($e['online_done_at'] ?? null) ? date('Y-m-d', strtotime((string) $e['online_done_at'])) : date('Y-m-d'));
@@ -222,6 +285,7 @@ final class Certificates
             'end' => $end,
             'issued_at' => $end,
             'practical_location' => (string) ($e['practical_location'] ?? ''),
+            'details' => self::details($e),
         ];
     }
 
@@ -249,6 +313,14 @@ final class Certificates
             'practical_location' => null, 'practical_done_at' => null,
         ];
         $options = ['start' => date('Y-m-d', strtotime('-4 days')), 'end' => date('Y-m-d'), 'practical_location' => $course['practical_required'] ? 'local da prática' : null];
+        if (self::needsDetails($course)) {
+            $options['details'] = [
+                'space_type' => 'tipo de espaço confinado da empresa do participante',
+                'activities' => 'atividades desenvolvidas no espaço confinado',
+                'rt_name' => 'Nome do Responsável Técnico',
+                'rt_title' => 'qualificação e registro',
+            ];
+        }
         return CertificatePdf::render(self::withFiles(self::data($fake, $course, $options, self::SAMPLE_CODE)));
     }
 
@@ -375,6 +447,7 @@ final class Certificates
             'contact_line' => self::contactLine($s),
             'syllabus' => self::syllabusFor($course),
             'location' => rtrim($location, '.') . '.',
+            'details_text' => self::detailsText($options['details'] ?? null),
             'signers' => array_map(static fn ($x) => [
                 'id' => (string) $x['id'],
                 'name' => trim((string) $x['name']),
@@ -385,6 +458,18 @@ final class Certificates
             'verify_url' => $verifyBase . '/' . $code,
             'verify_host' => preg_replace('#^https?://#', '', $verifyBase),
         ];
+    }
+
+    /** Linha do verso com os dados da NR-33; sem dados, nada. */
+    private static function detailsText(?array $details): string
+    {
+        if (!$details || self::missingDetails($details)) {
+            return '';
+        }
+        $clean = static fn (string $key) => rtrim(trim((string) ($details[$key] ?? '')), '.');
+        $rt = $clean('rt_name') . ($clean('rt_title') !== '' ? ', ' . $clean('rt_title') : '');
+        return 'Espaço confinado: ' . $clean('space_type') . '. Atividades desenvolvidas: ' . $clean('activities')
+            . '. Anuência do responsável técnico (NR-33, itens 33.3.2 e 33.6.5): ' . $rt . '.';
     }
 
     /** Troca o caminho guardado da assinatura pelo arquivo no disco, para o desenho. */
