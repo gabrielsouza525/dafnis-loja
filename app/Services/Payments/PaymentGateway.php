@@ -31,4 +31,10 @@ interface PaymentGateway
 
     /** Confere a assinatura da notificação recebida no webhook. */
     public function verifyWebhook(Request $request): bool;
+
+    /**
+     * Pedido cancelado: encerra no gateway o link de pagamento, para não se abrir um pagamento novo.
+     * Melhor esforço: falhas só vão para o log.
+     */
+    public function cancelCheckout(array $order): void;
 }

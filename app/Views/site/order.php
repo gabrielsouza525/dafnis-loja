@@ -73,6 +73,7 @@ if ($status === 'paid') {
 <div class="btns">
 <a class="btn btn-buy btn-lg" href="<?= e(url('/pedido/' . $order['number'] . '/pagar')) ?>" data-autopay="<?= $autoPay ? '1' : '0' ?>"><?= icon('lock') ?><?= $gw === 'rejected' ? 'Tentar pagar de novo' : 'Pagar com Mercado Pago' ?></a>
 <a class="btn btn-outline btn-lg" href="<?= e(url('/minha-conta/pedidos')) ?>">Ver meus pedidos</a>
+<?= partial('order-cancel', ['order' => $order, 'size' => 'btn-lg']) ?>
 </div>
 <?php if ($autoPay): ?><p class="hint" data-autopay-note>Abrindo o Mercado Pago…</p><?php endif; ?>
 </div>
@@ -85,6 +86,7 @@ if ($status === 'paid') {
 <div class="btns">
 <?php if ($whatsapp): ?><a class="btn btn-buy btn-lg" href="<?= e(wa_link($whatsapp, 'Olá! Acabei de fazer o pedido ' . $order['number'] . ' na loja da Dafnis e gostaria de receber as instruções de pagamento.')) ?>" target="_blank" rel="noopener"><?= icon('whatsapp') ?>Falar no WhatsApp</a><?php endif; ?>
 <a class="btn <?= $whatsapp ? 'btn-outline' : 'btn-primary' ?> btn-lg" href="<?= e(url('/minha-conta/pedidos')) ?>">Ver meus pedidos</a>
+<?= partial('order-cancel', ['order' => $order, 'size' => 'btn-lg']) ?>
 </div></div>
 
 <?php else: ?>

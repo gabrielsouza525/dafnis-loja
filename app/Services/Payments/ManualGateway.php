@@ -35,4 +35,9 @@ final class ManualGateway implements PaymentGateway
     {
         return false;
     }
+
+    public function cancelCheckout(array $order): void
+    {
+        // Nada aberto fora da loja: o pagamento é combinado pela equipe.
+    }
 }

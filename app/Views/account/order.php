@@ -20,7 +20,7 @@ $open = count(array_filter($seats, static fn ($s) => $s['status'] !== 'cancelled
 </div>
 
 <?php if ($order['status'] === 'pending'): ?>
-<div class="note-box" style="margin:0 0 22px"><?= icon('clock') ?><span><?php if ($online): ?><strong>Aguardando pagamento.</strong> <a href="<?= e(url('/pedido/' . $order['number'] . '/pagar')) ?>">Pagar com Mercado Pago</a><?php else: ?><strong>Aguardando pagamento.</strong> Nossa equipe envia as instruções para <?= e($order['buyer_email']) ?>. Depois da confirmação, você indica os participantes aqui.<?php endif; ?></span></div>
+<div class="note-box order-pending" style="margin:0 0 22px"><?= icon('clock') ?><span><?php if ($online): ?><strong>Aguardando pagamento.</strong> <a href="<?= e(url('/pedido/' . $order['number'] . '/pagar')) ?>">Pagar com Mercado Pago</a><?php else: ?><strong>Aguardando pagamento.</strong> Nossa equipe envia as instruções para <?= e($order['buyer_email']) ?>. Depois da confirmação, você indica os participantes aqui.<?php endif; ?><?= App\Services\Payments\Payments::cancelBlocked($order) === null ? ' Desistiu da compra? Você pode cancelar o pedido enquanto ele não estiver pago.' : '' ?></span><?= partial('order-cancel', ['order' => $order]) ?></div>
 <?php endif; ?>
 
 <div class="acc-order">

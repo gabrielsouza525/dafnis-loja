@@ -9,6 +9,8 @@ use App\Models\Course;
 use App\Models\Enrollment;
 use App\Models\Order;
 use App\Services\Auth;
+use App\Services\Notify;
+use App\Services\Orders;
 use App\Services\Payments\MercadoPagoGateway;
 use App\Services\Payments\Payments;
 use App\Services\Settings;
@@ -84,6 +86,40 @@ final class OrderController extends Controller
             flash($message[0], $message[1]);
         }
         return $this->redirect('/pedido/' . $order['number']);
+    }
+
+    /**
+     * O cliente cancela o próprio pedido enquanto ele não está pago. Antes, confere o pagamento no
+     * gateway (pode ter acabado de ser aprovado); depois, expira o link de pagamento.
+     * Se um pagamento ainda chegar, o pedido volta a valer (Orders::markPaid).
+     */
+    public function cancel(string $number): Response
+    {
+        $order = $this->ownOrder($number);
+        $back = '/minha-conta/pedidos/' . $number;
+        if ((int) $order['user_id'] !== Auth::id()) {
+            $this->notFound('Pedido não encontrado.');
+        }
+        if ($order['status'] === 'pending' && $order['gateway_payment_id'] && Payments::isOnline()) {
+            $order = Payments::reconcile((string) $order['gateway_payment_id'], 'cancelamento') ?? $order;
+        }
+        if ($order['status'] === 'paid') {
+            flash('success', 'O pagamento deste pedido já foi confirmado, então ele não foi cancelado.');
+            return $this->redirect($back);
+        }
+        if ($blocked = Payments::cancelBlocked($order)) {
+            flash('error', $blocked);
+            return $this->redirect($back);
+        }
+        if (!Orders::cancel((int) $order['id'], 'Cancelado pelo cliente')) {
+            flash('error', 'Não foi possível cancelar o pedido agora. Tente de novo ou fale com a nossa equipe.');
+            return $this->redirect($back);
+        }
+        $order = Order::find((int) $order['id']);
+        Payments::cancelCheckout($order);
+        Notify::orderCancelled($order, true);
+        flash('success', 'Pedido ' . $number . ' cancelado. Nenhuma cobrança foi feita.');
+        return $this->redirect($back);
     }
 
     private function ownOrder(string $number): array

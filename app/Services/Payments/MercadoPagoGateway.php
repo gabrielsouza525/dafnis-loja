@@ -118,6 +118,24 @@ final class MercadoPagoGateway implements PaymentGateway
     }
 
     /**
+     * Expira o link de pagamento (preferência), para que não se abra um pagamento novo. Um boleto já
+     * gerado não é cancelado: ele pode ter sido pago e ainda não ter compensado. Se compensar, o pedido
+     * volta a valer (Orders::markPaid).
+     */
+    public function cancelCheckout(array $order): void
+    {
+        $preference = (string) ($order['gateway_reference'] ?? '');
+        if ($preference === '' || !preg_match('/^[\w-]{1,80}$/', $preference)) {
+            return;
+        }
+        try {
+            $this->request('PUT', '/checkout/preferences/' . $preference, ['expires' => true, 'expiration_date_to' => date('Y-m-d\TH:i:s.000P')]);
+        } catch (RuntimeException $e) {
+            Logger::error('Mercado Pago: falha ao expirar o checkout do pedido ' . $order['number'] . ': ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Assinatura x-signature: "ts=...,v1=..." com HMAC-SHA256 de
      * "id:{data.id};request-id:{x-request-id};ts:{ts};" usando a chave secreta do webhook.
      * Sem chave configurada, aceita a notificação: o status é sempre conferido na API.

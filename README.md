@@ -99,6 +99,12 @@ Rode `db:fresh --demo` antes de cada um: eles criam pedidos e mudam o estado do 
    - **Sem Mercado Pago:** a loja avisa que o pagamento online está em ativação, a equipe envia as
      instruções e dá a **baixa manual** em *Painel › Pedidos*. Nada é aprovado sozinho e nenhuma tela
      mostra "pagamento aprovado" sem pagamento confirmado.
+   - **Cancelar antes de pagar:** enquanto o pedido aguarda pagamento, o próprio cliente pode cancelá-lo
+     (página do pedido e *Minha conta › Pedidos e vagas*). Antes, a loja confere o pagamento no Mercado
+     Pago, porque ele pode ter acabado de ser aprovado. Com o pagamento em análise, o cancelamento fica
+     bloqueado. Ao cancelar, o link de pagamento expira e o cupom volta a ficar disponível. O cliente e a
+     equipe recebem e-mail. Um boleto já gerado não é anulado: se ele compensar, o pedido volta a valer.
+     A equipe também cancela em *Painel › Pedidos*.
 4. Com o pagamento confirmado são criadas as **vagas**. Compra de pessoa física com 1 vaga já fica no
    nome do comprador; nas demais, o comprador indica nome, e-mail e CPF de cada participante em
    *Minha conta › Pedidos e vagas*.

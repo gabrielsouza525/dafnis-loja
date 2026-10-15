@@ -59,6 +59,26 @@ final class Notify
         }
     }
 
+    /** Pedido cancelado antes do pagamento: aviso ao comprador e, se foi ele quem cancelou, à equipe. */
+    public static function orderCancelled(array $order, bool $byCustomer): void
+    {
+        $items = Order::items((int) $order['id']);
+        Mailer::send($order['buyer_email'], 'Pedido ' . $order['number'] . ' cancelado', 'order-cancelled', [
+            'order' => $order,
+            'items' => $items,
+            'byCustomer' => $byCustomer,
+            'url' => absolute_url('/cursos'),
+        ]);
+        if ($byCustomer && ($team = self::teamAddress())) {
+            Mailer::send($team, 'Pedido ' . $order['number'] . ' cancelado pelo cliente', 'team-order', [
+                'order' => $order,
+                'items' => $items,
+                'headline' => 'O cliente cancelou o pedido antes do pagamento',
+                'url' => absolute_url('/admin/pedidos/' . $order['id']),
+            ]);
+        }
+    }
+
     public static function orderPaid(array $order): void
     {
         $items = Order::items((int) $order['id']);

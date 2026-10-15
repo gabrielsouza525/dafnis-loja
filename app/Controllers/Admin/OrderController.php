@@ -85,6 +85,7 @@ final class OrderController extends AdminController
         if (!Orders::cancel($id, $reason)) {
             throw ValidationException::with('order', 'Só pedidos aguardando pagamento podem ser cancelados.');
         }
+        Payments::cancelCheckout(Order::find($id));
         $this->appendNote($order, 'Cancelado: ' . $reason);
         return $this->success('Pedido cancelado.', '/admin/pedidos/' . $id);
     }

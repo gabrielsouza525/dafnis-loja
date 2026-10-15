@@ -41,6 +41,7 @@ return static function (Router $r): void {
     $r->get('/pedido/{number:DF\d{6}}', [OrderController::class, 'show'], ['auth']);
     $r->get('/pedido/{number:DF\d{6}}/pagar', [OrderController::class, 'pay'], ['auth']);
     $r->get('/pedido/{number:DF\d{6}}/retorno', [OrderController::class, 'returned'], ['auth']);
+    $r->post('/pedido/{number:DF\d{6}}/cancelar', [OrderController::class, 'cancel'], ['auth']);
     $r->post('/webhooks/mercadopago', [WebhookController::class, 'mercadoPago']);
 
     $r->get('/sobre', [PageController::class, 'about']);

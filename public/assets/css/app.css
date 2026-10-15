@@ -712,6 +712,10 @@ fieldset{margin:0;padding:0;border:0;min-width:0}
 .order-status h2{font-size:28px;letter-spacing:-.02em;margin-top:8px}
 .order-status p{color:var(--muted);margin-top:10px;font-size:16px;line-height:1.6;max-width:620px}
 .order-status .btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
+/* cancelar o pedido ainda não pago (cliente) */
+.order-cancel{display:inline-flex;margin:0}
+.note-box.order-pending{align-items:center;flex-wrap:wrap}
+.note-box.order-pending > span{flex:1 1 280px}
 .order-status.is-paid{border-top:4px solid var(--green)}
 .order-status.is-pending{border-top:4px solid var(--gold)}
 .order-status.is-cancelled,.order-status.is-refunded{border-top:4px solid var(--red)}

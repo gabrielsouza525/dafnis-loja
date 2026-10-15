@@ -137,6 +137,27 @@ if (mp_configured()) {
     check('rota de pagamento sem gateway volta para o pedido', str_contains($guest->request('GET', "/pedido/$number/pagar")['location'], "/pedido/$number"));
 }
 
+// 3b. O cliente cancela um pedido ainda não pago -------------------------
+echo "\nCancelamento pelo cliente\n";
+$guest->request('POST', '/carrinho/adicionar', ['course_id' => $nr10Id, 'qty' => 1]);
+$guest->request('GET', '/checkout');
+$r = $guest->request('POST', '/checkout', ['buyer_type' => 'pj', 'company_name' => 'Empresa Teste', 'company_document' => '11.222.333/0001-81', 'buyer_name' => 'Marina Teste', 'buyer_email' => $email, 'buyer_phone' => '(18) 99999-0000', 'payment_method' => 'boleto', 'accept_terms' => '1']);
+$toCancel = preg_match('#/pedido/(DF\d{6})#', (string) $r['location'], $m) ? $m[1] : '';
+check('segundo pedido, para cancelar', $toCancel !== '' && $toCancel !== $number, (string) $r['location']);
+$page = $guest->request('GET', "/pedido/$toCancel")['body'];
+check('confirmação do pedido oferece "Cancelar pedido"', str_contains($page, "/pedido/$toCancel/cancelar"));
+$acc = $guest->request('GET', "/minha-conta/pedidos/$toCancel")['body'];
+check('Minha conta › pedido não pago oferece "Cancelar pedido"', str_contains($acc, "/pedido/$toCancel/cancelar") && str_contains($acc, 'Desistiu da compra?'));
+$r = $guest->request('POST', "/pedido/$toCancel/cancelar");
+check('cliente cancela o próprio pedido', $r['status'] === 302 && str_ends_with((string) $r['location'], "/minha-conta/pedidos/$toCancel"), (string) $r['location']);
+$acc = $guest->request('GET', "/minha-conta/pedidos/$toCancel")['body'];
+check('pedido fica cancelado, com o aviso e sem o botão', str_contains($acc, 'Nenhuma cobrança foi feita') && str_contains($acc, '>Cancelado<') && !str_contains($acc, "/pedido/$toCancel/cancelar"));
+$r = $guest->request('POST', "/pedido/$toCancel/cancelar");
+check('cancelar de novo não muda nada', $r['status'] === 302 && str_contains($guest->request('GET', "/minha-conta/pedidos/$toCancel")['body'], 'não está mais aguardando pagamento'));
+$anon = new Client($base);
+$anon->request('GET', '/');
+check('cancelamento sem login vai para o login', str_contains((string) $anon->request('POST', "/pedido/$toCancel/cancelar")['location'], '/login'));
+
 // 4. Admin confirma pagamento ------------------------------------------
 echo "\nPainel: pagamento, liberação e certificado\n";
 $admin = new Client($base);
@@ -156,6 +177,10 @@ $r = $admin->request('POST', "/admin/pedidos/$orderId/confirmar-pagamento", ['no
 check('baixa manual do pagamento', $r['status'] === 302);
 $orderPage = $guest->request('GET', "/pedido/$number")['body'];
 check('cliente vê "Pagamento confirmado" só depois da baixa', str_contains($orderPage, 'Pagamento confirmado') && str_contains($orderPage, 'Indicar participantes'));
+check('pedido pago não oferece cancelar', !str_contains($orderPage, "/pedido/$number/cancelar"));
+$guest->request('POST', "/pedido/$number/cancelar");
+check('pedido pago não é cancelado pelo cliente', str_contains($guest->request('GET', "/pedido/$number")['body'], 'Pagamento confirmado'));
+check('outra pessoa não cancela o pedido (nem a equipe, por esta rota)', $admin->request('POST', "/pedido/$number/cancelar")['status'] === 404);
 $acc = $guest->request('GET', "/minha-conta/pedidos/$number")['body'];
 preg_match_all('#action="/minha-conta/vagas/(\d+)"#', $acc, $m);
 $seats = $m[1];

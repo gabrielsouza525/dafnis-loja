@@ -66,6 +66,35 @@ final class Payments
         return $session['url'];
     }
 
+    /** Pedido cancelado: expira o link de pagamento no gateway em que foi aberto. */
+    public static function cancelCheckout(array $order): void
+    {
+        $gateway = self::gateway();
+        if (!$gateway->isLive() || ($order['gateway'] && $order['gateway'] !== $gateway->name())) {
+            return;
+        }
+        try {
+            $gateway->cancelCheckout($order);
+        } catch (Throwable $e) {
+            Logger::error('Falha ao encerrar o pagamento do pedido ' . $order['number'] . ': ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * O cliente pode cancelar o próprio pedido enquanto ele não está pago, a não ser que o
+     * pagamento esteja em análise no gateway. Devolve o motivo do bloqueio ou null.
+     */
+    public static function cancelBlocked(array $order): ?string
+    {
+        if ($order['status'] !== 'pending') {
+            return 'Este pedido não está mais aguardando pagamento.';
+        }
+        if (in_array((string) $order['gateway_status'], ['in_process', 'authorized', 'in_mediation'], true)) {
+            return 'O pagamento está em análise no Mercado Pago. Aguarde a conclusão ou fale com a nossa equipe.';
+        }
+        return null;
+    }
+
     /**
      * Aplica ao pedido o status de um pagamento consultado na API do gateway.
      * Valor e moeda precisam bater com o pedido; qualquer divergência vai para o log.
