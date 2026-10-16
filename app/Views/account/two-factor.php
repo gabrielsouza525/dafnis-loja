@@ -25,6 +25,7 @@ $crumbs = [['Início', '/'], ['Minha conta', '/minha-conta'], ['Meus dados', '/m
 <dl class="tf-meta"><div><dt>Conta</dt><dd><?= e($issuer) ?> · <?= e($user['email']) ?></dd></div><div><dt>Tipo</dt><dd>Baseado em tempo</dd></div></dl>
 </div>
 </div>
+<p class="tf-note" style="margin-top:18px"><?= icon('info', 'ic-sm') ?><span><strong>Vai usar mais de um celular?</strong> Leia este mesmo QR code em cada um. Depois, você também pode conectar outro celular em Meus dados, com a sua senha.</span></p>
 </div>
 <div class="form-sec">
 <h2><span>3</span>Digite o código que aparece no aplicativo</h2>

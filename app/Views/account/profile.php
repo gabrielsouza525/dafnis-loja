@@ -51,6 +51,18 @@ $crumbs = [['Início', '/'], ['Minha conta', '/minha-conta'], ['Meus dados', nul
 </div>
 </div>
 <div class="tf-actions">
+<details class="tf-more"<?= old('_scope') === '2fa-device' ? ' open' : '' ?>>
+<summary><?= icon('phone', 'ic-sm') ?>Conectar outro celular</summary>
+<form method="post" action="<?= e(url('/minha-conta/duas-etapas/outro-celular')) ?>" data-loading-form>
+<?= csrf_field() ?>
+<input type="hidden" name="_scope" value="2fa-device">
+<p class="hint" style="margin:0 0 12px">Mostramos de novo o QR code para ler no outro celular. Os dois geram os mesmos códigos. Enviamos um aviso por e-mail.</p>
+<div class="tf-more-row">
+<?= partial('field', ['name' => 'current_password', 'scope' => '2fa-device', 'id' => 'tf-device-pw', 'label' => 'Senha atual', 'type' => 'password', 'required' => true, 'attrs' => ['autocomplete' => 'current-password']]) ?>
+<button class="btn btn-outline" type="submit">Mostrar o QR code</button>
+</div>
+</form>
+</details>
 <details class="tf-more"<?= old('_scope') === '2fa-codes' ? ' open' : '' ?>>
 <summary><?= icon('refresh', 'ic-sm') ?>Gerar novos códigos de recuperação</summary>
 <form method="post" action="<?= e(url('/minha-conta/duas-etapas/codigos')) ?>" data-loading-form>

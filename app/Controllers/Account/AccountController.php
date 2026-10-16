@@ -163,6 +163,7 @@ final class AccountController extends Controller
     public function profile(): Response
     {
         TwoFactor::forgetFreshCodes(); // "Já guardei os códigos" volta para cá
+        TwoFactor::forgetDevice(); // e "Pronto" na tela do outro celular também
         $row = Database::first('SELECT role, two_factor_enabled_at, two_factor_recovery FROM users WHERE id = :id', ['id' => Auth::id()]) ?? [];
         return $this->account('account/profile', 'dados', [
             'title' => 'Meus dados',
@@ -229,6 +230,33 @@ final class AccountController extends Controller
         }
         TwoFactor::regenerateRecovery($row);
         return $this->redirect('/minha-conta/duas-etapas/codigos');
+    }
+
+    /** Conectar outro celular: com a senha, mostra de novo o QR code da chave ativa por alguns minutos. */
+    public function twoFactorDeviceUnlock(): Response
+    {
+        $row = $this->confirmPassword('2fa-device');
+        if (!TwoFactor::enabled($row)) {
+            return $this->redirect('/minha-conta/dados#duas-etapas');
+        }
+        TwoFactor::showToDevice($row);
+        return $this->redirect('/minha-conta/duas-etapas/outro-celular');
+    }
+
+    public function twoFactorDevice(): Response
+    {
+        $row = Database::first('SELECT * FROM users WHERE id = :id', ['id' => Auth::id()]);
+        $secret = TwoFactor::deviceSecret($row);
+        if ($secret === null) {
+            return $this->redirect('/minha-conta/dados#duas-etapas');
+        }
+        return $this->account('account/two-factor-device', 'dados', [
+            'title' => 'Conectar outro celular',
+            'secret' => $secret,
+            'qr' => QrCode::svg(Totp::uri($secret, $row['email'], TwoFactor::issuer()), 'QR code para o aplicativo autenticador'),
+            'issuer' => TwoFactor::issuer(),
+            'required' => TwoFactor::required($row),
+        ]);
     }
 
     public function twoFactorDisable(): Response

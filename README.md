@@ -216,7 +216,7 @@ Para trocar de gateway, implemente `app/Services/Payments/PaymentGateway.php` e 
 
 Com `MAIL_DRIVER=smtp` e os dados do provedor no `.env`, a loja envia: conta criada, pedido recebido,
 pagamento confirmado, acesso liberado, certificado disponível, recuperação de senha e o aviso quando a
-verificação em duas etapas é ativada ou desativada. A equipe recebe
+verificação em duas etapas é ativada, desativada ou tem o QR code aberto para outro celular. A equipe recebe
 novos pedidos, pagamentos e contatos no `MAIL_ADMIN_ADDRESS` (ou no e-mail de contato das Configurações).
 
 ## Verificação em duas etapas
@@ -232,6 +232,10 @@ recebe 10 códigos de recuperação, que valem uma vez cada, para quando perder 
 - A chave de cada conta fica criptografada no banco com a `APP_KEY` do `.env`. Sem ela, a loja cria
   `storage/app.key` (fora do Git). **Guarde essa chave com o backup do banco:** sem ela, quem ativou a
   verificação precisa ativar de novo.
+- **Mais de um celular:** na ativação, basta ler o mesmo QR code em cada um. Depois, em *Meus dados ›
+  Conectar outro celular*, a pessoa digita a senha e vê de novo o QR code e a chave por 10 minutos
+  (recebe um aviso por e-mail). Todos os celulares geram os mesmos códigos; conectar outro não desliga
+  o antigo. Para tirar um celular perdido, desative e ative de novo, o que troca a chave.
 - A senha nova pelo link de "Esqueci a senha" também pede o código antes de entrar.
 - Quem perdeu o celular e os códigos: outra pessoa da equipe desativa em *Painel › Usuários › (pessoa)*,
   depois de confirmar que é a própria pessoa pedindo. Ela recebe um aviso por e-mail e, se for da

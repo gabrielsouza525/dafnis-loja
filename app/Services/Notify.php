@@ -40,6 +40,18 @@ final class Notify
         ]);
     }
 
+    /** O QR code da verificação foi aberto para conectar outro celular. */
+    public static function twoFactorDeviceQr(array $user): void
+    {
+        Mailer::send($user['email'], 'QR code da verificação em duas etapas aberto', 'two-factor', [
+            'name' => $user['name'],
+            'enabled' => true,
+            'byTeam' => false,
+            'deviceQr' => true,
+            'url' => absolute_url('/minha-conta/dados') . '#duas-etapas',
+        ]);
+    }
+
     public static function orderCreated(array $order): void
     {
         $items = Order::items((int) $order['id']);

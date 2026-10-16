@@ -378,6 +378,16 @@ $r = $tf->request('POST', '/minha-conta/duas-etapas/codigos', ['_scope' => '2fa-
 $codesPage = $tf->request('GET', '/minha-conta/duas-etapas/codigos')['body'];
 $newRecovery = preg_match_all('#<code>([a-z2-9]{5}-[a-z2-9]{5})</code>#', $codesPage, $m) ? $m[1] : [];
 check('gera 10 códigos novos', $r['status'] === 302 && count($newRecovery) === 10 && !in_array($recovery[2], $newRecovery, true));
+check('Meus dados oferece conectar outro celular', str_contains($tf->request('GET', '/minha-conta/dados')['body'], 'Conectar outro celular'));
+check('sem a senha, o QR code não aparece de novo', str_contains((string) $tf->request('GET', '/minha-conta/duas-etapas/outro-celular')['location'], '/minha-conta/dados'));
+$r = $tf->request('POST', '/minha-conta/duas-etapas/outro-celular', ['_scope' => '2fa-device', 'current_password' => 'errada123']);
+check('outro celular pede a senha atual', $r['status'] === 302 && str_contains($r['location'], '/minha-conta/dados'), $r['location']);
+$r = $tf->request('POST', '/minha-conta/duas-etapas/outro-celular', ['_scope' => '2fa-device', 'current_password' => $tfPass]);
+$device = $tf->request('GET', '/minha-conta/duas-etapas/outro-celular');
+$again = preg_match('/id="tf-secret" data-copy-text="([A-Z2-7]{32})"/', $device['body'], $m) ? $m[1] : '';
+check('com a senha, mostra o mesmo QR code da ativação', str_ends_with((string) $r['location'], '/minha-conta/duas-etapas/outro-celular') && str_contains($device['body'], '<svg class="qr"') && $again === $secret, (string) $r['location']);
+$tf->request('GET', '/minha-conta/dados');
+check('voltando para Meus dados, o QR code se fecha', str_contains((string) $tf->request('GET', '/minha-conta/duas-etapas/outro-celular')['location'], '/minha-conta/dados'));
 $tf->request('GET', '/minha-conta/dados');
 $r = $tf->request('POST', '/minha-conta/duas-etapas/desativar', ['_scope' => '2fa-off', 'current_password' => $tfPass, 'tf_code' => $recovery[2]]);
 check('código de recuperação antigo não desativa', str_contains($tf->request('GET', '/minha-conta/dados')['body'], 'Ativada desde'));

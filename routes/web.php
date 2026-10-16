@@ -95,6 +95,8 @@ return static function (Router $r): void {
         $r->get('/duas-etapas/codigos', [AccountController::class, 'twoFactorCodes']);
         $r->post('/duas-etapas/codigos', [AccountController::class, 'twoFactorRegenerate']);
         $r->post('/duas-etapas/desativar', [AccountController::class, 'twoFactorDisable']);
+        $r->get('/duas-etapas/outro-celular', [AccountController::class, 'twoFactorDevice']);
+        $r->post('/duas-etapas/outro-celular', [AccountController::class, 'twoFactorDeviceUnlock']);
     });
 
     // Painel da equipe ------------------------------------------------------

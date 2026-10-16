@@ -16,6 +16,7 @@ final class TwoFactor
     public const RECOVERY_COUNT = 10;
     private const PENDING_MINUTES = 10;
     private const CODES_MINUTES = 15;
+    private const DEVICE_MINUTES = 10;
     private const RECOVERY_ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789';
 
     public static function enabled(?array $user): bool
@@ -90,6 +91,7 @@ final class TwoFactor
             'two_factor_recovery' => null,
             'two_factor_last_step' => null,
         ], ['id' => $user['id']]);
+        self::forgetDevice();
         Activity::log('2fa.disabled', 'user', (int) $user['id'], $byTeam ? 'pela equipe' : null);
         Notify::twoFactorChanged($user, false, $byTeam);
     }
@@ -118,6 +120,36 @@ final class TwoFactor
     public static function forgetFreshCodes(): void
     {
         Session::forget('2fa_codes');
+    }
+
+    // Outro celular --------------------------------------------------------
+
+    /**
+     * Libera, por alguns minutos, o QR code da chave já ativa, para ler em mais um celular
+     * (todos geram os mesmos códigos). Quem chama confere a senha antes; a pessoa recebe um aviso.
+     */
+    public static function showToDevice(array $row): void
+    {
+        Session::set('2fa_device', ['user_id' => (int) $row['id'], 'at' => time()]);
+        Activity::log('2fa.device_qr', 'user', (int) $row['id']);
+        Notify::twoFactorDeviceQr($row);
+    }
+
+    /** Chave ativa para a tela de "conectar outro celular", ou null se a liberação expirou. */
+    public static function deviceSecret(array $row): ?string
+    {
+        $grant = Session::get('2fa_device');
+        if (!is_array($grant) || (int) ($grant['user_id'] ?? 0) !== (int) $row['id']
+            || time() - (int) ($grant['at'] ?? 0) > self::DEVICE_MINUTES * 60 || !self::enabled($row)) {
+            Session::forget('2fa_device');
+            return null;
+        }
+        return Crypto::decrypt((string) $row['two_factor_secret']);
+    }
+
+    public static function forgetDevice(): void
+    {
+        Session::forget('2fa_device');
     }
 
     public static function recoveryLeft(array $row): int

@@ -908,6 +908,7 @@ html:not(.js) .pw-meter,html:not(.js) .pw-meta{display:none}
 .tf-meta dd{margin:0;color:var(--ink);font-weight:500;overflow-wrap:anywhere}
 .tf-confirm{display:flex;align-items:flex-start;gap:20px;flex-wrap:wrap;margin-top:18px}
 .tf-confirm .btn{margin-top:29px}
+.tf-setup .form-sec > .btn{margin-top:16px}
 .tf-codes-card{max-width:720px;display:flex;flex-direction:column;gap:22px}
 .tf-codes{list-style:none;margin:0;padding:18px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 24px;border-radius:12px;background:var(--gray);border:1px solid var(--line);counter-reset:tf}
 .tf-codes li{display:flex;align-items:center;gap:10px;counter-increment:tf}
