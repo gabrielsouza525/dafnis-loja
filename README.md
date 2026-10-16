@@ -81,6 +81,7 @@ php tests/smoke.php http://localhost:8000    # todas as páginas por perfil
 php tests/links.php http://localhost:8000    # rastreia links quebrados
 php tests/scorm.php http://localhost:8000    # cursos próprios: importação, página do curso, andamento e tempo
 php tests/certificates.php http://localhost:8000  # certificados: PDF, emissão automática, CPF, validação
+php tests/webhooks.php                       # notificações do Mercado Pago (sem servidor)
 node tests/browser.mjs http://localhost:8000 # comportamento do JavaScript no Chrome (headless)
 ```
 
@@ -205,6 +206,11 @@ refeito igual no próximo download.
    produção** para `MP_ACCESS_TOKEN` no `.env`.
 2. Em *Webhooks*, cadastre `https://SEU-DOMINIO/webhooks/mercadopago` com o evento **Pagamentos** e
    copie a **chave secreta** para `MP_WEBHOOK_SECRET` (a loja confere a assinatura `x-signature`).
+   A cada evento, o Mercado Pago manda também notificações no formato antigo (IPN: `?id=...&topic=payment`
+   e `topic=merchant_order`), sem essa assinatura. A loja responde 200 e não faz nada com elas: o
+   webhook assinado do mesmo evento é o que confirma o pagamento. Só uma assinatura que não confere em
+   um webhook de pagamento dá erro (401) no log, o que indica `MP_WEBHOOK_SECRET` diferente da chave
+   do painel.
 3. Para testar antes, use credenciais de teste e `MP_SANDBOX=true`.
 4. O webhook e o retorno automático só funcionam com `APP_URL` em **https** (exigência do Mercado Pago).
 

@@ -142,19 +142,73 @@ final class MercadoPagoGateway implements PaymentGateway
      */
     public function verifyWebhook(Request $request): bool
     {
+        return $this->webhookProblem($request) === null;
+    }
+
+    /**
+     * O que fazer com uma notificação: "process" (pagamento com assinatura válida), "ignore" (responde
+     * 200 sem fazer nada) ou "reject" (401: assinatura que não confere, ou seja, chave errada).
+     *
+     * Para cada evento, o Mercado Pago dispara várias notificações ao mesmo tempo: o webhook assinado
+     * (?data.id=...&type=payment), que é o que vale, e as do formato antigo, IPN (?id=...&topic=payment
+     * e topic=merchant_order), sem a assinatura que a loja confere. Recusar estas faz o Mercado Pago
+     * reenviá-las durante dias; ignorá-las não perde nada, porque o webhook assinado do mesmo evento
+     * também chega. Ordens comerciais e outros tópicos não interessam à loja.
+     * @return array{0: string, 1: ?string} [ação, motivo]
+     */
+    public function classifyWebhook(Request $request): array
+    {
+        $type = self::webhookType($request);
+        if ($type !== 'payment') {
+            return ['ignore', 'tópico ' . ($type !== '' ? $type : 'vazio')];
+        }
+        $problem = $this->webhookProblem($request);
+        if ($problem === null) {
+            return ['process', null];
+        }
+        return self::webhookDataId($request) === ''
+            ? ['ignore', 'formato antigo (IPN), ' . $problem]
+            : ['reject', $problem];
+    }
+
+    /** Tópico da notificação: "payment", "merchant_order", "topic_merchant_order_wh"... */
+    public static function webhookType(Request $request): string
+    {
+        $body = $request->json() ?? [];
+        return (string) ($request->query('type') ?: $request->query('topic') ?: ($body['type'] ?? $body['topic'] ?? ''));
+    }
+
+    /** data.id do webhook (na URL, que o PHP entrega como data_id, ou no corpo). Vazio no formato IPN. */
+    public static function webhookDataId(Request $request): string
+    {
+        return (string) ($request->query('data_id') ?: ($request->json()['data']['id'] ?? ''));
+    }
+
+    /** Número do pagamento avisado, nos dois formatos. */
+    public static function webhookPaymentId(Request $request): string
+    {
+        return self::webhookDataId($request) ?: (string) ($request->query('id') ?: '');
+    }
+
+    /** Motivo da recusa da assinatura (para o log), ou null quando a notificação é válida. */
+    public function webhookProblem(Request $request): ?string
+    {
         if ($this->webhookSecret === '') {
-            return true;
+            return null;
         }
         $header = (string) $request->header('X-Signature');
+        if ($header === '') {
+            return 'sem x-signature';
+        }
         $parts = [];
         foreach (explode(',', $header) as $piece) {
             [$k, $v] = array_pad(explode('=', trim($piece), 2), 2, '');
             $parts[$k] = $v;
         }
         if (empty($parts['ts']) || empty($parts['v1'])) {
-            return false;
+            return 'x-signature sem ts ou v1';
         }
-        $dataId = (string) ($request->query('data_id') ?? ($request->json()['data']['id'] ?? ''));
+        $dataId = self::webhookDataId($request);
         if (ctype_alnum($dataId)) {
             $dataId = strtolower($dataId);
         }
@@ -166,7 +220,10 @@ final class MercadoPagoGateway implements PaymentGateway
             $manifest .= 'request-id:' . $requestId . ';';
         }
         $manifest .= 'ts:' . $parts['ts'] . ';';
-        return hash_equals(hash_hmac('sha256', $manifest, $this->webhookSecret), $parts['v1']);
+        if (hash_equals(hash_hmac('sha256', $manifest, $this->webhookSecret), $parts['v1'])) {
+            return null;
+        }
+        return 'assinatura não confere' . ($dataId === '' ? ' (sem data.id)' : '');
     }
 
     /** A forma escolhida no checkout da loja define o que aparece no Mercado Pago. */
