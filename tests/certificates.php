@@ -131,21 +131,21 @@ if (!env('MAIL_ADMIN_ADDRESS') && !Settings::get('business.email')) {
 Settings::set('certificate.auto', '1');
 Settings::set('certificate.city', 'Araçatuba/SP');
 Settings::set('certificate.signers', json_encode([
-    ['id' => 'a1b2c3d4', 'name' => 'Instrutora Exemplo', 'role' => 'Téc. em Segurança do Trabalho / Instrutora', 'registry' => 'MTE/SP 0000000', 'default' => true, 'signature' => null],
+    ['id' => '01234567', 'name' => 'Instrutora Exemplo', 'role' => 'Téc. em Segurança do Trabalho / Instrutora', 'registry' => 'MTE/SP 0000000', 'default' => true, 'signature' => null],
     ['id' => 'e5f6a7b8', 'name' => 'Engenheiro Exemplo', 'role' => 'Engenheiro Eletricista / Resp. Técnico', 'registry' => 'CREA/SP 0000000000', 'default' => false, 'signature' => null],
 ], JSON_UNESCAPED_UNICODE));
 Database::update('courses', [
     'cert_name' => 'NR 10 – Segurança em Instalações e Serviços em Eletricidade',
     'cert_syllabus' => "1. Introdução à segurança com eletricidade.\n2. Riscos em instalações e serviços com eletricidade:\na) o choque elétrico, mecanismos e efeitos;\nb) arcos elétricos; queimaduras e quedas.",
-    'cert_signers' => json_encode(['a1b2c3d4', 'e5f6a7b8']),
+    'cert_signers' => json_encode(['01234567', 'e5f6a7b8']),
     'practical_required' => 1,
 ], ['id' => $courseId]);
 Database::query('DELETE FROM certificates WHERE enrollment_id = :e', ['e' => $enrollmentId]);
 Database::update('enrollments', ['status' => 'active', 'participant_document' => '52998224725', 'practical_done_at' => null, 'practical_location' => null], ['id' => $enrollmentId]);
 
 $course = Database::first('SELECT * FROM courses WHERE id = :id', ['id' => $courseId]);
-check('curso escolhe quem assina, na ordem marcada', array_column(Certificates::signersFor($course), 'id') === ['a1b2c3d4', 'e5f6a7b8']);
-check('sem escolha no curso, assinam os marcados como padrão', array_column(Certificates::signersFor(['cert_signers' => null]), 'id') === ['a1b2c3d4']);
+check('curso escolhe quem assina, na ordem marcada', array_column(Certificates::signersFor($course), 'id') === ['01234567', 'e5f6a7b8']);
+check('sem escolha no curso, assinam os marcados como padrão', array_column(Certificates::signersFor(['cert_signers' => null]), 'id') === ['01234567']);
 check('falta de CPF impede a geração', in_array('o CPF do participante', Certificates::missing(['participant_name' => 'Ana Souza', 'participant_document' => null], $course), true));
 $sample = Certificates::sample($course);
 check('PDF de exemplo com frente e verso', str_starts_with($sample, '%PDF') && substr_count($sample, '/Type /Page ') === 2);
@@ -257,19 +257,20 @@ $sig = sys_get_temp_dir() . '/dafnis-assinatura-' . bin2hex(random_bytes(3)) . '
 file_put_contents($sig, png_rgba(300, 90));
 $r = $admin->request('POST', '/admin/certificados', [
     'certificate_auto' => '1', 'certificate_company' => 'Dafnis HSE Compliance', 'certificate_legal_name' => 'Dafnis HSE Compliance Ltda', 'certificate_city' => 'Araçatuba/SP',
-    'signer_id[0]' => 'a1b2c3d4', 'signer_name[0]' => 'Instrutora Exemplo', 'signer_role[0]' => 'Instrutora', 'signer_registry[0]' => '', 'signer_default[0]' => '1', 'signer_remove_signature[0]' => '0',
+    'signer_id[0]' => '01234567', 'signer_name[0]' => 'Instrutora Exemplo', 'signer_role[0]' => 'Instrutora', 'signer_registry[0]' => '', 'signer_default[0]' => '1', 'signer_remove_signature[0]' => '0',
     'signer_signature[0]' => new CURLFile($sig, 'image/png', 'assinatura.png'),
     'signer_id[1]' => 'e5f6a7b8', 'signer_name[1]' => 'Engenheiro Exemplo', 'signer_role[1]' => 'Resp. Técnico', 'signer_registry[1]' => 'CREA/SP 1', 'signer_default[1]' => '0', 'signer_remove_signature[1]' => '0',
     'signer_id[2]' => '', 'signer_name[2]' => 'Pessoa Nova', 'signer_role[2]' => 'Instrutor', 'signer_registry[2]' => '', 'signer_default[2]' => '0', 'signer_remove_signature[2]' => '0',
 ]);
 Settings::flush();
 $signers = Certificates::signers();
-check('modelo salvo com as três pessoas', $r['status'] === 302 && count($signers) === 3 && $signers[0]['id'] === 'a1b2c3d4' && $signers[1]['id'] === 'e5f6a7b8' && preg_match('/^[a-f0-9]{8}$/', $signers[2]['id']) === 1);
+check('modelo salvo com as três pessoas', $r['status'] === 302 && count($signers) === 3 && $signers[0]['id'] === '01234567' && $signers[1]['id'] === 'e5f6a7b8' && preg_match('/^[a-f0-9]{8}$/', $signers[2]['id']) === 1);
 check('razão social em maiúsculas e cidade da data', Settings::get('certificate.legal_name') === 'DAFNIS HSE COMPLIANCE LTDA' && Settings::get('certificate.city') === 'Araçatuba/SP');
 check('imagem da assinatura guardada fora da pasta pública', !empty($signers[0]['signature']) && is_file(BASE_PATH . '/storage/uploads/' . $signers[0]['signature']));
-$r = $admin->request('GET', '/admin/certificados/assinaturas/a1b2c3d4');
+// Id só com dígitos (e zero à esquerda): o roteador o entrega como int.
+$r = $admin->request('GET', '/admin/certificados/assinaturas/01234567');
 check('equipe confere a assinatura no painel', $r['status'] === 200 && str_contains((string) Client::header($r, 'Content-Type'), 'image/png'));
-check('assinatura não abre fora do painel', $guest->request('GET', '/admin/certificados/assinaturas/a1b2c3d4')['status'] !== 200);
+check('assinatura não abre fora do painel', $guest->request('GET', '/admin/certificados/assinaturas/01234567')['status'] !== 200);
 $course = Database::first('SELECT * FROM courses WHERE id = :id', ['id' => $courseId]);
 check('PDF com a imagem da assinatura', str_contains(Certificates::sample($course), '/SMask'));
 $r = $admin->request('GET', "/admin/cursos/$courseId/certificado-exemplo");
@@ -280,7 +281,7 @@ $oldSignature = $signers[0]['signature'];
 $admin->request('GET', '/admin/certificados');
 $admin->request('POST', '/admin/certificados', [
     'certificate_auto' => '1',
-    'signer_id[0]' => 'a1b2c3d4', 'signer_name[0]' => 'Instrutora Exemplo', 'signer_role[0]' => 'Instrutora', 'signer_registry[0]' => '', 'signer_default[0]' => '1', 'signer_remove_signature[0]' => '1',
+    'signer_id[0]' => '01234567', 'signer_name[0]' => 'Instrutora Exemplo', 'signer_role[0]' => 'Instrutora', 'signer_registry[0]' => '', 'signer_default[0]' => '1', 'signer_remove_signature[0]' => '1',
 ]);
 Settings::flush();
 $left = Certificates::signers();

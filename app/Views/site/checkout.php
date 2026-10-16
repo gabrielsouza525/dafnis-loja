@@ -2,6 +2,8 @@
 /** @var array $lines @var array $totals @var array $buyer @var bool $online @var array $methods */
 $type = has_old() ? (old('buyer_type', $buyer['buyer_type']) === 'pj' ? 'pj' : 'pf') : $buyer['buyer_type'];
 $method = has_old() ? old('payment_method', $buyer['payment_method']) : $buyer['payment_method'];
+// Cupom que cobre o valor inteiro: o pedido é confirmado sem pagamento (Orders::createFromCart).
+$free = $totals['total'] <= 0;
 ?>
 <div class="screen">
 <section class="phead phead-dark">
@@ -41,6 +43,11 @@ $method = has_old() ? old('payment_method', $buyer['payment_method']) : $buyer['
 </div>
 </div>
 <div class="form-sec">
+<?php if ($free): ?>
+<h2><span>2</span>Pagamento</h2>
+<input type="hidden" name="payment_method" value="<?= e(isset($methods[$method]) ? $method : 'pix') ?>">
+<div class="note-box info"><?= icon('check') ?><span>O cupom cobre o valor total do pedido, então <strong>não há nada a pagar</strong>. Ao confirmar, o pedido já fica pago e as vagas são liberadas.</span></div>
+<?php else: ?>
 <h2><span>2</span>Forma de pagamento</h2>
 <div class="pay-opts" role="radiogroup" aria-label="Forma de pagamento">
 <?php foreach ($methods as $id => $m): ?>
@@ -51,6 +58,7 @@ $method = has_old() ? old('payment_method', $buyer['payment_method']) : $buyer['
 <div class="note-box info"><?= icon('lock') ?><span>Ao confirmar, você vai para o ambiente seguro do <strong>Mercado Pago</strong> para concluir o pagamento. Os dados do cartão não passam pela nossa loja.</span></div>
 <?php else: ?>
 <div class="note-box"><?= icon('info') ?><span>O pagamento online está em ativação. Ao confirmar, seu pedido fica registrado como <strong>aguardando pagamento</strong> e a nossa equipe envia as instruções pela forma escolhida. Nenhuma cobrança é feita automaticamente.</span></div>
+<?php endif; ?>
 <?php endif; ?>
 </div>
 </div>
@@ -70,7 +78,7 @@ $method = has_old() ? old('payment_method', $buyer['payment_method']) : $buyer['
 <?php if ($err = field_error('accept_terms')): ?><p class="field-error" id="erro-termos"><?= icon('alert') ?><?= e($err) ?></p><?php endif; ?>
 </div>
 <div class="sum-actions">
-<button class="btn btn-buy btn-lg btn-block" type="submit" data-submit><?= $online ? 'Ir para o pagamento' : 'Confirmar pedido' ?><?= icon('arrowR') ?></button>
+<button class="btn btn-buy btn-lg btn-block" type="submit" data-submit><?= $online && !$free ? 'Ir para o pagamento' : 'Confirmar pedido' ?><?= icon('arrowR') ?></button>
 </div>
 <p class="secure"><?= icon('shield') ?>Seus dados são usados só para emitir o pedido, liberar o acesso e os certificados.</p>
 </aside>

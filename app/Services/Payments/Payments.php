@@ -41,7 +41,8 @@ final class Payments
     public static function checkoutUrl(array $order): ?string
     {
         $gateway = self::gateway();
-        if ($order['status'] !== 'pending' || !$gateway->isLive()) {
+        // Pedido de valor zero nunca vai ao gateway: o Mercado Pago recusa unit_price 0.
+        if ($order['status'] !== 'pending' || !$gateway->isLive() || (float) $order['total'] <= 0) {
             return null;
         }
         $fresh = $order['checkout_url'] && $order['gateway'] === $gateway->name()

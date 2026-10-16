@@ -99,9 +99,13 @@ final class CertificateController extends AdminController
         return $this->success('Modelo do certificado salvo.', '/admin/certificados');
     }
 
-    /** Imagem da assinatura, para conferir no painel. */
-    public function signature(string $id): Response
+    /**
+     * Imagem da assinatura, para conferir no painel. O id é hexadecimal: quando só tem dígitos,
+     * o roteador o entrega como int, então vale o texto original da URL (com os zeros à esquerda).
+     */
+    public function signature(string|int $id): Response
     {
+        $id = (string) $this->request->param('id');
         foreach (Certificates::signers() as $s) {
             if ($s['id'] === $id && ($path = Uploads::privatePath($s['signature'] ?? null))) {
                 return Response::file($path, str_ends_with($path, '.png') ? 'image/png' : 'image/jpeg', ['Cache-Control' => 'no-store, private']);

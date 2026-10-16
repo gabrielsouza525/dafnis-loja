@@ -181,6 +181,23 @@ check('pedido pago não oferece cancelar', !str_contains($orderPage, "/pedido/$n
 $guest->request('POST', "/pedido/$number/cancelar");
 check('pedido pago não é cancelado pelo cliente', str_contains($guest->request('GET', "/pedido/$number")['body'], 'Pagamento confirmado'));
 check('outra pessoa não cancela o pedido (nem a equipe, por esta rota)', $admin->request('POST', "/pedido/$number/cancelar")['status'] === 404);
+
+// Cupom que cobre o pedido inteiro: não há o que cobrar (o Mercado Pago recusa R$ 0).
+$admin->request('GET', '/admin/cupons/novo');
+$freeCode = 'CORTESIA' . substr((string) time(), -6);
+$r = $admin->request('POST', '/admin/cupons', ['code' => $freeCode, 'type' => 'percent', 'value' => '100', 'is_active' => '1']);
+check('equipe cria cupom de 100%', $r['status'] === 302 && str_ends_with((string) $r['location'], '/admin/cupons'), (string) $r['location']);
+$guest->request('POST', '/carrinho/adicionar', ['course_id' => $nr10Id, 'qty' => 1]);
+$guest->request('GET', '/carrinho');
+$guest->request('POST', '/carrinho/cupom', ['coupon' => strtolower($freeCode)], $ajax);
+$checkout = $guest->request('GET', '/checkout')['body'];
+check('checkout com total zero não pede pagamento', str_contains($checkout, 'não há nada a pagar') && str_contains($checkout, 'Confirmar pedido') && !str_contains($checkout, 'Ir para o pagamento'));
+$r = $guest->request('POST', '/checkout', ['buyer_type' => 'pj', 'company_name' => 'Empresa Teste', 'company_document' => '11.222.333/0001-81', 'buyer_name' => 'Marina Teste', 'buyer_email' => $email, 'buyer_phone' => '(18) 99999-0000', 'payment_method' => 'pix', 'accept_terms' => '1']);
+$free = preg_match('#/pedido/(DF\d{6})$#', (string) $r['location'], $m) ? $m[1] : '';
+check('pedido de valor zero não vai para o pagamento', $free !== '', (string) $r['location']);
+$page = $guest->request('GET', "/pedido/$free")['body'];
+check('pedido com cupom de 100% já sai pago', str_contains($page, 'Pagamento confirmado') && str_contains($page, 'não há nada a pagar'));
+check('pagar o pedido de valor zero volta para o pedido', str_ends_with((string) $guest->request('GET', "/pedido/$free/pagar")['location'], "/pedido/$free"));
 $acc = $guest->request('GET', "/minha-conta/pedidos/$number")['body'];
 preg_match_all('#action="/minha-conta/vagas/(\d+)"#', $acc, $m);
 $seats = $m[1];

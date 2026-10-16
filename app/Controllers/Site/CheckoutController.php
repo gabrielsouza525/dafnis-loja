@@ -94,6 +94,10 @@ final class CheckoutController extends Controller
         }
 
         Cart::clear();
+        if ($order['status'] === 'paid') {
+            flash('success', 'Pedido confirmado. O cupom cobriu o valor total, então não há nada a pagar.');
+            return $this->redirect('/pedido/' . $order['number']);
+        }
         return $this->redirect('/pedido/' . $order['number'] . (Payments::isOnline() ? '?pagar=1' : ''));
     }
 }

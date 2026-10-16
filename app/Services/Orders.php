@@ -63,7 +63,7 @@ final class Orders
                 'coupon_id' => $couponId,
                 'coupon_code' => $couponCode,
                 'payment_method' => $paymentMethod,
-                'gateway' => Payments::gateway()->name(),
+                'gateway' => $total > 0 ? Payments::gateway()->name() : 'manual',
                 'terms_accepted_at' => date('Y-m-d H:i:s'),
                 'ip' => $ip,
             ]);
@@ -88,6 +88,12 @@ final class Orders
             return Order::find($orderId);
         });
 
+        // Cupom que cobre o valor inteiro: não há o que cobrar (o Mercado Pago recusa cobrança
+        // de R$ 0), então o pedido já sai pago e o e-mail de confirmação substitui o de "recebido".
+        if ((float) $order['total'] <= 0) {
+            self::markPaid((int) $order['id'], 'coupon');
+            return Order::find((int) $order['id']);
+        }
         Notify::orderCreated($order);
         return $order;
     }
@@ -100,7 +106,7 @@ final class Orders
     /**
      * Confirma o pagamento e cria as vagas. Idempotente: chamar duas vezes
      * (webhook + retorno do checkout) não duplica nada.
-     * @param string $source "gateway" ou "admin"
+     * @param string $source "gateway", "admin" ou "coupon" (pedido de valor zero)
      */
     public static function markPaid(int $orderId, string $source, array $gatewayFields = []): bool
     {
@@ -121,7 +127,11 @@ final class Orders
         if ($changed) {
             Enrollments::autoReleaseOrder($orderId);
             $order = Order::find($orderId);
-            Activity::log('order.paid', 'order', $orderId, 'Pagamento confirmado (' . ($source === 'admin' ? 'baixa manual' : 'gateway') . ')');
+            Activity::log('order.paid', 'order', $orderId, 'Pagamento confirmado (' . match ($source) {
+                'admin' => 'baixa manual',
+                'coupon' => 'cupom cobriu o valor total',
+                default => 'gateway',
+            } . ')');
             Notify::orderPaid($order);
         }
         return $changed;
