@@ -30,7 +30,7 @@ $thumb = static function (array $c) use ($active): array {
 <tbody>
 <?php foreach ($page['rows'] as $c): ?>
 <tr<?= (int) $c['is_active'] ? '' : ' class="is-off"' ?>>
-<td><span class="course-cell"><?= partial('cover', ['course' => $thumb($c), 'variant' => 'thumb']) ?><span class="who-txt"><a href="<?= e(url('/admin/cursos/' . $c['id'] . '/editar')) ?>"><?= e(($c['code'] ?: ($c['nr_number'] ? 'NR ' . $c['nr_number'] : '')) ? ($c['code'] ?: 'NR ' . $c['nr_number']) . ' — ' : '') ?><?= e($c['title']) ?></a><span class="sub">/cursos/<?= e($c['slug']) ?></span></span></span></td>
+<td><span class="course-cell"><?= partial('cover', ['course' => $thumb($c), 'variant' => 'thumb']) ?><span class="who-txt"><a href="<?= e(url('/admin/cursos/' . $c['id'] . '/editar')) ?>"><?= e(($c['code'] ?: ($c['nr_number'] ? 'NR ' . $c['nr_number'] : '')) ? ($c['code'] ?: 'NR ' . $c['nr_number']) . ' — ' : '') ?><?= e($c['title']) ?></a><span class="sub">/cursos/<?= e($c['slug']) ?></span><?php if ($c['package_id']): ?><a class="btn btn-outline btn-xs cell-preview" href="<?= e(url('/admin/cursos/' . $c['id'] . '/pacotes/' . $c['package_id'] . '/previa')) ?>" target="_blank" title="Abre o conteúdo on-line como o aluno vê, sem gravar andamento"><?= icon('eye', 'ic-sm') ?>Prévia do curso</a><?php endif; ?></span></span></td>
 <td><?= e((string) $c['category_name']) ?></td>
 <td><?= e(hours_short($c['hours'])) ?></td>
 <td><?= e(modality_label($c['modality'])) ?></td>

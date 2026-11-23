@@ -119,6 +119,7 @@ body.admin{background:var(--gray)}
 .mini-progress .progress{width:84px;height:6px;flex-shrink:0}
 .course-cell{display:flex;align-items:center;gap:12px;min-width:0}
 .course-cell .thumb{width:56px;height:40px;border-radius:7px;flex-shrink:0}
+.course-cell .cell-preview{margin-top:7px}
 .course-cell .thumb .plate{padding:5px 7px 8px}
 .course-cell .thumb .plate-code{font-size:12px}
 .course-cell .thumb .plate-code.is-text{font-size:8.5px}

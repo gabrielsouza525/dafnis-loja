@@ -197,6 +197,10 @@ check('matrícula lista os acessos', substr_count($r['body'], '<td class="mono">
 check('aprovação com tempo abaixo da carga on-line pede conferência', str_contains($r['body'], 'Confira antes do certificado') && str_contains($r['body'], 'abaixo das 32 h'));
 $r = $admin->request('GET', "/admin/cursos/$courseId/editar");
 check('curso mostra as versões do conteúdo', str_contains($r['body'], 'Conteúdo on-line próprio') && str_contains($r['body'], 'Curso de demonstração'));
+$previewPath = "/admin/cursos/$courseId/pacotes/{$package['id']}/previa";
+check('topo da edição tem o botão de prévia', str_contains($r['body'], 'Prévia do curso') && substr_count($r['body'], $previewPath) >= 2);
+$r = $admin->request('GET', '/admin/cursos?' . http_build_query(['q' => $slug]));
+check('lista de cursos tem o botão de prévia do conteúdo em uso', $r['status'] === 200 && str_contains($r['body'], $previewPath . '"'));
 $r = $admin->request('GET', "/admin/cursos/$courseId/pacotes/{$package['id']}/previa");
 $preview = config_of($r['body']);
 check('pré-visualização abre sem gravar nada', $r['status'] === 200 && ($preview['preview'] ?? false) === true && !isset($preview['commit']));

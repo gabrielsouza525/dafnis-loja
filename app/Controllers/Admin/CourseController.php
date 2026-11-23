@@ -42,7 +42,8 @@ final class CourseController extends AdminController
         }
         $page = $this->paginate(
             "SELECT c.*, k.name AS category_name,
-                    (SELECT COUNT(*) FROM order_items i JOIN orders o ON o.id = i.order_id WHERE i.course_id = c.id AND o.status = 'paid') AS sold
+                    (SELECT COUNT(*) FROM order_items i JOIN orders o ON o.id = i.order_id WHERE i.course_id = c.id AND o.status = 'paid') AS sold,
+                    (SELECT p.id FROM course_packages p WHERE p.course_id = c.id AND p.is_current = 1 ORDER BY p.version DESC LIMIT 1) AS package_id
                FROM courses c LEFT JOIN categories k ON k.id = c.category_id
               WHERE " . implode(' AND ', $where) . '
               ORDER BY c.nr_number IS NULL, c.nr_number, c.title',

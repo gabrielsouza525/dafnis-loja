@@ -8,10 +8,11 @@ $c = $course ?? [];
 $v = static fn (string $key, mixed $default = '') => $c[$key] ?? $default;
 $modules = $syllabus ?: [['title' => '', 'hours' => '', 'topics' => '']];
 $action = $course ? url('/admin/cursos/' . $course['id']) : url('/admin/cursos');
+$currentPackage = array_values(array_filter($packages, static fn ($p) => $p['is_current']))[0] ?? null;
 ?>
 <div class="adm-head">
 <div><h1><?= $course ? e($course['display_title']) : 'Novo curso' ?></h1><?php if ($course): ?><p><a href="<?= e($course['url']) ?>" target="_blank">/cursos/<?= e($course['slug']) ?> <?= icon('external', 'ic-sm') ?></a><?= $course['source_ref'] ? ' · Origem: ' . e($course['source_ref']) : '' ?></p><?php endif; ?></div>
-<div class="adm-actions"><a class="btn btn-outline btn-sm" href="<?= e(url('/admin/cursos')) ?>"><?= icon('arrowL', 'ic-sm') ?>Voltar</a></div>
+<div class="adm-actions"><?php if ($currentPackage): ?><a class="btn btn-navy btn-sm" href="<?= e(url('/admin/cursos/' . $course['id'] . '/pacotes/' . $currentPackage['id'] . '/previa')) ?>" target="_blank" title="Abre o conteúdo on-line como o aluno vê, sem gravar andamento"><?= icon('eye', 'ic-sm') ?>Prévia do curso</a><?php endif; ?><a class="btn btn-outline btn-sm" href="<?= e(url('/admin/cursos')) ?>"><?= icon('arrowL', 'ic-sm') ?>Voltar</a></div>
 </div>
 
 <form method="post" action="<?= e($action) ?>" enctype="multipart/form-data" data-loading-form>
@@ -134,7 +135,7 @@ $defaultName = Certificates::courseName(['cert_name' => '', 'code' => $v('code')
 </form>
 
 <?php if ($course): ?>
-<?php $limit = Packages::uploadLimitBytes(); $currentPackage = array_values(array_filter($packages, static fn ($p) => $p['is_current']))[0] ?? null; ?>
+<?php $limit = Packages::uploadLimitBytes(); ?>
 <div class="panel" id="conteudo-online" style="margin-top:22px">
 <div class="panel-head"><h2>Conteúdo on-line próprio (SCORM)</h2><?php if ($currentPackage): ?><a class="btn btn-outline btn-xs" href="<?= e(url('/admin/cursos/' . $course['id'] . '/pacotes/' . $currentPackage['id'] . '/previa')) ?>" target="_blank"><?= icon('external', 'ic-sm') ?>Ver como o aluno</a><?php endif; ?></div>
 <div class="panel-body">

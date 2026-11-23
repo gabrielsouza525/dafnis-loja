@@ -133,7 +133,7 @@ Curso com conteúdo próprio não depende da plataforma de ensino: o aluno faz o
    `php bin/console scorm:import --course=id-ou-slug --file=pacote.zip` (`--draft` importa fora de uso).
    A importação confere o `imsmanifest.xml`, recusa SCORM 2004 e qualquer arquivo de tipo não previsto
    (`.php`, por exemplo) e guarda tudo em `storage/scorm`, fora da web.
-3. **Conferir.** "Pré-visualizar" abre o curso como o aluno vê, sem gravar nada.
+3. **Conferir.** "Pré-visualizar" abre o curso como o aluno vê, sem gravar nada. A versão em uso também abre pelo botão "Prévia do curso", no topo da edição e embaixo do nome do curso na lista do painel.
 4. **Liberação automática.** Com uma versão em uso, o acesso é liberado sem a equipe: na compra para si,
    assim que o pagamento é confirmado (o e-mail de pagamento e a página do pedido já levam ao curso); na
    compra para empresa, assim que o comprador indica cada participante (que recebe o link por e-mail). Ao
