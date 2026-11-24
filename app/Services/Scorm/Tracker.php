@@ -250,11 +250,15 @@ final class Tracker
         return $h . ' h' . ($m ? ' ' . $m . ' min' : '');
     }
 
-    /** Horas da parte on-line: carga total menos a prática presencial informada no curso ("8 h ..."). */
+    /**
+     * Horas da parte on-line: carga total menos a prática presencial informada no curso. Vale a
+     * primeira quantidade de horas do texto, em qualquer posição ("8 h ...", "Recomendamos 4 h",
+     * "Instalação Classe II - 3 h").
+     */
     public static function onlineHours(array $course): int
     {
         $hours = (int) ($course['hours'] ?? $course['course_hours'] ?? 0);
-        if (!empty($course['practical_required']) && preg_match('/^\s*(\d{1,3})\s*h/i', (string) ($course['practical_hours'] ?? ''), $m)) {
+        if (!empty($course['practical_required']) && preg_match('/(\d{1,3})\s*(?:h|horas?)(?!\p{L})/iu', (string) ($course['practical_hours'] ?? ''), $m)) {
             $hours -= (int) $m[1];
         }
         return max(0, $hours);

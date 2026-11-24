@@ -414,6 +414,15 @@ check('total de lições lido do pacote do Rise, sem os títulos de seção', Ap
 @rmdir($riseDir . '/scormcontent');
 @rmdir($riseDir);
 
+echo "\nHoras da parte on-line\n";
+$online = static fn (int $hours, ?string $practical, bool $required = true): int => App\Services\Scorm\Tracker::onlineHours(['hours' => $hours, 'practical_required' => $required, 'practical_hours' => $practical]);
+check('prática no começo do texto', $online(40, '8 h') === 32 && $online(16, '8 h no mínimo, metade da carga horária, conforme a NR-33') === 8);
+check('prática no meio do texto', $online(14, 'Instalação Classe II - Recomendamos 4 h') === 10 && $online(6, 'Instalação Classe II - 3 h') === 3 && $online(12, 'Recomenda-se atividade prática de no minimo 4 h') === 8);
+check('vale a primeira quantidade de horas', $online(24, '8 h (Proteção e combate a incêndio e Primeiros socorros mínimo de 4 h)') === 16);
+check('aceita "horas" e não confunde com palavras', $online(20, '4 horas') === 16 && $online(8, 'NR-33 2 hidrantes') === 8);
+check('sem prática obrigatória ou sem horas, a carga é toda on-line', $online(8, '4 h', false) === 8 && $online(8, null) === 8 && $online(8, 'A combinar') === 8);
+check('nunca fica negativo', $online(2, '4 h') === 0);
+
 foreach ([$zip, $bad, $evil, $zipNoManifest] as $f) {
     @unlink($f);
 }
