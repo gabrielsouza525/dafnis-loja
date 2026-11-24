@@ -165,6 +165,11 @@ abrem dentro da loja (`frame-ancestors 'self'`). O conteúdo exportado pelas fer
 embutidos, então roda com uma CSP própria, mais aberta que a da loja, no mesmo domínio: envie só pacotes
 gerados pela própria Dafnis.
 
+**Link aberto com outra conta.** O curso só abre na conta com o e-mail do participante. Se o link do e-mail
+"acesso liberado" for aberto com outra conta conectada (a da equipe no mesmo navegador, por exemplo), a loja
+mostra uma página que explica isso, sem dizer de quem é a vaga, com o botão "Sair e entrar com o outro e-mail":
+ele sai, abre o login e, depois do login, volta direto ao curso.
+
 ## Certificados
 
 A loja gera o certificado em PDF no modelo da Dafnis (A4 deitado, frente e verso), sem programa externo

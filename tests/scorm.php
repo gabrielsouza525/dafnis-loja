@@ -227,6 +227,17 @@ $rh->login('rh@example.com', 'dafnis123');
 check('outra conta não abre o curso da Ana', $rh->request('GET', "/minha-conta/cursos/$enrollmentId/estudar")['status'] === 404);
 check('outra conta não baixa os arquivos do curso', $rh->request('GET', $launch)['status'] === 404);
 check('outra conta não grava andamento', $rh->json("/minha-conta/cursos/$enrollmentId/scorm", ['status' => 'passed'])['status'] === 404);
+$studyPath = "/minha-conta/cursos/$enrollmentId/estudar";
+$r = $rh->request('GET', $studyPath);
+check('link do curso aberto com outra conta explica e oferece trocar de conta', str_contains($r['body'], 'não está nesta conta') && str_contains($r['body'], 'name="volta" value="' . $studyPath . '"') && !str_contains($r['body'], 'ana@example.com'));
+check('participante comum não vê o atalho do painel', !str_contains($r['body'], '/admin/matriculas/'));
+$r = $rh->request('POST', '/sair', ['volta' => 'https://exemplo.com/']);
+check('sair não redireciona para fora da loja', $r['status'] === 302 && !str_contains((string) Client::header($r, 'Location'), 'exemplo.com'));
+$rh->login('rh@example.com', 'dafnis123');
+$rh->request('GET', $studyPath);
+$r = $rh->request('POST', '/sair', ['volta' => $studyPath]);
+check('sair por essa página leva ao login e, depois, de volta ao curso', $r['status'] === 302 && str_contains((string) Client::header($r, 'Location'), '/login?volta=' . rawurlencode($studyPath)));
+check('conta saiu de verdade', $rh->request('GET', '/minha-conta/cursos')['status'] === 302);
 
 echo "\nEquipe\n";
 $admin = new Client($base);

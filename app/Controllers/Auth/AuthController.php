@@ -153,7 +153,13 @@ final class AuthController extends Controller
 
     public function logout(): Response
     {
+        // "Sair e entrar com outro e-mail" (link de curso aberto com a conta errada): volta ao login e, depois, ao curso.
+        $volta = Auth::safeReturnPath($this->request->input('volta'));
         Auth::logout($this->request);
+        if ($volta) {
+            Session::flash('toast', ['type' => 'info', 'message' => 'Você saiu. Entre com o e-mail que recebeu o acesso ao treinamento.']);
+            return $this->redirect('/login?volta=' . rawurlencode($volta));
+        }
         Session::flash('toast', ['type' => 'info', 'message' => 'Você saiu da sua conta.']);
         return $this->redirect('/');
     }

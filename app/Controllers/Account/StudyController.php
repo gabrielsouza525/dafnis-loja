@@ -22,6 +22,12 @@ final class StudyController extends Controller
 {
     public function show(int $id): Response
     {
+        // Link do e-mail aberto com outra conta conectada (por exemplo, a da equipe no mesmo navegador):
+        // em vez de um 404 seco, explica e oferece sair e entrar com o e-mail do participante.
+        $found = Enrollment::find($id);
+        if ($found && $found['status'] !== 'cancelled' && $found['participant_email'] !== mb_strtolower((string) Auth::user()['email'])) {
+            return $this->otherAccount($id);
+        }
         $enrollment = $this->enrollment($id);
         if (in_array($enrollment['status'], ['awaiting_participant', 'processing'], true)) {
             flash('info', 'O acesso a este curso ainda está sendo liberado. Avisaremos por e-mail.');
@@ -99,6 +105,26 @@ final class StudyController extends Controller
     }
 
     /** Matrícula do usuário logado como participante (404 para qualquer outra). */
+    /** A matrícula é de outro e-mail: página que orienta a trocar de conta (sem revelar de quem é). */
+    private function otherAccount(int $id): Response
+    {
+        $user = Auth::user();
+        $html = View::render('account/study-other-account', [
+            'title' => 'Treinamento em outra conta',
+            'noindex' => true,
+            'nav' => 'conta',
+            'active' => 'cursos',
+            'user' => $user,
+            'awaitingSeats' => (int) Database::value(
+                "SELECT COUNT(*) FROM enrollments WHERE buyer_user_id = :u AND status = 'awaiting_participant'",
+                ['u' => $user['id']]
+            ),
+            'volta' => Enrollment::studyPath(['id' => $id]),
+            'adminUrl' => Auth::isAdmin() ? url('/admin/matriculas/' . $id) : null,
+        ], $this->layout);
+        return Response::html($html, 404);
+    }
+
     private function enrollment(int $id): array
     {
         $enrollment = Enrollment::find($id);
