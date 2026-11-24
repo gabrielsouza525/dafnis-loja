@@ -5,6 +5,7 @@ namespace App\Controllers\Admin;
 
 use App\Core\Response;
 use App\Core\Validator;
+use App\Models\Course;
 use App\Services\Activity;
 use App\Services\Payments\Payments;
 use App\Services\Settings;
@@ -39,6 +40,7 @@ final class SettingsController extends AdminController
         foreach (array_keys(self::FIELDS) as $key) {
             $values[$key] = Settings::get($key, '');
         }
+        $values['catalog.only_with_content'] = Course::onlyWithContent() ? '1' : '0';
         return $this->view('admin/settings', [
             'title' => 'Configurações',
             'section' => 'configuracoes',
@@ -82,6 +84,7 @@ final class SettingsController extends AdminController
             }
         }
         Settings::set('content.faq', json_encode($faq, JSON_UNESCAPED_UNICODE));
+        Settings::set('catalog.only_with_content', $this->request->input('catalog__only_with_content') === '1' ? '1' : '0');
         Activity::log('settings.updated', 'settings', null);
         return $this->success('Configurações salvas.', '/admin/configuracoes');
     }

@@ -146,7 +146,7 @@ final class PageController extends Controller
             $urls[] = ['/nr/' . $nr['nr'], '0.8'];
         }
         $updated = [];
-        foreach (Database::select('SELECT slug, updated_at FROM courses WHERE is_active = 1') as $row) {
+        foreach (Database::select('SELECT c.slug, c.updated_at FROM courses c WHERE ' . Course::publishedSql('c')) as $row) {
             $updated[$row['slug']] = $row['updated_at'];
             $urls[] = ['/cursos/' . $row['slug'], '0.7'];
         }

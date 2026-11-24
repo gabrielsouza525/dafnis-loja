@@ -305,6 +305,13 @@ Os 119 cursos vêm da planilha de valores sugeridos (EAD 2025), com preço = "Va
 Regras, correções e as **divergências de carga horária com o catálogo 2026** estão em
 [`docs/catalogo.md`](docs/catalogo.md).
 
+**Só cursos com conteúdo próprio.** Em *Painel › Configurações › Catálogo*, a opção "Mostrar na loja só os
+cursos com conteúdo próprio" deixa na loja apenas os cursos ativos com conteúdo SCORM em uso. Os demais
+saem do catálogo, das páginas de NR e de categoria, da busca, do sitemap e do carrinho, mas continuam no
+painel, nos pedidos e nas matrículas já feitos. Com a opção desligada (padrão), vale só o "Ativo na loja".
+Na lista de cursos do painel, o filtro "Publicados na loja" mostra exatamente o que está à venda, e o selo
+"Fora da loja" marca o curso ativo que está escondido por falta de conteúdo.
+
 ## Estrutura
 
 ```

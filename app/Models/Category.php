@@ -11,12 +11,12 @@ final class Category
 
     public const TONES = ['a' => 'Azul-marinho', 'b' => 'Azul-aço', 'c' => 'Azul-royal', 'd' => 'Grafite'];
 
-    /** Categorias ativas com a quantidade de cursos ativos. */
+    /** Categorias ativas com a quantidade de cursos publicados na loja. */
     public static function active(): array
     {
         if (self::$cache === null) {
             self::$cache = Database::select(
-                'SELECT k.*, (SELECT COUNT(*) FROM courses c WHERE c.category_id = k.id AND c.is_active = 1) AS course_count
+                'SELECT k.*, (SELECT COUNT(*) FROM courses c WHERE c.category_id = k.id AND ' . Course::publishedSql('c') . ') AS course_count
                    FROM categories k WHERE k.is_active = 1 ORDER BY k.sort_order, k.name'
             );
             foreach (self::$cache as &$cat) {

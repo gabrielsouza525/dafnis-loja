@@ -47,6 +47,46 @@ function config_of(string $html): ?array
     return preg_match('#<script type="application/json" id="scorm-config">(.*?)</script>#s', $html, $m) ? json_decode($m[1], true) : null;
 }
 
+/** Campos do formulário de Configurações como o navegador enviaria, com $override por cima. */
+function settings_form(string $html, array $override): array
+{
+    $doc = new DOMDocument();
+    @$doc->loadHTML('<?xml encoding="UTF-8">' . $html);
+    $form = null;
+    foreach ($doc->getElementsByTagName('form') as $f) {
+        if (str_ends_with($f->getAttribute('action'), '/admin/configuracoes')) {
+            $form = $f;
+        }
+    }
+    $data = [];
+    $put = static function (string $name, string $value) use (&$data): void {
+        if (str_ends_with($name, '[]')) {
+            $data[substr($name, 0, -2)][] = $value;
+        } else {
+            $data[$name] = $value;
+        }
+    };
+    foreach ((new DOMXPath($doc))->query('.//input|.//textarea|.//select', $form) as $el) {
+        $name = $el->getAttribute('name');
+        $type = strtolower($el->getAttribute('type'));
+        if ($name === '' || in_array($type, ['submit', 'button', 'file'], true) || (in_array($type, ['checkbox', 'radio'], true) && !$el->hasAttribute('checked'))) {
+            continue;
+        }
+        if ($el->nodeName === 'select') {
+            $value = '';
+            foreach ($el->getElementsByTagName('option') as $o) {
+                if ($o->hasAttribute('selected')) {
+                    $value = $o->getAttribute('value');
+                }
+            }
+            $put($name, $value);
+        } else {
+            $put($name, $el->nodeName === 'textarea' ? $el->textContent : $el->getAttribute('value'));
+        }
+    }
+    return array_merge($data, $override);
+}
+
 /** Endereço do app (sem a subpasta do Apache), como os testes pedem as páginas. */
 function app_path(string $url): string
 {
@@ -201,6 +241,40 @@ $previewPath = "/admin/cursos/$courseId/pacotes/{$package['id']}/previa";
 check('topo da edição tem o botão de prévia', str_contains($r['body'], 'Prévia do curso') && substr_count($r['body'], $previewPath) >= 2);
 $r = $admin->request('GET', '/admin/cursos?' . http_build_query(['q' => $slug]));
 check('lista de cursos tem o botão de prévia do conteúdo em uso', $r['status'] === 200 && str_contains($r['body'], $previewPath . '"'));
+
+echo "\nCatálogo só com conteúdo próprio\n";
+$other = Database::first('SELECT c.id, c.slug FROM courses c WHERE c.is_active = 1 AND NOT EXISTS (SELECT 1 FROM course_packages p WHERE p.course_id = c.id AND p.is_current = 1) ORDER BY c.id LIMIT 1');
+$ruleKey = 'catalog.only_with_content';
+$ruleBefore = Database::first('SELECT `value` FROM settings WHERE `key` = :k', ['k' => $ruleKey]);
+$ruleNow = static fn () => Database::value('SELECT `value` FROM settings WHERE `key` = :k', ['k' => $ruleKey]);
+$r = $admin->request('GET', '/admin/configuracoes');
+check('configurações mostram a regra do catálogo', str_contains($r['body'], 'name="catalog__only_with_content"'));
+$admin->request('POST', '/admin/configuracoes', settings_form($r['body'], ['catalog__only_with_content' => '1']));
+check('regra ligada pelo painel', $ruleNow() === '1');
+$visitor = new Client($base);
+check('curso com conteúdo próprio continua na loja', $visitor->request('GET', "/cursos/$slug")['status'] === 200);
+check('curso sem conteúdo próprio sai da loja', $visitor->request('GET', "/cursos/{$other['slug']}")['status'] === 404);
+$r = $visitor->request('GET', '/cursos');
+check('catálogo lista só os cursos com conteúdo', str_contains($r['body'], "/cursos/$slug\"") && !str_contains($r['body'], "/cursos/{$other['slug']}\""));
+$r = $visitor->request('GET', '/sitemap.xml');
+check('sitemap sem os cursos fora da loja', str_contains($r['body'], "/cursos/$slug<") && !str_contains($r['body'], "/cursos/{$other['slug']}<"));
+$visitor->request('POST', '/carrinho/adicionar', ['course_id' => $other['id']]);
+check('curso fora da loja não entra no carrinho', !str_contains($visitor->request('GET', '/carrinho')['body'], "/cursos/{$other['slug']}\""));
+$r = $admin->request('GET', '/admin/cursos?status=publicados');
+check('filtro "Publicados na loja" no painel', str_contains($r['body'], "/cursos/$slug<") && !str_contains($r['body'], "/cursos/{$other['slug']}<"));
+$r = $admin->request('GET', '/admin/cursos?' . http_build_query(['q' => $other['slug']]));
+check('painel marca o curso ativo que está fora da loja', str_contains($r['body'], 'Fora da loja'));
+$r = $admin->request('GET', "/admin/cursos/{$other['id']}/editar");
+check('edição avisa que o curso sem conteúdo não aparece na loja', str_contains($r['body'], 'o curso não aparece na loja'));
+$r = $admin->request('GET', '/admin/configuracoes');
+check('caixa da regra vem marcada', (bool) preg_match('/name="catalog__only_with_content" value="1" checked/', $r['body']));
+$admin->request('POST', '/admin/configuracoes', settings_form($r['body'], ['catalog__only_with_content' => '0']));
+check('regra desligada pelo painel: o curso volta à loja', $ruleNow() === '0' && $visitor->request('GET', "/cursos/{$other['slug']}")['status'] === 200);
+if ($ruleBefore === null) {
+    Database::query('DELETE FROM settings WHERE `key` = :k', ['k' => $ruleKey]);
+} else {
+    Database::query('UPDATE settings SET `value` = :v WHERE `key` = :k', ['v' => $ruleBefore['value'], 'k' => $ruleKey]);
+}
 $r = $admin->request('GET', "/admin/cursos/$courseId/pacotes/{$package['id']}/previa");
 $preview = config_of($r['body']);
 check('pré-visualização abre sem gravar nada', $r['status'] === 200 && ($preview['preview'] ?? false) === true && !isset($preview['commit']));

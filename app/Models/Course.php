@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Core\Database;
+use App\Services\Settings;
 
 /**
  * Cursos do catálogo. present() acrescenta os campos que as views usam
@@ -18,12 +19,31 @@ final class Course
     private const SELECT = 'SELECT c.*, k.slug AS category_slug, k.name AS category_name, k.tone AS category_tone
                               FROM courses c LEFT JOIN categories k ON k.id = c.category_id';
 
-    /** Todos os cursos ativos já apresentados, indexados por id (cache da requisição). */
+    /**
+     * Regra de Configurações › Catálogo: com ela ligada, só aparecem na loja os cursos
+     * com conteúdo on-line próprio em uso (os feitos pela Dafnis, em SCORM).
+     */
+    public static function onlyWithContent(): bool
+    {
+        return Settings::get('catalog.only_with_content', '0') === '1';
+    }
+
+    /** Condição SQL de "publicado na loja": curso ativo e, com a regra ligada, com conteúdo próprio em uso. */
+    public static function publishedSql(string $alias = 'c'): string
+    {
+        $sql = $alias . '.is_active = 1';
+        if (self::onlyWithContent()) {
+            $sql .= ' AND EXISTS (SELECT 1 FROM course_packages pk WHERE pk.course_id = ' . $alias . '.id AND pk.is_current = 1)';
+        }
+        return $sql;
+    }
+
+    /** Todos os cursos publicados na loja já apresentados, indexados por id (cache da requisição). */
     public static function allActive(): array
     {
         if (self::$activeCache === null) {
             self::$activeCache = [];
-            foreach (Database::select(self::SELECT . ' WHERE c.is_active = 1 ORDER BY c.nr_number IS NULL, c.nr_number, c.title') as $row) {
+            foreach (Database::select(self::SELECT . ' WHERE ' . self::publishedSql() . ' ORDER BY c.nr_number IS NULL, c.nr_number, c.title') as $row) {
                 self::$activeCache[(int) $row['id']] = self::present($row);
             }
         }

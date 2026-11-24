@@ -1,7 +1,7 @@
 <?php
-/** @var array $page @var string $q @var string $status @var int $category @var array $categories */
-$filters = ['todos' => 'Todos', 'ativos' => 'Ativos', 'inativos' => 'Inativos', 'sem-preco' => 'Sob consulta', 'destaques' => 'Destaques / mais vendidos'];
-// Miniatura: a capa do curso ativo; os inativos ganham uma placa cinza com o código
+/** @var array $page @var string $q @var string $status @var int $category @var array $categories @var bool $onlyWithContent */
+$filters = ['todos' => 'Todos', 'publicados' => 'Publicados na loja', 'ativos' => 'Ativos', 'inativos' => 'Inativos', 'sem-preco' => 'Sob consulta', 'destaques' => 'Destaques / mais vendidos'];
+// Miniatura: a capa do curso publicado na loja; os demais ganham uma placa cinza com o código
 $active = App\Models\Course::allActive();
 $thumb = static function (array $c) use ($active): array {
     if (isset($active[(int) $c['id']])) {
@@ -11,7 +11,7 @@ $thumb = static function (array $c) use ($active): array {
     return ['tone' => 'd', 'image_url' => null, 'url' => '#', 'display_title' => $c['title'], 'kicker' => '', 'plate_big' => $code ?: ($c['short_title'] ?: 'Curso'), 'plate_is_text' => !$code, 'icon' => $c['icon'] ?: 'clipboard', 'badge' => null];
 };
 ?>
-<div class="adm-head"><div><h1>Cursos</h1><p>Catálogo da loja: preços, cargas horárias, destaques e disponibilidade.</p></div>
+<div class="adm-head"><div><h1>Cursos</h1><p>Catálogo da loja: preços, cargas horárias, destaques e disponibilidade.<?php if ($onlyWithContent): ?> A loja mostra só os cursos com conteúdo próprio em uso (<a href="<?= e(url('/admin/configuracoes')) ?>#catalogo">Configurações › Catálogo</a>).<?php endif; ?></p></div>
 <div class="adm-actions"><a class="btn btn-navy btn-sm" href="<?= e(url('/admin/cursos/novo')) ?>"><?= icon('plus', 'ic-sm') ?>Novo curso</a></div></div>
 
 <form class="toolbar" method="get" action="<?= e(url('/admin/cursos')) ?>">
@@ -36,7 +36,7 @@ $thumb = static function (array $c) use ($active): array {
 <td><?= e(modality_label($c['modality'])) ?></td>
 <td class="num"><?php if ($c['price'] === null): ?><span class="muted">Sob consulta</span><?php else: ?><?php if ($c['promo_price'] !== null): ?><s class="muted" style="font-size:12.5px"><?= money($c['price']) ?></s><br><?= money($c['promo_price']) ?><?php else: ?><?= money($c['price']) ?><?php endif; ?><?php endif; ?></td>
 <td class="num"><?= (int) $c['sold'] ?></td>
-<td><?= partial('status', ['label' => (int) $c['is_active'] ? 'Ativo' : 'Inativo', 'tone' => (int) $c['is_active'] ? 'ok' : 'muted']) ?><?php if ((int) $c['is_bestseller']): ?> <span class="pill badge-mais" style="height:22px">Mais vendido</span><?php endif; ?><?php if ($c['featured_order'] !== null): ?> <span class="pill badge-novo" style="height:22px">Destaque <?= (int) $c['featured_order'] ?></span><?php endif; ?></td>
+<td><?= partial('status', ['label' => (int) $c['is_active'] ? 'Ativo' : 'Inativo', 'tone' => (int) $c['is_active'] ? 'ok' : 'muted']) ?><?php if ((int) $c['is_active'] && !(int) $c['in_store']): ?> <span class="pill pill-plain" style="height:22px" title="Sem conteúdo próprio em uso, o curso não aparece na loja">Fora da loja</span><?php endif; ?><?php if ((int) $c['is_bestseller']): ?> <span class="pill badge-mais" style="height:22px">Mais vendido</span><?php endif; ?><?php if ($c['featured_order'] !== null): ?> <span class="pill badge-novo" style="height:22px">Destaque <?= (int) $c['featured_order'] ?></span><?php endif; ?></td>
 <td><div class="actions">
 <a class="btn btn-ghost btn-xs" href="<?= e(url('/admin/cursos/' . $c['id'] . '/editar')) ?>">Editar</a>
 <form method="post" action="<?= e(url('/admin/cursos/' . $c['id'] . '/alternar')) ?>"><?= csrf_field() ?><input type="hidden" name="volta" value="lista"><button class="btn btn-outline btn-xs" type="submit"><?= (int) $c['is_active'] ? 'Desativar' : 'Ativar' ?></button></form>

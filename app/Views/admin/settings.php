@@ -59,6 +59,9 @@ $faqRows = $faq ?: [['q' => '', 'a' => '']];
 </div>
 
 <aside>
+<div class="panel" id="catalogo"><div class="panel-head"><h2>Catálogo</h2></div><div class="panel-body">
+<label class="switch"><input type="hidden" name="catalog__only_with_content" value="0"><input type="checkbox" name="catalog__only_with_content" value="1"<?= checked(($values['catalog.only_with_content'] ?? '0') === '1') ?>><span>Mostrar na loja só os cursos com conteúdo próprio<small>Aparecem só os cursos ativos que têm conteúdo on-line em uso na loja (os feitos pela Dafnis). Os demais saem do catálogo, das buscas e do carrinho, mas continuam no painel e nos pedidos já feitos.</small></span></label>
+</div></div>
 <div class="panel"><div class="panel-head"><h2>Plataforma de ensino</h2></div><div class="panel-body">
 <?= $f('lms.url', 'Link de acesso dos alunos', ['type' => 'url', 'optional' => true, 'hint' => 'Endereço da plataforma white label. Usado no botão "Continuar" quando o curso não tem link próprio.']) ?>
 </div></div>

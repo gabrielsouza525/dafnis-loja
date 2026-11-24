@@ -5,6 +5,7 @@ namespace App\Controllers\Admin;
 
 use App\Core\Database;
 use App\Core\Response;
+use App\Models\Course;
 use App\Services\Payments\Payments;
 
 final class DashboardController extends AdminController
@@ -19,7 +20,7 @@ final class DashboardController extends AdminController
                     (SELECT COALESCE(SUM(total), 0) FROM orders WHERE status = 'paid' AND paid_at >= :m2) AS revenue_month,
                     (SELECT COUNT(*) FROM enrollments WHERE status = 'processing') AS to_release,
                     (SELECT COUNT(*) FROM enrollments WHERE status = 'awaiting_participant') AS awaiting,
-                    (SELECT COUNT(*) FROM courses WHERE is_active = 1) AS courses,
+                    (SELECT COUNT(*) FROM courses c WHERE " . Course::publishedSql('c') . ") AS courses,
                     (SELECT COUNT(*) FROM users WHERE role = 'student') AS students",
             ['m1' => $monthStart, 'm2' => $monthStart]
         );
