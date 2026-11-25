@@ -1,7 +1,12 @@
-<?php /** @var array $order @var array $items @var int $awaiting @var string|null $ready link do curso já liberado @var int $readyCount @var string $url */ ?>
-<?= App\Core\View::file('emails/title', ['kicker' => 'Pagamento confirmado', 'title' => 'Tudo certo com o pedido ' . $order['number'], 'color' => '#0F6A32']) ?>
+<?php /** @var array $order @var array $items @var bool $invoiced fatura mensal @var int $awaiting @var string|null $ready link do curso já liberado @var int $readyCount @var string $url */
+$invoiced = !empty($invoiced); ?>
+<?= App\Core\View::file('emails/title', ['kicker' => $invoiced ? 'Pedido faturado' : 'Pagamento confirmado', 'title' => 'Tudo certo com o pedido ' . $order['number'], 'color' => '#0F6A32']) ?>
 <p style="margin:0 0 12px">Olá, <?= e(first_name($order['buyer_name'])) ?>.</p>
+<?php if ($invoiced): ?>
+<p style="margin:0 0 12px">O pedido <strong><?= e($order['number']) ?></strong> entrou na fatura mensal<?= $order['company_name'] ? ' da ' . e((string) $order['company_name']) : '' ?>. O valor é cobrado no fechamento do mês, junto com os outros pedidos, e o acesso aos treinamentos já está liberado.</p>
+<?php else: ?>
 <p style="margin:0 0 12px">O pagamento do pedido <strong><?= e($order['number']) ?></strong> foi confirmado. Obrigado!</p>
+<?php endif; ?>
 <?= App\Core\View::file('emails/items', ['order' => $order, 'items' => $items]) ?>
 <?php if (!empty($ready)): ?>
 <p style="margin:0 0 12px"><strong>Seu acesso já está liberado.</strong> O curso é feito aqui no nosso site, na sua conta (Minha conta › Meus cursos). Pode começar agora mesmo.</p>

@@ -54,10 +54,30 @@ use App\Services\Payments\MercadoPagoGateway;
 <dt>E-mail</dt><dd><a href="mailto:<?= e($order['buyer_email']) ?>"><?= e($order['buyer_email']) ?></a></dd>
 <dt>Telefone</dt><dd><?= e(phone_display($order['buyer_phone'])) ?><?php if ($wa = wa_link($order['buyer_phone'], 'Olá! Aqui é da Dafnis Treinamentos, sobre o pedido ' . $order['number'] . '.')): ?> · <a href="<?= e($wa) ?>" target="_blank" rel="noopener">WhatsApp</a><?php endif; ?></dd>
 <?php if ($buyer): ?><dt>Conta</dt><dd><a href="<?= e(url('/admin/usuarios/' . $buyer['id'])) ?>"><?= e($buyer['name']) ?></a></dd><?php endif; ?>
+<?php if ($order['invoiced_at']): ?><dt>Faturado em</dt><dd><?= e(date_br($order['invoiced_at'], true)) ?></dd><?php endif; ?>
 <?php if ($order['paid_at']): ?><dt>Pago em</dt><dd><?= e(date_br($order['paid_at'], true)) ?></dd><?php endif; ?>
 <?php if ($order['gateway_payment_id']): ?><dt>ID Mercado Pago</dt><dd class="mono"><?= e($order['gateway_payment_id']) ?> (<?= e(MercadoPagoGateway::statusLabel($order['gateway_status']) ?? '') ?>)</dd><?php endif; ?>
 </dl>
 </div></div>
+
+<?php if ($order['status'] === 'invoiced'): ?>
+<?php $month = substr((string) $order['created_at'], 0, 7); ?>
+<div class="panel"><div class="panel-head"><h2>Fatura mensal</h2></div><div class="panel-body">
+<p style="margin:0 0 12px">Pedido faturado: o acesso já foi liberado e o valor entra na fatura de <?= e(month_br($month)) ?>.</p>
+<a class="btn btn-outline btn-sm" href="<?= e(url('/admin/faturamento/cliente', ['doc' => $order['buyer_document'], 'mes' => $month])) ?>"><?= icon('receipt', 'ic-sm') ?>Ver a fatura do mês</a>
+<form method="post" action="<?= e(url('/admin/pedidos/' . $order['id'] . '/confirmar-pagamento')) ?>" data-confirm="Confirmar o recebimento de <?= e(money($order['total'])) ?> deste pedido?" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--line)">
+<?= csrf_field() ?>
+<div class="field"><label for="note">Como foi pago <small>(opcional)</small></label><input class="input" id="note" name="note" placeholder="Ex.: fatura de novembro paga por transferência"></div>
+<button class="btn btn-buy btn-block" type="submit" style="margin-top:12px"><?= icon('check') ?>Dar baixa só neste pedido</button>
+</form>
+<p class="hint">Para a fatura inteira do mês, use a página Faturamento.</p>
+<form method="post" action="<?= e(url('/admin/pedidos/' . $order['id'] . '/cancelar')) ?>" data-confirm="Cancelar este pedido faturado? Ele sai da fatura e as vagas, já liberadas, são canceladas." style="margin-top:16px;padding-top:16px;border-top:1px solid var(--line)">
+<?= csrf_field() ?>
+<div class="field"><label for="reason">Motivo do cancelamento <small>(opcional)</small></label><input class="input" id="reason" name="reason"></div>
+<button class="btn btn-danger btn-sm" type="submit" style="margin-top:10px">Cancelar pedido</button>
+</form>
+</div></div>
+<?php endif; ?>
 
 <?php if (in_array($order['status'], ['pending', 'cancelled'], true)): ?>
 <div class="panel"><div class="panel-head"><h2>Pagamento</h2></div><div class="panel-body">

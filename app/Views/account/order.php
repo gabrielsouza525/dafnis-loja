@@ -77,7 +77,7 @@ $open = count(array_filter($seats, static fn ($s) => $s['status'] !== 'cancelled
 <div><dt><?= icon($order['buyer_type'] === 'pj' ? 'building' : 'user', 'ic-sm') ?>Comprador</dt><dd><?= e($order['buyer_type'] === 'pj' ? $order['company_name'] : $order['buyer_name']) ?><small><?= e($order['buyer_type'] === 'pj' ? 'CNPJ ' . document_display($order['buyer_document']) : 'CPF ' . document_masked($order['buyer_document'])) ?></small></dd></div>
 <?php if ($order['buyer_type'] === 'pj'): ?><div><dt><?= icon('user', 'ic-sm') ?>Responsável</dt><dd><?= e($order['buyer_name']) ?></dd></div><?php endif; ?>
 <div><dt><?= icon('mail', 'ic-sm') ?>Contato</dt><dd><?= e($order['buyer_email']) ?><small><?= e(phone_display($order['buyer_phone'])) ?></small></dd></div>
-<div><dt><?= icon($method['icon'] ?? 'card', 'ic-sm') ?>Pagamento</dt><dd><?= e($method['label']) ?><?php if ($order['paid_at']): ?><small>Pago em <?= e(date_br($order['paid_at'], true)) ?></small><?php endif; ?></dd></div>
+<div><dt><?= icon($method['icon'] ?? 'card', 'ic-sm') ?>Pagamento</dt><dd><?= e($method['label']) ?><?php if ($order['paid_at']): ?><small>Pago em <?= e(date_br($order['paid_at'], true)) ?></small><?php elseif ($order['status'] === 'invoiced'): ?><small>Cobrado no fechamento do mês</small><?php endif; ?></dd></div>
 </dl>
 </aside>
 </div>

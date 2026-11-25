@@ -9,14 +9,19 @@ use App\Models\Order;
 $status = $order['status'];
 $gw = (string) $order['gateway_status'];
 $method = Order::METHODS[$order['payment_method']] ?? ['label' => $order['payment_method'], 'icon' => 'card'];
-$step = $status === 'paid' ? 5 : 3;
+// Pedido faturado (fatura mensal) vale como pago: as vagas existem e o acesso é liberado.
+$confirmed = Order::isConfirmed($order);
+$invoiced = $status === 'invoiced';
+$step = $confirmed ? 5 : 3;
 $processing = in_array($gw, ['pending', 'in_process', 'authorized'], true);
 
 // Próximos passos: [título, texto, done|on|todo]
 $next = [];
-if ($status === 'paid') {
+if ($confirmed) {
     $next = [
-        ['Pagamento confirmado', $order['paid_at'] ? 'Recebido em ' . date_br($order['paid_at'], true) . '.' : 'Recebemos o pagamento.', 'done'],
+        $invoiced
+            ? ['Pedido faturado', 'Entrou na fatura mensal em ' . date_br((string) ($order['invoiced_at'] ?: $order['created_at']), true) . '. O valor é cobrado no fechamento do mês.', 'done']
+            : ['Pagamento confirmado', $order['paid_at'] ? 'Recebido em ' . date_br($order['paid_at'], true) . '.' : 'Recebemos o pagamento.', 'done'],
         ['Indicar os participantes', $awaiting > 0 ? ucfirst(pluralize($awaiting, 'vaga aguarda', 'vagas aguardam')) . ' o nome, o e-mail e o CPF de quem vai fazer o curso.' : 'Os participantes já estão definidos.', $awaiting > 0 ? 'on' : 'done'],
         $ready
             ? ['Acesso liberado', 'O curso já está em Minha conta › Meus cursos e é feito aqui no site.', 'done']
@@ -48,9 +53,9 @@ if ($status === 'paid') {
 <div class="cart-layout order-layout">
 <div class="order-main">
 <div class="form-card order-status is-<?= e($status) ?>">
-<?php if ($status === 'paid'): ?>
+<?php if ($confirmed): ?>
 <span class="success-ic"><?= icon('check') ?></span>
-<div><div class="kicker">Pagamento confirmado</div>
+<div><div class="kicker"><?= $invoiced ? 'Pedido faturado · fatura mensal' : 'Pagamento confirmado' ?></div>
 <h2><?= $ready ? 'Seu acesso já está liberado' : 'Tudo certo com o seu pedido' ?></h2>
 <p><?php if ($ready): ?>O curso é feito aqui no nosso site e já está em Minha conta › Meus cursos. Pode começar agora mesmo.<?= $awaiting > 0 ? ' Falta indicar quem vai fazer ' . e(pluralize($awaiting, 'vaga', 'vagas')) . '.' : '' ?><?php elseif ($awaiting > 0): ?>Agora indique quem vai fazer cada treinamento: <?= e(pluralize($awaiting, 'vaga aguarda', 'vagas aguardam')) ?> o participante. Assim que você informar, liberamos o acesso na plataforma de ensino.<?php else: ?>Estamos liberando o acesso na plataforma de ensino. O participante recebe o link por e-mail e o curso aparece em Minha conta › Meus cursos.<?php endif; ?></p>
 <div class="btns">

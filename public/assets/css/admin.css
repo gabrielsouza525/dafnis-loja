@@ -49,6 +49,9 @@ body.admin{background:var(--gray)}
 .adm-content .table tbody tr:hover{background:var(--surface-2)}
 .table .actions{display:flex;gap:6px;justify-content:flex-end;flex-wrap:nowrap}
 .table .actions form{display:inline}
+.table tfoot th{border-top:2px solid var(--line);border-bottom:0;color:var(--text);font-size:12.5px}
+.table tr.bill-order td{background:var(--surface-2);font-size:13.5px}
+.table td.bill-people{font-size:13.5px;color:var(--muted)}
 .pager-admin{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px;border-top:1px solid var(--line);font-size:13.5px;color:var(--muted);flex-wrap:wrap}
 .pager-admin nav{display:flex;gap:4px}
 .pager-admin a,.pager-admin span.cur{min-width:34px;height:34px;padding:0 10px;border-radius:8px;border:1px solid var(--line);display:grid;place-items:center;font-weight:600;color:var(--navy-ink);background:var(--surface);text-decoration:none}

@@ -27,7 +27,7 @@ final class OrderController extends Controller
         $active = Course::allActive();
         // Miniatura do curso no resumo (curso desativado depois da compra fica sem)
         $items = array_map(static fn ($i) => $i + ['course' => $active[(int) $i['course_id']] ?? null], Order::items((int) $order['id']));
-        $seats = $order['status'] === 'paid' ? Enrollment::forOrder((int) $order['id']) : [];
+        $seats = Order::isConfirmed($order) ? Enrollment::forOrder((int) $order['id']) : [];
 
         return $this->view('site/order', [
             'title' => 'Pedido ' . $order['number'],
@@ -105,6 +105,10 @@ final class OrderController extends Controller
         }
         if ($order['status'] === 'paid') {
             flash('success', 'O pagamento deste pedido já foi confirmado, então ele não foi cancelado.');
+            return $this->redirect($back);
+        }
+        if ($order['status'] === 'invoiced') {
+            flash('error', 'Este pedido já está na fatura mensal e o acesso foi liberado. Para cancelar, fale com a nossa equipe.');
             return $this->redirect($back);
         }
         if ($blocked = Payments::cancelBlocked($order)) {

@@ -1,7 +1,11 @@
 <?php
-/** @var array $lines @var array $totals @var array $buyer @var bool $online @var array $methods */
+/** @var array $lines @var array $totals @var array $buyer @var bool $online @var array $methods @var string|null $invoiceCnpj CNPJ autorizado para a fatura mensal */
 $type = has_old() ? (old('buyer_type', $buyer['buyer_type']) === 'pj' ? 'pj' : 'pf') : $buyer['buyer_type'];
 $method = has_old() ? old('payment_method', $buyer['payment_method']) : $buyer['payment_method'];
+$invoice = $method === 'invoice' && isset($methods['invoice']);
+if ($invoice) {
+    $type = 'pj';
+}
 // Cupom que cobre o valor inteiro: o pedido é confirmado sem pagamento (Orders::createFromCart).
 $free = $totals['total'] <= 0;
 ?>
@@ -51,13 +55,16 @@ $free = $totals['total'] <= 0;
 <h2><span>2</span>Forma de pagamento</h2>
 <div class="pay-opts" role="radiogroup" aria-label="Forma de pagamento">
 <?php foreach ($methods as $id => $m): ?>
-<label class="pay"><input type="radio" name="payment_method" value="<?= e($id) ?>"<?= checked($method === $id) ?>><span class="pay-top"><?= icon($m['icon']) ?><span class="radio"></span></span><span><strong><?= e($m['label']) ?></strong><small><?= e($m['sub']) ?></small></span></label>
+<label class="pay"><input type="radio" name="payment_method" value="<?= e($id) ?>"<?= checked($method === $id) ?><?= $id === 'invoice' ? ' data-invoice-cnpj="' . e(document_display((string) $invoiceCnpj)) . '"' : '' ?>><span class="pay-top"><?= icon($m['icon']) ?><span class="radio"></span></span><span><strong><?= e($m['label']) ?></strong><small><?= e($m['sub']) ?></small></span></label>
 <?php endforeach; ?>
 </div>
+<?php if (isset($methods['invoice'])): ?>
+<div class="note-box info" data-pay-note="invoice"<?= $invoice ? '' : ' hidden' ?>><?= icon('receipt') ?><span>Pedido na <strong>fatura mensal</strong> da empresa de CNPJ <?= e(document_display((string) $invoiceCnpj)) ?>. O acesso é liberado assim que você confirmar, e o valor é cobrado no fechamento do mês, junto com os outros pedidos.</span></div>
+<?php endif; ?>
 <?php if ($online): ?>
-<div class="note-box info"><?= icon('lock') ?><span>Ao confirmar, você vai para o ambiente seguro do <strong>Mercado Pago</strong> para concluir o pagamento. Os dados do cartão não passam pela nossa loja.</span></div>
+<div class="note-box info" data-pay-note="gateway"<?= $invoice ? ' hidden' : '' ?>><?= icon('lock') ?><span>Ao confirmar, você vai para o ambiente seguro do <strong>Mercado Pago</strong> para concluir o pagamento. Os dados do cartão não passam pela nossa loja.</span></div>
 <?php else: ?>
-<div class="note-box"><?= icon('info') ?><span>O pagamento online está em ativação. Ao confirmar, seu pedido fica registrado como <strong>aguardando pagamento</strong> e a nossa equipe envia as instruções pela forma escolhida. Nenhuma cobrança é feita automaticamente.</span></div>
+<div class="note-box" data-pay-note="gateway"<?= $invoice ? ' hidden' : '' ?>><?= icon('info') ?><span>O pagamento online está em ativação. Ao confirmar, seu pedido fica registrado como <strong>aguardando pagamento</strong> e a nossa equipe envia as instruções pela forma escolhida. Nenhuma cobrança é feita automaticamente.</span></div>
 <?php endif; ?>
 <?php endif; ?>
 </div>
@@ -78,7 +85,7 @@ $free = $totals['total'] <= 0;
 <?php if ($err = field_error('accept_terms')): ?><p class="field-error" id="erro-termos"><?= icon('alert') ?><?= e($err) ?></p><?php endif; ?>
 </div>
 <div class="sum-actions">
-<button class="btn btn-buy btn-lg btn-block" type="submit" data-submit><?= $online && !$free ? 'Ir para o pagamento' : 'Confirmar pedido' ?><?= icon('arrowR') ?></button>
+<button class="btn btn-buy btn-lg btn-block" type="submit" data-submit<?= $online && !$free && isset($methods['invoice']) ? ' data-label-gateway="Ir para o pagamento" data-label-invoice="Confirmar pedido"' : '' ?>><span data-submit-label><?= $online && !$free && !$invoice ? 'Ir para o pagamento' : 'Confirmar pedido' ?></span><?= icon('arrowR') ?></button>
 </div>
 <p class="secure"><?= icon('shield') ?>Seus dados são usados só para emitir o pedido, liberar o acesso e os certificados.</p>
 </aside>

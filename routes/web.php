@@ -145,6 +145,11 @@ return static function (Router $r): void {
         $r->get('/usuarios/{id:\d+}', [Admin\UserController::class, 'show']);
         $r->post('/usuarios/{id:\d+}', [Admin\UserController::class, 'update']);
         $r->post('/usuarios/{id:\d+}/duas-etapas/desativar', [Admin\UserController::class, 'disableTwoFactor']);
+        $r->post('/usuarios/{id:\d+}/fatura', [Admin\UserController::class, 'invoice']);
+
+        $r->get('/faturamento', [Admin\BillingController::class, 'index']);
+        $r->get('/faturamento/cliente', [Admin\BillingController::class, 'client']);
+        $r->post('/faturamento/baixa', [Admin\BillingController::class, 'settle']);
 
         $r->get('/cupons', [Admin\CouponController::class, 'index']);
         $r->get('/cupons/novo', [Admin\CouponController::class, 'create']);

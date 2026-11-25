@@ -29,7 +29,7 @@ final class UserController extends AdminController
             $params['r'] = $role;
         }
         $page = $this->paginate(
-            "SELECT u.*, (SELECT COUNT(*) FROM orders o WHERE o.user_id = u.id AND o.status = 'paid') AS paid_orders,
+            "SELECT u.*, (SELECT COUNT(*) FROM orders o WHERE o.user_id = u.id AND o.status IN ('paid','invoiced')) AS paid_orders,
                     (SELECT COUNT(*) FROM enrollments e WHERE e.participant_email = u.email AND e.status IN ('processing','active','completed')) AS courses
                FROM users u WHERE " . implode(' AND ', $where) . ' ORDER BY u.id DESC',
             $params
@@ -58,6 +58,24 @@ final class UserController extends AdminController
             TwoFactor::disable($user, true);
         }
         return $this->success('Verificação em duas etapas desativada. A pessoa recebeu um aviso por e-mail.', '/admin/usuarios/' . $id);
+    }
+
+    /**
+     * Fatura mensal: a conta passa a ver "Fatura mensal" no checkout, só para o CNPJ informado.
+     * O pedido faturado libera o acesso na hora e é cobrado no fechamento do mês (Faturamento).
+     */
+    public function invoice(int $id): Response
+    {
+        $user = $this->findOr404(Database::first('SELECT * FROM users WHERE id = :id', ['id' => $id]), 'Usuário não encontrado.');
+        $enabled = (string) $this->request->input('invoice_enabled', '') === '1';
+        $cnpj = null;
+        if ($enabled) {
+            $data = $this->validate(['invoice_cnpj' => 'required|cnpj'], ['invoice_cnpj' => 'CNPJ da fatura']);
+            $cnpj = preg_replace('/\D/', '', (string) $data['invoice_cnpj']);
+        }
+        Database::update('users', ['invoice_cnpj' => $cnpj], ['id' => $id]);
+        Activity::log('user.invoice', 'user', $id, $cnpj ? 'fatura mensal autorizada para o CNPJ ' . document_display($cnpj) : 'fatura mensal desativada');
+        return $this->success($cnpj ? 'Fatura mensal autorizada para ' . $user['name'] . ' no CNPJ ' . document_display($cnpj) . '.' : 'Fatura mensal desativada para esta conta.', '/admin/usuarios/' . $id);
     }
 
     public function update(int $id): Response

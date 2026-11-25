@@ -99,21 +99,25 @@ final class Notify
         $manual = array_filter($seats, static fn ($e) => $e['status'] === 'processing');
         // Vaga do próprio comprador já liberada (curso na loja): o e-mail leva direto ao curso.
         $ready = array_values(array_filter($seats, static fn ($e) => $e['status'] === 'active' && $e['has_content'] && mb_strtolower((string) $e['participant_email']) === mb_strtolower($order['buyer_email'])));
-        Mailer::send($order['buyer_email'], 'Pagamento confirmado — pedido ' . $order['number'], 'order-paid', [
+        // Fatura mensal: o pedido vale na hora e o pagamento vem no fechamento do mês.
+        $invoiced = $order['status'] === 'invoiced';
+        $done = $invoiced ? 'Pedido faturado' : 'Pagamento confirmado';
+        Mailer::send($order['buyer_email'], ($invoiced ? 'Pedido ' . $order['number'] . ' faturado — acesso liberado' : 'Pagamento confirmado — pedido ' . $order['number']), 'order-paid', [
             'order' => $order,
             'items' => $items,
+            'invoiced' => $invoiced,
             'awaiting' => count($awaiting),
             'ready' => $ready ? absolute_url(Enrollment::studyPath($ready[0])) : null,
             'readyCount' => count($ready),
             'url' => absolute_url('/minha-conta/pedidos/' . $order['number']),
         ]);
         if ($team = self::teamAddress()) {
-            Mailer::send($team, 'Pedido ' . $order['number'] . ' pago' . ($manual ? ' — liberar acessos' : ''), 'team-order', [
+            Mailer::send($team, 'Pedido ' . $order['number'] . ($invoiced ? ' faturado — ' . money($order['total']) . ' na fatura mensal' : ' pago') . ($manual ? ' — liberar acessos' : ''), 'team-order', [
                 'order' => $order,
                 'items' => $items,
                 'headline' => $manual
-                    ? 'Pagamento confirmado: cadastre os participantes na plataforma de ensino'
-                    : ($awaiting ? 'Pagamento confirmado: aguardando o comprador indicar os participantes' : 'Pagamento confirmado: acesso liberado automaticamente (curso na loja)'),
+                    ? $done . ': cadastre os participantes na plataforma de ensino'
+                    : ($awaiting ? $done . ': aguardando o comprador indicar os participantes' : $done . ': acesso liberado automaticamente (curso na loja)'),
                 'url' => absolute_url($manual ? '/admin/matriculas?status=processing' : '/admin/pedidos/' . $order['id']),
             ]);
         }

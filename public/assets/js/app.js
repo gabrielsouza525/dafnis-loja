@@ -437,6 +437,29 @@
     };
     $all('[data-buyer-type]', checkout).forEach(function (r) { r.addEventListener('change', applyBuyer); });
     applyBuyer();
+
+    // Fatura mensal (só para contas autorizadas): é sempre para a empresa do CNPJ autorizado
+    // e não passa pelo Mercado Pago.
+    var invoiceRadio = checkout.querySelector('input[name="payment_method"][value="invoice"]');
+    if (invoiceRadio) {
+      var applyPayment = function () {
+        var inv = invoiceRadio.checked;
+        $all('[data-pay-note]', checkout).forEach(function (el) { el.hidden = (el.getAttribute('data-pay-note') === 'invoice') !== inv; });
+        var submit = checkout.querySelector('[data-submit]');
+        var label = submit && submit.querySelector('[data-submit-label]');
+        if (label && submit.hasAttribute('data-label-gateway')) {
+          label.textContent = submit.getAttribute(inv ? 'data-label-invoice' : 'data-label-gateway');
+        }
+        if (inv) {
+          var pjRadio = checkout.querySelector('[data-buyer-type][value="pj"]');
+          if (pjRadio && !pjRadio.checked) { pjRadio.checked = true; applyBuyer(); }
+          var cnpj = checkout.querySelector('[name="company_document"]');
+          if (cnpj && !cnpj.value) cnpj.value = invoiceRadio.getAttribute('data-invoice-cnpj') || '';
+        }
+      };
+      $all('input[name="payment_method"]', checkout).forEach(function (r) { r.addEventListener('change', applyPayment); });
+      applyPayment();
+    }
   }
 
   /* ---------- NRs: filtra os cartões ao digitar (número da norma ou parte do nome) ---------- */

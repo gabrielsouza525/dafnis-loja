@@ -6,6 +6,7 @@ namespace App\Controllers\Site;
 use App\Controllers\Controller;
 use App\Core\Database;
 use App\Core\Response;
+use App\Core\ValidationException;
 use App\Core\Validator;
 use App\Models\Order;
 use App\Services\Auth;
@@ -26,6 +27,12 @@ final class CheckoutController extends Controller
         $user = Auth::user();
         // Reaproveita os dados da última compra (útil para empresas que compram sempre).
         $last = Database::first('SELECT * FROM orders WHERE user_id = :u ORDER BY id DESC LIMIT 1', ['u' => $user['id']]);
+        $invoiceCnpj = self::invoiceCnpj((int) $user['id']);
+        $methods = Order::METHODS;
+        if ($invoiceCnpj === null) {
+            unset($methods['invoice']);
+        }
+        $method = $last['payment_method'] ?? 'pix';
 
         return $this->view('site/checkout', [
             'title' => 'Finalizar compra',
@@ -40,11 +47,19 @@ final class CheckoutController extends Controller
                 'buyer_phone' => $user['phone'] ? phone_display($user['phone']) : '',
                 'company_name' => $last['company_name'] ?? '',
                 'company_document' => ($last['buyer_type'] ?? '') === 'pj' ? document_display($last['buyer_document']) : '',
-                'payment_method' => $last['payment_method'] ?? 'pix',
+                'payment_method' => isset($methods[$method]) ? $method : 'pix',
             ],
             'online' => Payments::isOnline(),
-            'methods' => Order::METHODS,
+            'methods' => $methods,
+            'invoiceCnpj' => $invoiceCnpj,
         ]);
+    }
+
+    /** CNPJ que a conta pode faturar (autorizado pela equipe no painel), ou null. */
+    private static function invoiceCnpj(int $userId): ?string
+    {
+        $cnpj = (string) Database::value('SELECT invoice_cnpj FROM users WHERE id = :id', ['id' => $userId]);
+        return $cnpj !== '' ? $cnpj : null;
     }
 
     public function place(): Response
@@ -52,12 +67,15 @@ final class CheckoutController extends Controller
         $user = Auth::user();
         RateLimiter::check('checkout', (string) $user['id'], $this->request->ip(), 10, 30, 10);
 
-        $type = $this->request->input('buyer_type') === 'pj' ? 'pj' : 'pf';
+        $invoiceCnpj = self::invoiceCnpj((int) $user['id']);
+        $invoice = $invoiceCnpj !== null && $this->request->input('payment_method') === 'invoice';
+        // A fatura mensal é sempre para a empresa autorizada.
+        $type = $invoice || $this->request->input('buyer_type') === 'pj' ? 'pj' : 'pf';
         $rules = [
             'buyer_name' => 'required|min:3|max:120',
             'buyer_email' => 'required|email',
             'buyer_phone' => 'required|phone',
-            'payment_method' => 'required|in:pix,card,boleto',
+            'payment_method' => 'required|in:pix,card,boleto' . ($invoiceCnpj !== null ? ',invoice' : ''),
             'accept_terms' => 'required',
         ];
         $labels = ['buyer_name' => 'nome', 'buyer_email' => 'e-mail', 'buyer_phone' => 'telefone', 'payment_method' => 'forma de pagamento'];
@@ -71,6 +89,9 @@ final class CheckoutController extends Controller
             $labels['buyer_document'] = 'CPF';
         }
         $data = Validator::validate($this->request->all(), $rules, $labels, $messages);
+        if ($invoice && preg_replace('/\D/', '', (string) $data['company_document']) !== $invoiceCnpj) {
+            throw ValidationException::with('company_document', 'A fatura mensal vale só para o CNPJ ' . document_display($invoiceCnpj) . '. Para outra empresa, escolha outra forma de pagamento.');
+        }
 
         $order = Orders::createFromCart([
             'buyer_type' => $type,
@@ -96,6 +117,10 @@ final class CheckoutController extends Controller
         Cart::clear();
         if ($order['status'] === 'paid') {
             flash('success', 'Pedido confirmado. O cupom cobriu o valor total, então não há nada a pagar.');
+            return $this->redirect('/pedido/' . $order['number']);
+        }
+        if ($order['status'] === 'invoiced') {
+            flash('success', 'Pedido faturado. O acesso já está liberado e o valor entra na fatura do mês.');
             return $this->redirect('/pedido/' . $order['number']);
         }
         return $this->redirect('/pedido/' . $order['number'] . (Payments::isOnline() ? '?pagar=1' : ''));

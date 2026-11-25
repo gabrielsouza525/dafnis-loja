@@ -81,6 +81,7 @@ php tests/smoke.php http://localhost:8000    # todas as páginas por perfil
 php tests/links.php http://localhost:8000    # rastreia links quebrados
 php tests/scorm.php http://localhost:8000    # cursos próprios: importação, página do curso, andamento e tempo
 php tests/certificates.php http://localhost:8000  # certificados: PDF, emissão automática, CPF, validação
+php tests/billing.php http://localhost:8000  # fatura mensal e página Faturamento
 php tests/webhooks.php                       # notificações do Mercado Pago (sem servidor)
 node tests/browser.mjs http://localhost:8000 # comportamento do JavaScript no Chrome (headless)
 ```
@@ -109,7 +110,16 @@ Rode `db:fresh --demo` antes de cada um: eles criam pedidos e mudam o estado do 
      bloqueado. Ao cancelar, o link de pagamento expira e o cupom volta a ficar disponível. O cliente e a
      equipe recebem e-mail. Um boleto já gerado não é anulado: se ele compensar, o pedido volta a valer.
      A equipe também cancela em *Painel › Pedidos*.
-4. Com o pagamento confirmado são criadas as **vagas**. Compra de pessoa física com 1 vaga já fica no
+   - **Fatura mensal** (empresas que pagam tudo de uma vez no fim do mês): a equipe autoriza a conta em
+     *Painel › Usuários › Fatura mensal*, informando o CNPJ. Essa conta passa a ver "Fatura mensal" no
+     checkout, que vale só para aquele CNPJ. O pedido nasce **faturado**: as vagas são criadas e o acesso
+     é liberado na hora, sem passar pelo Mercado Pago. Em *Painel › Faturamento*, a equipe vê quanto cada
+     cliente gastou no mês (pedidos pagos e faturados, pela data do pedido) e as faturas em aberto, abre o
+     demonstrativo de cada cliente (na tela, para imprimir ou salvar em PDF, e em planilha CSV) e, quando o
+     pagamento chega, dá a baixa da fatura do mês: os pedidos faturados passam a pagos, sem e-mail ao cliente.
+     O cliente não cancela um pedido faturado; a equipe cancela em *Painel › Pedidos*, e as vagas dele
+     também são canceladas.
+4. Com o pagamento confirmado (ou o pedido faturado) são criadas as **vagas**. Compra de pessoa física com 1 vaga já fica no
    nome do comprador; nas demais, o comprador indica nome, e-mail e CPF de cada participante em
    *Minha conta › Pedidos e vagas*.
 5. A equipe cadastra o participante na plataforma de ensino e marca a vaga como **Em andamento**

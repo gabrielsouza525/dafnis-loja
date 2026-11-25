@@ -63,7 +63,7 @@ final class Orders
                 'coupon_id' => $couponId,
                 'coupon_code' => $couponCode,
                 'payment_method' => $paymentMethod,
-                'gateway' => $total > 0 ? Payments::gateway()->name() : 'manual',
+                'gateway' => $total > 0 && $paymentMethod !== 'invoice' ? Payments::gateway()->name() : 'manual',
                 'terms_accepted_at' => date('Y-m-d H:i:s'),
                 'ip' => $ip,
             ]);
@@ -94,8 +94,34 @@ final class Orders
             self::markPaid((int) $order['id'], 'coupon');
             return Order::find((int) $order['id']);
         }
+        if ($paymentMethod === 'invoice') {
+            self::markInvoiced((int) $order['id']);
+            return Order::find((int) $order['id']);
+        }
         Notify::orderCreated($order);
         return $order;
+    }
+
+    /**
+     * Fatura mensal: o pedido vale na hora (vagas criadas e acesso liberado) e o pagamento vem no
+     * fechamento do mês, pela página Faturamento do painel (Orders::markPaid com a origem "invoice").
+     */
+    private static function markInvoiced(int $orderId): void
+    {
+        $changed = Database::transaction(static function () use ($orderId) {
+            $order = Database::first('SELECT * FROM orders WHERE id = :id FOR UPDATE', ['id' => $orderId]);
+            if (!$order || $order['status'] !== 'pending') {
+                return false;
+            }
+            Database::update('orders', ['status' => 'invoiced', 'invoiced_at' => date('Y-m-d H:i:s')], ['id' => $orderId]);
+            self::createEnrollments($order);
+            return true;
+        });
+        if ($changed) {
+            Enrollments::autoReleaseOrder($orderId);
+            Activity::log('order.invoiced', 'order', $orderId, 'Pedido faturado (fatura mensal)');
+            Notify::orderPaid(Order::find($orderId));
+        }
     }
 
     public static function numberFor(int $id): string
@@ -106,33 +132,45 @@ final class Orders
     /**
      * Confirma o pagamento e cria as vagas. Idempotente: chamar duas vezes
      * (webhook + retorno do checkout) não duplica nada.
-     * @param string $source "gateway", "admin" ou "coupon" (pedido de valor zero)
+     * @param string $source "gateway", "admin", "coupon" (pedido de valor zero) ou "invoice"
+     *                       (fatura mensal paga: as vagas já existiam e o cliente não recebe outro e-mail)
      */
     public static function markPaid(int $orderId, string $source, array $gatewayFields = []): bool
     {
-        $changed = Database::transaction(static function () use ($orderId, $gatewayFields) {
+        $wasInvoiced = false;
+        $changed = Database::transaction(static function () use ($orderId, $gatewayFields, $source, &$wasInvoiced) {
             $order = Database::first('SELECT * FROM orders WHERE id = :id FOR UPDATE', ['id' => $orderId]);
             if (!$order || in_array($order['status'], ['paid', 'refunded'], true)) {
                 return false;
             }
+            // A baixa da fatura só vale para pedido faturado (um pedido cancelado não volta por ela).
+            if ($source === 'invoice' && $order['status'] !== 'invoiced') {
+                return false;
+            }
+            $wasInvoiced = $order['status'] === 'invoiced';
             Database::update('orders', array_merge($gatewayFields, [
                 'status' => 'paid',
                 'paid_at' => date('Y-m-d H:i:s'),
                 'cancelled_at' => null,
             ]), ['id' => $orderId]);
-            self::createEnrollments($order);
+            if (!$wasInvoiced) {
+                self::createEnrollments($order);
+            }
             return true;
         });
 
         if ($changed) {
-            Enrollments::autoReleaseOrder($orderId);
             $order = Order::find($orderId);
             Activity::log('order.paid', 'order', $orderId, 'Pagamento confirmado (' . match ($source) {
-                'admin' => 'baixa manual',
+                'admin' => $wasInvoiced ? 'baixa manual da fatura' : 'baixa manual',
                 'coupon' => 'cupom cobriu o valor total',
+                'invoice' => 'fatura mensal paga',
                 default => 'gateway',
             } . ')');
-            Notify::orderPaid($order);
+            if (!$wasInvoiced) {
+                Enrollments::autoReleaseOrder($orderId);
+                Notify::orderPaid($order);
+            }
         }
         return $changed;
     }
@@ -162,14 +200,21 @@ final class Orders
         }
     }
 
-    public static function cancel(int $orderId, string $reason): bool
+    /**
+     * Cancela o pedido aguardando pagamento. Com $invoiced, a equipe também cancela um pedido
+     * faturado ainda não pago (sai da fatura, e as vagas, já liberadas, são canceladas).
+     */
+    public static function cancel(int $orderId, string $reason, bool $invoiced = false): bool
     {
-        $changed = Database::transaction(static function () use ($orderId) {
+        $changed = Database::transaction(static function () use ($orderId, $invoiced) {
             $order = Database::first('SELECT * FROM orders WHERE id = :id FOR UPDATE', ['id' => $orderId]);
-            if (!$order || $order['status'] !== 'pending') {
+            if (!$order || !($order['status'] === 'pending' || ($invoiced && $order['status'] === 'invoiced'))) {
                 return false;
             }
             Database::update('orders', ['status' => 'cancelled', 'cancelled_at' => date('Y-m-d H:i:s')], ['id' => $orderId]);
+            if ($order['status'] === 'invoiced') {
+                Database::query("UPDATE enrollments SET status = 'cancelled' WHERE order_id = :o", ['o' => $orderId]);
+            }
             if ($order['coupon_id']) {
                 Database::query('UPDATE coupons SET uses = GREATEST(uses - 1, 0) WHERE id = :id', ['id' => $order['coupon_id']]);
             }

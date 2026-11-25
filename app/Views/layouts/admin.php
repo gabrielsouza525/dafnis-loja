@@ -17,6 +17,7 @@ $items = [
     'painel' => ['/admin', 'Visão geral', 'grid', 0],
     'pedidos' => ['/admin/pedidos', 'Pedidos', 'receipt', (int) ($counts['pending'] ?? 0)],
     'matriculas' => ['/admin/matriculas', 'Matrículas', 'award', (int) ($counts['processing'] ?? 0)],
+    'faturamento' => ['/admin/faturamento', 'Faturamento', 'chart', 0],
     'cursos' => ['/admin/cursos', 'Cursos', 'book', 0],
     'categorias' => ['/admin/categorias', 'Categorias', 'tag', 0],
     'cupons' => ['/admin/cupons', 'Cupons', 'card', 0],
@@ -28,7 +29,7 @@ $items = [
 // Menu em grupos (o primeiro não tem título)
 $groups = [
     '' => ['painel'],
-    'Vendas' => ['pedidos', 'matriculas', 'cupons'],
+    'Vendas' => ['pedidos', 'faturamento', 'matriculas', 'cupons'],
     'Catálogo' => ['cursos', 'categorias'],
     'Pessoas' => ['usuarios', 'contatos'],
     'Sistema' => ['configuracoes', 'certificados'],

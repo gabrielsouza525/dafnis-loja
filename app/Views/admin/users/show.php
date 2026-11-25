@@ -40,6 +40,16 @@ use App\Models\Order;
 </form>
 <?php endif; ?>
 </div></div>
+<form class="panel" method="post" action="<?= e(url('/admin/usuarios/' . $u['id'] . '/fatura')) ?>" id="fatura">
+<?= csrf_field() ?>
+<div class="panel-head"><h2>Fatura mensal</h2><?php if ($u['invoice_cnpj']): ?><?= partial('status', ['label' => 'Autorizada', 'tone' => 'ok']) ?><?php endif; ?></div>
+<div class="panel-body">
+<p class="hint" style="margin:0 0 12px">Para empresas que pagam todos os treinamentos de uma vez, no fim do mês. Com a fatura autorizada, esta conta vê a opção "Fatura mensal" no checkout: o acesso é liberado na hora e o pedido entra em Faturamento, para cobrar no fechamento.</p>
+<label class="switch"><input type="hidden" name="invoice_enabled" value="0"><input type="checkbox" name="invoice_enabled" value="1"<?= checked((bool) $u['invoice_cnpj'] || (has_old() && old('invoice_enabled') === '1')) ?>><span>Pode comprar com fatura mensal<small>Vale só para o CNPJ abaixo, para ninguém faturar em nome de outra empresa.</small></span></label>
+<div style="margin-top:12px"><?= partial('field', ['name' => 'invoice_cnpj', 'label' => 'CNPJ da fatura', 'value' => $u['invoice_cnpj'] ? document_display($u['invoice_cnpj']) : '', 'placeholder' => '00.000.000/0000-00', 'mask' => 'cnpj']) ?></div>
+<button class="btn btn-navy btn-sm" type="submit" style="margin-top:14px">Salvar fatura mensal</button>
+</div>
+</form>
 <form class="panel" method="post" action="<?= e(url('/admin/usuarios/' . $u['id'])) ?>" data-confirm="Salvar as alterações de acesso deste usuário?">
 <?= csrf_field() ?>
 <div class="panel-head"><h2>Acesso</h2></div>

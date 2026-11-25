@@ -224,6 +224,16 @@ function date_br(?string $value, bool $withTime = false): string
 
 const MONTHS = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 
+/** "2026-11" → "novembro de 2026" (com $capital, "Novembro de 2026") */
+function month_br(string $ym, bool $capital = false): string
+{
+    if (!preg_match('/^(\d{4})-(\d{2})$/', $ym, $m) || (int) $m[2] < 1 || (int) $m[2] > 12) {
+        return $ym;
+    }
+    $name = MONTHS[(int) $m[2] - 1];
+    return ($capital ? mb_strtoupper(mb_substr($name, 0, 1)) . mb_substr($name, 1) : $name) . ' de ' . $m[1];
+}
+
 /** "25 de setembro de 2026" */
 function date_long(?string $value): string
 {

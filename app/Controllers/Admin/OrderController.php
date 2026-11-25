@@ -67,13 +67,16 @@ final class OrderController extends AdminController
     public function markPaid(int $id): Response
     {
         $order = $this->findOr404(Order::find($id), 'Pedido não encontrado.');
-        if ($order['status'] !== 'pending' && $order['status'] !== 'cancelled') {
-            throw ValidationException::with('order', 'Só pedidos aguardando pagamento (ou cancelados) podem receber baixa.');
+        if (!in_array($order['status'], ['pending', 'invoiced', 'cancelled'], true)) {
+            throw ValidationException::with('order', 'Só pedidos aguardando pagamento, faturados ou cancelados podem receber baixa.');
         }
         $note = trim((string) $this->request->input('note', ''));
         Orders::markPaid($id, 'admin', ['gateway' => $order['gateway'] === 'mercadopago' && $order['gateway_payment_id'] ? 'mercadopago' : 'manual']);
         if ($note !== '') {
             $this->appendNote($order, 'Baixa manual: ' . $note);
+        }
+        if ($order['status'] === 'invoiced') {
+            return $this->success('Pagamento do pedido faturado registrado.', '/admin/pedidos/' . $id);
         }
         return $this->success('Pagamento confirmado. As vagas foram criadas e o cliente foi avisado por e-mail.', '/admin/pedidos/' . $id);
     }
@@ -82,8 +85,8 @@ final class OrderController extends AdminController
     {
         $order = $this->findOr404(Order::find($id), 'Pedido não encontrado.');
         $reason = trim((string) $this->request->input('reason', '')) ?: 'Cancelado pela equipe';
-        if (!Orders::cancel($id, $reason)) {
-            throw ValidationException::with('order', 'Só pedidos aguardando pagamento podem ser cancelados.');
+        if (!Orders::cancel($id, $reason, true)) {
+            throw ValidationException::with('order', 'Só pedidos aguardando pagamento ou faturados podem ser cancelados.');
         }
         Payments::cancelCheckout(Order::find($id));
         $this->appendNote($order, 'Cancelado: ' . $reason);

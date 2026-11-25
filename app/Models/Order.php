@@ -9,18 +9,29 @@ final class Order
 {
     public const STATUS = [
         'pending' => 'Aguardando pagamento',
+        'invoiced' => 'Faturado',
         'paid' => 'Pago',
         'cancelled' => 'Cancelado',
         'refunded' => 'Estornado',
     ];
 
-    public const STATUS_TONE = ['pending' => 'warn', 'paid' => 'ok', 'cancelled' => 'muted', 'refunded' => 'muted'];
+    public const STATUS_TONE = ['pending' => 'warn', 'invoiced' => 'blue', 'paid' => 'ok', 'cancelled' => 'muted', 'refunded' => 'muted'];
 
+    /** Pedidos que valem como compra: as vagas existem e entram no faturamento. */
+    public const CONFIRMED = ['invoiced', 'paid'];
+
+    /** "invoice" (fatura mensal) só aparece no checkout para as contas autorizadas pela equipe. */
     public const METHODS = [
         'pix' => ['label' => 'Pix', 'sub' => 'Pagamento instantâneo', 'icon' => 'pix'],
         'card' => ['label' => 'Cartão de crédito', 'sub' => 'Parcelamento conforme o Mercado Pago', 'icon' => 'card'],
         'boleto' => ['label' => 'Boleto bancário', 'sub' => 'Compensação em até 3 dias úteis', 'icon' => 'barcode'],
+        'invoice' => ['label' => 'Fatura mensal', 'sub' => 'Acesso liberado na hora; pagamento no fechamento do mês', 'icon' => 'receipt'],
     ];
+
+    public static function isConfirmed(array $order): bool
+    {
+        return in_array($order['status'], self::CONFIRMED, true);
+    }
 
     public static function findByNumber(string $number): ?array
     {
