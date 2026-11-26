@@ -26,6 +26,7 @@ $currentPackage = array_values(array_filter($packages, static fn ($p) => $p['is_
 <?= partial('field', ['name' => 'code', 'label' => 'Código exibido', 'value' => $v('code'), 'optional' => true, 'placeholder' => 'Ex.: NR 31.7', 'hint' => 'Só quando for diferente de "NR + número".']) ?>
 <?= partial('field', ['name' => 'category_id', 'label' => 'Categoria', 'type' => 'select', 'value' => $v('category_id'), 'options' => ['' => 'Sem categoria'] + $categories]) ?>
 <?= partial('field', ['name' => 'short_title', 'label' => 'Texto da capa', 'value' => $v('short_title'), 'optional' => true, 'hint' => 'Para cursos sem NR (ex.: "Primeiros Socorros").']) ?>
+<div class="full"><?= partial('field', ['name' => 'billing_code', 'label' => 'Sigla na planilha de medição', 'value' => $v('billing_code'), 'optional' => true, 'placeholder' => 'Ex.: NR10SEP', 'attrs' => ['maxlength' => 30], 'hint' => 'Coluna "Treinamento" da planilha do Faturamento enviada à empresa. Em branco, sai o código da NR (ex.: NR10) ou, sem NR, o nome do curso.']) ?></div>
 <div class="full"><?= partial('field', ['name' => 'slug', 'label' => 'Endereço (slug)', 'value' => $v('slug'), 'optional' => true, 'hint' => 'Gerado a partir do título se ficar vazio. Mudar o slug muda o link do curso.', 'attrs' => ['data-slug-target' => true, 'pattern' => '[a-z0-9-]*']]) ?></div>
 </div>
 </div></div>

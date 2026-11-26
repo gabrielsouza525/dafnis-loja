@@ -11,6 +11,7 @@ use App\Models\Order;
 use App\Services\Activity;
 use App\Services\Orders;
 use App\Services\Settings;
+use App\Services\Xlsx;
 
 /**
  * Faturamento: quanto cada cliente gastou no mês (pedidos pagos e faturados, pela data do pedido),
@@ -76,7 +77,7 @@ final class BillingController extends AdminController
         ]);
     }
 
-    /** Demonstrativo de um cliente no mês: na tela, para imprimir (?imprimir=1) ou em planilha (?formato=csv). */
+    /** Demonstrativo de um cliente no mês: na tela, para imprimir (?imprimir=1) ou na planilha de medição (?formato=xlsx). */
     public function client(): Response
     {
         $month = $this->month();
@@ -86,8 +87,9 @@ final class BillingController extends AdminController
             flash('info', 'Nenhum pedido pago ou faturado deste cliente em ' . month_br($month) . '.');
             return $this->redirect('/admin/faturamento?mes=' . $month);
         }
-        if ($this->request->query('formato') === 'csv') {
-            return Response::download(self::csv($data), 'demonstrativo-' . $doc . '-' . $month . '.csv', 'text/csv; charset=UTF-8');
+        if ($this->request->query('formato') === 'xlsx') {
+            $name = 'medicao-treinamentos-' . (slugify($data['client']['name']) ?: $doc) . '-' . substr($month, 5, 2) . substr($month, 0, 4) . '.xlsx';
+            return Response::download(self::measurement($data, $month), $name, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         }
         $data += [
             'title' => 'Faturamento — ' . $data['client']['name'],
@@ -148,8 +150,8 @@ final class BillingController extends AdminController
 
     /**
      * Pedidos pagos e faturados do cliente no mês e uma linha por vaga (aluno), com o que a empresa
-     * pede na fatura: nome e CPF do aluno, curso, formação ou reciclagem, data da certificação e
-     * centro de custo. Também o total por centro de custo.
+     * pede na fatura: nome, CPF e função do aluno, curso (e a sigla dele na medição), formação ou
+     * reciclagem, data da certificação e centro de custo. Também o total por centro de custo.
      * @return array{client: array, orders: array, rows: array, centers: array, discounts: float, total: float, open: float, paid: float, seats: int}
      */
     public static function statement(string $doc, string $month): array
@@ -164,14 +166,14 @@ final class BillingController extends AdminController
         if ($orders) {
             $ids = implode(',', array_map(static fn ($o) => (int) $o['id'], $orders));
             foreach (Database::select(
-                "SELECT e.id, e.order_item_id, e.participant_name, e.participant_document, e.cost_center, e.status, c.issued_at AS certified_at
+                "SELECT e.id, e.order_item_id, e.participant_name, e.participant_document, e.job_title, e.cost_center, e.status, c.issued_at AS certified_at
                    FROM enrollments e LEFT JOIN certificates c ON c.enrollment_id = e.id
                   WHERE e.order_id IN ($ids) ORDER BY e.id"
             ) as $e) {
                 $people[(int) $e['order_item_id']][] = $e;
             }
-            foreach (Database::select("SELECT DISTINCT c.id, c.training_type FROM courses c JOIN order_items i ON i.course_id = c.id WHERE i.order_id IN ($ids)") as $c) {
-                $types[(int) $c['id']] = $c['training_type'];
+            foreach (Database::select("SELECT DISTINCT c.id, c.training_type, c.billing_code FROM courses c JOIN order_items i ON i.course_id = c.id WHERE i.order_id IN ($ids)") as $c) {
+                $types[(int) $c['id']] = $c;
             }
         }
         $seats = 0;
@@ -185,18 +187,21 @@ final class BillingController extends AdminController
                 $lines += (float) $item['line_total'];
                 $o['seats'] += (int) $item['quantity'];
                 $list = $people[(int) $item['id']] ?? [];
-                $type = $types[(int) $item['course_id']] ?? null;
+                $course = $types[(int) $item['course_id']] ?? null;
                 // Curso apagado do catálogo: o título diz se era reciclagem.
-                $recycling = $type !== null ? $type === 'periodico' : str_contains(mb_strtolower($item['course_title']), 'reciclagem');
+                $recycling = $course !== null ? $course['training_type'] === 'periodico' : str_contains(mb_strtolower($item['course_title']), 'reciclagem');
+                $code = self::trainingCode($course['billing_code'] ?? null, $item['course_code'], $item['course_title']);
                 for ($i = 0; $i < (int) $item['quantity']; $i++) {
                     $p = $list[$i] ?? null;
                     $rows[] = [
                         'enrollment_id' => $p ? (int) $p['id'] : null,
                         'name' => $p ? (string) $p['participant_name'] : '',
                         'cpf' => $p ? (string) $p['participant_document'] : '',
+                        'job_title' => $p ? trim((string) $p['job_title']) : '',
                         'cost_center' => $p ? trim((string) $p['cost_center']) : '',
                         'status' => $p ? $p['status'] : 'awaiting_participant',
                         'certified_at' => $p ? $p['certified_at'] : null,
+                        'code' => $code,
                         'course' => ($item['course_code'] ? $item['course_code'] . ' — ' : '') . $item['course_title'],
                         'hours' => (int) $item['course_hours'],
                         'kind' => $recycling ? 'Reciclagem' : 'Formação',
@@ -255,46 +260,116 @@ final class BillingController extends AdminController
         };
     }
 
-    /** Planilha para o Excel em português: separador ";", vírgula decimal e BOM para os acentos. */
-    private static function csv(array $data): string
+    /**
+     * Sigla do treinamento na planilha de medição: a definida no curso (ex.: NR10SEP) ou o código
+     * da NR sem espaço e com dois dígitos ("NR 6" → NR06, "NR 31.7" → NR31.7). Curso sem NR sai pelo nome.
+     */
+    public static function trainingCode(?string $billingCode, ?string $courseCode, string $title): string
+    {
+        $billingCode = trim((string) $billingCode);
+        if ($billingCode !== '') {
+            return $billingCode;
+        }
+        $code = (string) preg_replace('/\s+/', '', (string) $courseCode);
+        return $code !== '' ? (string) preg_replace('/^NR(\d)(?!\d)/i', 'NR0$1', $code) : $title;
+    }
+
+    /**
+     * Planilha de medição no formato que a empresa recebe com a nota: uma linha por treinamento de
+     * cada aluno (agrupada por aluno), o total com fórmula e, embaixo, o valor e a carga de cada
+     * treinamento em formação e em reciclagem.
+     */
+    private static function measurement(array $data, string $month): string
     {
         $client = $data['client'];
-        $rows = [[$client['pj'] ? 'CNPJ' : 'CPF do cliente', $client['pj'] ? 'Razão social' : 'Cliente', 'Aluno', 'CPF do aluno', 'Curso',
-            'Formação ou reciclagem', 'Data da certificação', 'Centro de custo', 'Carga horária (h)', 'Pedido', 'Data do pedido', 'Situação', 'Valor (R$)']];
-        $head = [document_display($client['doc']), $client['name']];
-        foreach ($data['rows'] as $r) {
-            $rows[] = array_merge($head, [
-                $r['name'] !== '' ? $r['name'] : 'Aluno a indicar',
-                $r['cpf'] !== '' ? document_display($r['cpf']) : '',
-                $r['course'],
-                $r['kind'],
-                self::certification($r),
-                $r['cost_center'],
-                (string) $r['hours'],
-                $r['order'],
-                date_br($r['order_date']),
-                Order::statusLabel($r['order_status']),
-                money($r['value'], false),
-            ]);
+        $T = Xlsx::TEXT;
+        $head = [$client['pj'] ? 'CNPJ' : 'CPF do cliente', $client['pj'] ? 'Razão Social' : 'Cliente', 'Nome', 'CPF', 'Função',
+            'Centro de Custo', 'Treinamento', 'Data Realizada', 'REC/FOR', 'Valor'];
+        $doc = document_display($client['doc']);
+        $people = $data['rows'];
+        // Agrupada por aluno, como a medição da empresa; vagas ainda sem aluno no fim.
+        usort($people, static fn ($a, $b) => ($a['name'] === '') <=> ($b['name'] === '')
+            ?: strcmp(normalize_text($a['name']), normalize_text($b['name']))
+            ?: strnatcasecmp($a['code'], $b['code'])
+            ?: ($a['enrollment_id'] ?? PHP_INT_MAX) <=> ($b['enrollment_id'] ?? PHP_INT_MAX));
+        $sheet = [array_map(static fn ($h) => ['v' => $h, 's' => Xlsx::HEAD], $head)];
+        foreach ($people as $r) {
+            $sheet[] = [
+                ['v' => $doc, 's' => $T],
+                ['v' => $client['name'], 's' => $T],
+                ['v' => $r['name'] !== '' ? mb_strtoupper($r['name']) : 'ALUNO A INDICAR', 's' => $T],
+                ['v' => $r['cpf'] !== '' ? document_display($r['cpf']) : '', 's' => $T],
+                ['v' => mb_strtoupper($r['job_title']), 's' => $T],
+                ['v' => $r['cost_center'], 's' => $T],
+                ['v' => $r['code'], 's' => $T],
+                ['v' => !empty($r['certified_at']) ? (string) $r['certified_at'] : self::certification($r), 's' => Xlsx::DATE],
+                ['v' => mb_strtoupper($r['kind']), 's' => $T],
+                ['v' => round((float) $r['value'], 2), 's' => Xlsx::MONEY],
+            ];
         }
         foreach ($data['orders'] as $o) {
             if ($o['order_discount'] > 0) {
-                $rows[] = array_merge($head, ['Desconto' . ($o['coupon_code'] ? ' (cupom ' . $o['coupon_code'] . ')' : ''), '', '', '', '', '', '', $o['number'], date_br($o['created_at']), Order::statusLabel($o['status']), '-' . money($o['order_discount'], false)]);
+                $label = 'Desconto' . ($o['coupon_code'] ? ' (cupom ' . $o['coupon_code'] . ')' : '') . ' · pedido ' . $o['number'];
+                $sheet[] = [['v' => $doc, 's' => $T], ['v' => $client['name'], 's' => $T], ['v' => '', 's' => $T], ['v' => '', 's' => $T], ['v' => '', 's' => $T],
+                    ['v' => '', 's' => $T], ['v' => $label, 's' => $T], ['v' => '', 's' => $T], ['v' => '', 's' => $T], ['v' => -round((float) $o['order_discount'], 2), 's' => Xlsx::MONEY]];
             }
         }
-        $rows[] = ['', '', '', '', '', '', '', '', '', '', '', 'Total', money($data['total'], false)];
-        $out = "\xEF\xBB\xBF";
-        foreach ($rows as $row) {
-            $out .= implode(';', array_map(static function ($v) {
-                $v = (string) $v;
-                // Evita que o Excel interprete o texto como fórmula.
-                if ($v !== '' && str_contains('=+-@', $v[0]) && !preg_match('/^-\d/', $v)) {
-                    $v = "'" . $v;
-                }
-                return '"' . str_replace('"', '""', $v) . '"';
-            }, $row)) . "\r\n";
+        $last = count($sheet);
+        $money = Xlsx::col(count($head) - 1);
+        $sheet[] = array_merge(array_fill(0, count($head) - 2, null), [
+            ['v' => 'TOTAL', 's' => Xlsx::LABEL],
+            ['v' => round((float) $data['total'], 2), 'f' => 'SUM(' . $money . '2:' . $money . $last . ')', 's' => Xlsx::TOTAL],
+        ]);
+
+        // Valor e carga de cada treinamento: formação e reciclagem lado a lado, pela sigla.
+        $prices = [];
+        foreach ($data['rows'] as $r) {
+            $side = $r['kind'] === 'Reciclagem' ? 'r' : 'f';
+            $combo = [round((float) $r['value'], 2), (int) $r['hours']];
+            $prices[$r['code']] ??= ['f' => [], 'r' => []];
+            if (!in_array($combo, $prices[$r['code']][$side], true)) {
+                $prices[$r['code']][$side][] = $combo;
+            }
         }
-        return $out;
+        uksort($prices, static fn ($a, $b) => strnatcasecmp((string) $a, (string) $b));
+        array_push($sheet, [], [], [], []);
+        $sheet[] = array_map(static fn ($h) => ['v' => $h, 's' => Xlsx::HEAD], ['Treinamento', 'Formação', 'Carga (h)', 'Carga (h)', 'Reciclagem']);
+        foreach ($prices as $code => $p) {
+            for ($i = 0, $n = max(count($p['f']), count($p['r'])); $i < $n; $i++) {
+                $f = $p['f'][$i] ?? null;
+                $c = $p['r'][$i] ?? null;
+                $sheet[] = [
+                    ['v' => (string) $code, 's' => $T],
+                    ['v' => $f ? $f[0] : '', 's' => Xlsx::MONEY],
+                    ['v' => $f ? $f[1] : '', 's' => Xlsx::INT],
+                    ['v' => $c ? $c[1] : '', 's' => Xlsx::INT],
+                    ['v' => $c ? $c[0] : '', 's' => Xlsx::MONEY],
+                ];
+            }
+        }
+
+        // Largura das colunas pelo conteúdo, dentro de um limite.
+        $widths = [];
+        foreach ($head as $i => $h) {
+            $len = mb_strlen($h);
+            for ($r = 1; $r < $last; $r++) {
+                $v = $sheet[$r][$i]['v'] ?? '';
+                $len = max($len, is_string($v) ? mb_strlen($v) : 12);
+            }
+            $widths[] = min(48, max([10, 19, 12, 16, 12, 16, 12, 14, 13, 15][$i], $len * 1.1 + 3));
+        }
+        // A tabela de baixo começa na coluna A: o nome do treinamento precisa caber nela.
+        foreach (array_keys($prices) as $code) {
+            $widths[0] = min(48, max($widths[0], mb_strlen((string) $code) * 1.1 + 3));
+        }
+        $title = 'Medição de treinamentos — ' . $client['name'] . ' — ' . month_br($month);
+        return (new Xlsx($title))
+            ->sheet('Medição ' . substr($month, 5, 2) . '-' . substr($month, 0, 4), $sheet, [
+                'widths' => $widths,
+                'filter' => 'A1:' . $money . $last,
+                'freeze' => true,
+            ])
+            ->build();
     }
 
     /** Mês pedido (AAAA-MM), ou o atual. */

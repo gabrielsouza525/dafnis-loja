@@ -82,11 +82,12 @@ final class EnrollmentController extends AdminController
             'participant_name' => 'nullable|min:3|max:120',
             'participant_email' => 'nullable|email',
             'participant_document' => 'nullable|cpf',
+            'job_title' => 'nullable|max:100',
             'cost_center' => 'nullable|max:80',
             'status' => 'required|in:' . implode(',', array_keys(Enrollment::STATUS)),
             'progress' => 'nullable|integer',
             'access_url' => 'nullable|url',
-        ], ['participant_name' => 'nome', 'participant_email' => 'e-mail', 'participant_document' => 'CPF', 'cost_center' => 'centro de custo', 'access_url' => 'link de acesso']);
+        ], ['participant_name' => 'nome', 'participant_email' => 'e-mail', 'participant_document' => 'CPF', 'job_title' => 'função', 'cost_center' => 'centro de custo', 'access_url' => 'link de acesso']);
         Enrollments::adminUpdate($id, $data);
         return $this->success('Matrícula atualizada.', '/admin/matriculas/' . $id);
     }

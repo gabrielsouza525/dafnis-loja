@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 /**
  * Fatura mensal e Faturamento: a equipe autoriza o CNPJ de uma conta, o comprador faz o pedido faturado
- * (acesso na hora), o painel soma o mês por cliente, o demonstrativo sai na tela, para imprimir e em
- * planilha, e a baixa da fatura passa os pedidos a pago. Também as proteções: sem autorização não há
+ * (acesso na hora), o painel soma o mês por cliente, o demonstrativo sai na tela, para imprimir e na
+ * planilha de medição (.xlsx), e a baixa da fatura passa os pedidos a pago. Também as proteções: sem autorização não há
  * fatura, a fatura só vale para o CNPJ autorizado e o cliente não abre o Faturamento.
  * Requer os dados de demonstração (db:fresh --demo) e o servidor rodando; acessa o banco do .env.
  *
@@ -29,6 +29,24 @@ function check(string $label, bool $ok, string $detail = ''): void
         $failures++;
     }
     echo ($ok ? '  ok   ' : '  FAIL ') . $label . ($detail !== '' && !$ok ? "  → $detail" : '') . PHP_EOL;
+}
+
+/** Arquivos de um ZIP (o .xlsx), conferindo o CRC de cada um; sem a extensão zip do PHP. @return array<string, string> */
+function unzip(string $zip): array
+{
+    $files = [];
+    for ($pos = 0; substr($zip, $pos, 4) === "PK\x03\x04";) {
+        $h = unpack('vversion/vflags/vmethod/vtime/vdate/Vcrc/Vcsize/Vusize/vnlen/vxlen', substr($zip, $pos + 4, 26));
+        $name = substr($zip, $pos + 30, $h['nlen']);
+        $data = substr($zip, $pos + 30 + $h['nlen'] + $h['xlen'], $h['csize']);
+        $data = $h['method'] === 8 ? (string) gzinflate($data) : $data;
+        if (crc32($data) !== $h['crc'] || strlen($data) !== $h['usize']) {
+            return [];
+        }
+        $files[$name] = $data;
+        $pos += 30 + $h['nlen'] + $h['xlen'] + $h['csize'];
+    }
+    return $files;
 }
 
 // Empresa dos dados de demonstração (database/seeders/DemoSeeder.php)
@@ -86,25 +104,29 @@ $p = $rh->request('GET', '/pedido/' . $number)['body'];
 check('a página do pedido mostra o pedido faturado e a indicação dos participantes', str_contains($p, 'Pedido faturado') && str_contains($p, 'fatura mensal') && str_contains($p, 'Indicar participantes'));
 $seat = (int) Database::value('SELECT id FROM enrollments WHERE order_id = :o ORDER BY id LIMIT 1', ['o' => $orderId]);
 $accountOrder = $rh->request('GET', '/minha-conta/pedidos/' . $number)['body'];
-check('a vaga da fatura pede o centro de custo', str_contains($accountOrder, 'name="cost_center"') && str_contains($accountOrder, 'Centro de custo (departamento)'));
+check('a vaga da fatura pede a função e o centro de custo', str_contains($accountOrder, 'name="job_title"') && str_contains($accountOrder, 'Função (cargo)')
+    && str_contains($accountOrder, 'name="cost_center"') && str_contains($accountOrder, 'Centro de custo (departamento)'));
 $participant = ['participant_name' => 'Joana Pereira', 'participant_email' => 'joana@example.com', 'participant_document' => '529.982.247-25'];
 $rh->request('POST', '/minha-conta/vagas/' . $seat, $participant + ['_scope' => 'seat-' . $seat]);
-check('na fatura, o centro de custo é obrigatório', Database::value('SELECT participant_name FROM enrollments WHERE id = :id', ['id' => $seat]) === null
-    && str_contains($rh->request('GET', '/minha-conta/pedidos/' . $number)['body'], 'Preencha o campo centro de custo'));
-$rh->request('POST', '/minha-conta/vagas/' . $seat, $participant + ['cost_center' => 'Manutenção elétrica']);
-$seatRow = Database::first('SELECT participant_name, cost_center, status FROM enrollments WHERE id = :id', ['id' => $seat]);
-check('o comprador indica o participante e o centro de custo', $seatRow['participant_name'] === 'Joana Pereira' && $seatRow['cost_center'] === 'Manutenção elétrica');
-// Vaga já liberada: o participante não muda mais, mas o centro de custo ainda pode ser corrigido.
+$accountOrder = $rh->request('GET', '/minha-conta/pedidos/' . $number)['body'];
+check('na fatura, a função e o centro de custo são obrigatórios', Database::value('SELECT participant_name FROM enrollments WHERE id = :id', ['id' => $seat]) === null
+    && str_contains($accountOrder, 'Preencha o campo função') && str_contains($accountOrder, 'Preencha o campo centro de custo'));
+$rh->request('POST', '/minha-conta/vagas/' . $seat, $participant + ['job_title' => 'Eletricista', 'cost_center' => 'Manutenção elétrica']);
+$seatRow = Database::first('SELECT participant_name, job_title, cost_center, status FROM enrollments WHERE id = :id', ['id' => $seat]);
+check('o comprador indica o participante, a função e o centro de custo', $seatRow['participant_name'] === 'Joana Pereira' && $seatRow['job_title'] === 'Eletricista' && $seatRow['cost_center'] === 'Manutenção elétrica');
+// Vaga já liberada: o participante não muda mais, mas a função e o centro de custo ainda podem ser corrigidos.
 Database::update('enrollments', ['status' => 'active'], ['id' => $seat]);
 $rh->request('GET', '/minha-conta/pedidos/' . $number);
-$rh->request('POST', '/minha-conta/vagas/' . $seat . '/centro-de-custo', ['cost_center' => '4102']);
-check('o centro de custo da vaga liberada pode ser corrigido', Database::value('SELECT cost_center FROM enrollments WHERE id = :id', ['id' => $seat]) === '4102');
+$rh->request('POST', '/minha-conta/vagas/' . $seat . '/empresa', ['job_title' => 'Eletricista de força e controle', 'cost_center' => '4102']);
+$seatRow = Database::first('SELECT job_title, cost_center FROM enrollments WHERE id = :id', ['id' => $seat]);
+check('a função e o centro de custo da vaga liberada podem ser corrigidos', $seatRow['job_title'] === 'Eletricista de força e controle' && $seatRow['cost_center'] === '4102');
 $otherBuyer = new Client($base);
 $otherBuyer->login('ana@example.com', 'dafnis123');
 $otherBuyer->request('GET', '/minha-conta');
-check('outra conta não muda o centro de custo da vaga', $otherBuyer->request('POST', '/minha-conta/vagas/' . $seat . '/centro-de-custo', ['cost_center' => 'X'])['status'] === 404
+check('outra conta não muda a vaga', $otherBuyer->request('POST', '/minha-conta/vagas/' . $seat . '/empresa', ['job_title' => 'X', 'cost_center' => 'X'])['status'] === 404
     && Database::value('SELECT cost_center FROM enrollments WHERE id = :id', ['id' => $seat]) === '4102');
-check('a matrícula no painel mostra o centro de custo', str_contains($admin->request('GET', '/admin/matriculas/' . $seat)['body'], 'value="4102"'));
+$adminSeat = $admin->request('GET', '/admin/matriculas/' . $seat)['body'];
+check('a matrícula no painel mostra a função e o centro de custo', str_contains($adminSeat, 'value="4102"') && str_contains($adminSeat, 'value="Eletricista de força e controle"'));
 Database::insert('certificates', ['enrollment_id' => $seat, 'code' => 'FATURATESTE1', 'issued_at' => date('Y-m-d')]);
 $rh->request('GET', '/minha-conta/pedidos/' . $number);
 $rh->request('POST', '/pedido/' . $number . '/cancelar');
@@ -133,10 +155,50 @@ check('o demonstrativo para imprimir sai sem o menu do painel', $print['status']
 check('o demonstrativo para imprimir tem os dados pedidos pela empresa', str_contains($print['body'], 'Razão social') && str_contains($print['body'], 'Metalúrgica Exemplo Ltda') && str_contains($print['body'], '11.222.333/0001-81')
     && str_contains($print['body'], '529.982.247-25') && str_contains($print['body'], 'Formação ou reciclagem') && str_contains($print['body'], 'Data da certificação')
     && str_contains($print['body'], $today) && str_contains($print['body'], '4102'));
-$csv = $admin->request('GET', '/admin/faturamento/cliente' . $q . '&formato=csv');
-check('a planilha sai em CSV para o Excel', str_starts_with((string) Client::header($csv, 'Content-Type'), 'text/csv') && str_starts_with($csv['body'], "\xEF\xBB\xBF") && str_contains($csv['body'], '"Total";"' . money($expected, false) . '"'));
-check('a planilha tem uma linha por aluno com os dados da fatura', str_contains($csv['body'], '"CNPJ";"Razão social";"Aluno";"CPF do aluno";"Curso";"Formação ou reciclagem";"Data da certificação";"Centro de custo"')
-    && str_contains($csv['body'], '"11.222.333/0001-81";"Metalúrgica Exemplo Ltda";"Joana Pereira";"529.982.247-25";') && str_contains($csv['body'], '"Formação";"' . $today . '";"4102"'));
+check('o demonstrativo mostra a função do aluno', str_contains($client, 'Eletricista de força e controle') && str_contains($print['body'], 'Eletricista de força e controle'));
+
+// Planilha de medição (.xlsx): as células de cada linha, já com os textos no lugar.
+$sheet = static function (array $response): array {
+    $files = unzip($response['body']);
+    preg_match_all('#<si><t[^>]*>(.*?)</t></si>#s', $files['xl/sharedStrings.xml'] ?? '', $m);
+    $strings = array_map(static fn ($s) => html_entity_decode($s, ENT_XML1 | ENT_QUOTES, 'UTF-8'), $m[1]);
+    $rows = [];
+    preg_match_all('#<row r="(\d+)">(.*?)</row>#s', $files['xl/worksheets/sheet1.xml'] ?? '', $rm, PREG_SET_ORDER);
+    foreach ($rm as [, $r, $cells]) {
+        preg_match_all('#<c r="([A-Z]+)\d+" s="(\d+)"( t="s")?(?:/>|>(?:<f>(.*?)</f>)?(?:<v>(.*?)</v>)?</c>)#s', $cells, $cm, PREG_SET_ORDER);
+        foreach ($cm as $c) {
+            $v = $c[5] ?? '';
+            $rows[(int) $r][$c[1]] = ['v' => ($c[3] ?? '') !== '' ? $strings[(int) $v] : $v, 's' => (int) $c[2], 'f' => $c[4] ?? ''];
+        }
+    }
+    return ['files' => $files, 'rows' => $rows];
+};
+$xlsx = $admin->request('GET', '/admin/faturamento/cliente' . $q . '&formato=xlsx');
+$x = $sheet($xlsx);
+$header = array_map(static fn ($c) => $c['v'], $x['rows'][1] ?? []);
+check('a planilha de medição sai em Excel', str_contains((string) Client::header($xlsx, 'Content-Type'), 'spreadsheetml.sheet') && str_starts_with($xlsx['body'], "PK\x03\x04")
+    && str_contains((string) Client::header($xlsx, 'Content-Disposition'), 'medicao-treinamentos-metalurgica-exemplo-ltda-' . substr($month, 5, 2) . substr($month, 0, 4) . '.xlsx')
+    && isset($x['files']['xl/workbook.xml'], $x['files']['xl/styles.xml']));
+check('a planilha tem as colunas da medição', array_values($header) === ['CNPJ', 'Razão Social', 'Nome', 'CPF', 'Função', 'Centro de Custo', 'Treinamento', 'Data Realizada', 'REC/FOR', 'Valor'], implode(' | ', $header));
+$joana = current(array_filter($x['rows'], static fn ($r) => ($r['C']['v'] ?? '') === 'JOANA PEREIRA')) ?: [];
+$serial = intdiv(gmmktime(0, 0, 0, (int) date('n'), (int) date('j'), (int) date('Y')), 86400) + 25569;
+check('a linha do aluno traz CNPJ, CPF, função, centro de custo, sigla, data, formação e valor',
+    ($joana['A']['v'] ?? '') === '11.222.333/0001-81' && ($joana['B']['v'] ?? '') === 'Metalúrgica Exemplo Ltda' && ($joana['D']['v'] ?? '') === '529.982.247-25'
+    && ($joana['E']['v'] ?? '') === 'ELETRICISTA DE FORÇA E CONTROLE' && ($joana['F']['v'] ?? '') === '4102' && ($joana['G']['v'] ?? '') === 'NR10'
+    && ($joana['H']['v'] ?? '') === (string) $serial && ($joana['H']['s'] ?? 0) === 3 && ($joana['I']['v'] ?? '') === 'FORMAÇÃO'
+    && (float) ($joana['J']['v'] ?? 0) === (float) Database::value('SELECT unit_price FROM order_items WHERE order_id = :o', ['o' => $orderId]), json_encode($joana, JSON_UNESCAPED_UNICODE));
+$last = max(array_keys(array_filter($x['rows'], static fn ($r) => ($r['A']['v'] ?? '') === '11.222.333/0001-81')));
+$total = $x['rows'][$last + 1]['J'] ?? [];
+check('o total da planilha é uma soma com o valor do mês', ($x['rows'][$last + 1]['I']['v'] ?? '') === 'TOTAL' && $total && $total['f'] === 'SUM(J2:J' . $last . ')' && abs((float) $total['v'] - $expected) < 0.005, json_encode($total));
+check('a vaga ainda sem aluno aparece na planilha', (bool) array_filter($x['rows'], static fn ($r) => ($r['C']['v'] ?? '') === 'ALUNO A INDICAR' && ($r['H']['v'] ?? '') === 'Aguardando o aluno'));
+check('embaixo, valor e carga de cada treinamento', (bool) array_filter($x['rows'], static fn ($r) => ($r['A']['v'] ?? '') === 'Treinamento' && ($r['B']['v'] ?? '') === 'Formação' && ($r['E']['v'] ?? '') === 'Reciclagem')
+    && (bool) array_filter($x['rows'], static fn ($r) => ($r['A']['v'] ?? '') === 'NR10' && ($r['B']['v'] ?? '') !== '' && (int) ($r['C']['v'] ?? 0) === 40));
+Database::update('courses', ['billing_code' => 'NR10BAS'], ['id' => $nr10Id]);
+$x = $sheet($admin->request('GET', '/admin/faturamento/cliente' . $q . '&formato=xlsx'));
+check('a sigla definida no curso vai na coluna Treinamento', (bool) array_filter($x['rows'], static fn ($r) => ($r['C']['v'] ?? '') === 'JOANA PEREIRA' && ($r['G']['v'] ?? '') === 'NR10BAS'));
+Database::update('courses', ['billing_code' => null], ['id' => $nr10Id]);
+$courseForm = $admin->request('GET', '/admin/cursos/' . $nr10Id . '/editar')['body'];
+check('o curso no painel tem a sigla da planilha de medição', str_contains($courseForm, 'name="billing_code"') && str_contains($courseForm, 'Sigla na planilha de medição'));
 check('cliente sem pedidos no mês volta ao Faturamento', $admin->request('GET', '/admin/faturamento/cliente?doc=' . $cnpj . '&mes=2020-01')['status'] === 302);
 check('documento inválido não abre demonstrativo', $admin->request('GET', '/admin/faturamento/cliente?doc=123&mes=' . $month)['status'] === 404);
 

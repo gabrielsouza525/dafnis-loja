@@ -144,6 +144,7 @@ final class CourseController extends AdminController
             'category_id' => 'nullable|exists:categories,id',
             'nr_number' => 'nullable|integer',
             'code' => 'nullable|max:20',
+            'billing_code' => 'nullable|max:30',
             'short_title' => 'nullable|max:60',
             'summary' => 'nullable|max:400',
             'description' => 'nullable|max:8000',
@@ -174,6 +175,7 @@ final class CourseController extends AdminController
             'cert_syllabus' => 'nullable|max:8000',
         ], [
             'title' => 'título', 'slug' => 'endereço (slug)', 'category_id' => 'categoria', 'nr_number' => 'número da NR',
+            'billing_code' => 'sigla na planilha de medição',
             'hours' => 'carga horária', 'price' => 'preço', 'promo_price' => 'preço promocional', 'access_url' => 'link de acesso',
             'access_days' => 'prazo de acesso', 'featured_order' => 'ordem no destaque',
             'cert_name' => 'nome no certificado', 'cert_syllabus' => 'conteúdo programático do certificado',

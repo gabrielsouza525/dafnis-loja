@@ -72,7 +72,7 @@ footer{margin-top:26px;font-size:11.5px;color:#5B6777;border-top:1px solid #E6EA
 <tbody>
 <?php foreach ($rows as $r): ?>
 <tr>
-<?php if ($r['name'] !== ''): ?><td><?= e($r['name']) ?></td><?php else: ?><td class="empty">Aluno a indicar</td><?php endif; ?>
+<?php if ($r['name'] !== ''): ?><td><?= e($r['name']) ?><?php if ($r['job_title'] !== ''): ?><span class="sub"><?= e($r['job_title']) ?></span><?php endif; ?></td><?php else: ?><td class="empty">Aluno a indicar</td><?php endif; ?>
 <td class="nowrap"><?= $r['cpf'] !== '' ? e(document_display($r['cpf'])) : '' ?></td>
 <td><?= e($r['course']) ?><span class="sub"><?= (int) $r['hours'] ?> h · pedido <?= e($r['order']) ?> de <?= e(date_br($r['order_date'])) ?><?= $mixed && $r['order_status'] === 'paid' ? ' · já pago' : '' ?></span></td>
 <td><?= e($r['kind']) ?></td>

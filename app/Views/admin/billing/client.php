@@ -13,12 +13,13 @@ $openCount = count(array_filter($orders, static fn ($o) => $o['status'] === 'inv
 $active = array_filter($rows, static fn ($r) => $r['status'] !== 'cancelled');
 $noName = count(array_filter($active, static fn ($r) => $r['name'] === ''));
 $noCenter = $client['pj'] ? count(array_filter($active, static fn ($r) => $r['name'] !== '' && $r['cost_center'] === '')) : 0;
+$noJob = $client['pj'] ? count(array_filter($active, static fn ($r) => $r['name'] !== '' && $r['job_title'] === '')) : 0;
 ?>
 <div class="adm-head"><div><h1><?= e($client['name']) ?></h1><p><?= $client['pj'] ? 'CNPJ' : 'CPF' ?> <?= e(document_display($client['doc'])) ?> · <?= e(month_br($month, true)) ?></p></div>
 <div class="adm-actions">
 <a class="btn btn-outline btn-sm" href="<?= e(url('/admin/faturamento', ['mes' => $month])) ?>"><?= icon('arrowL', 'ic-sm') ?>Faturamento</a>
 <a class="btn btn-outline btn-sm" href="<?= e(url('/admin/faturamento/cliente', $q + ['imprimir' => '1'])) ?>" target="_blank" rel="noopener"><?= icon('file', 'ic-sm') ?>Imprimir demonstrativo</a>
-<a class="btn btn-outline btn-sm" href="<?= e(url('/admin/faturamento/cliente', $q + ['formato' => 'csv'])) ?>"><?= icon('download', 'ic-sm') ?>Baixar planilha</a>
+<a class="btn btn-outline btn-sm" href="<?= e(url('/admin/faturamento/cliente', $q + ['formato' => 'xlsx'])) ?>" title="Planilha de medição para o Excel: uma linha por treinamento de cada aluno"><?= icon('download', 'ic-sm') ?>Baixar planilha (Excel)</a>
 </div></div>
 <?php if ($err = field_error('settle')): ?><div class="note-box err" style="margin:0 0 16px"><?= icon('alert') ?><span><?= e($err) ?></span></div><?php endif; ?>
 
@@ -86,9 +87,9 @@ $noCenter = $client['pj'] ? count(array_filter($active, static fn ($r) => $r['na
 
 <div class="panel" id="alunos" style="margin-top:22px">
 <div class="panel-head"><h2>Alunos do mês</h2><span class="muted" style="font-size:14px"><?= e(pluralize(count($rows), 'vaga', 'vagas')) ?></span></div>
-<?php if ($noName || $noCenter): ?>
+<?php if ($noName || $noCenter || $noJob): ?>
 <div class="panel-body" style="padding-bottom:0"><div class="note-box" style="margin:0"><?= icon('info') ?><span>
-<?= $noName ? e(pluralize($noName, 'vaga ainda sem aluno', 'vagas ainda sem aluno')) . '. ' : '' ?><?= $noCenter ? e(pluralize($noCenter, 'aluno sem centro de custo', 'alunos sem centro de custo')) . '. ' : '' ?>O comprador preenche em Minha conta › Pedidos; você também pode preencher clicando no aluno.
+<?= $noName ? e(pluralize($noName, 'vaga ainda sem aluno', 'vagas ainda sem aluno')) . '. ' : '' ?><?= $noJob ? e(pluralize($noJob, 'aluno sem função', 'alunos sem função')) . '. ' : '' ?><?= $noCenter ? e(pluralize($noCenter, 'aluno sem centro de custo', 'alunos sem centro de custo')) . '. ' : '' ?>O comprador preenche em Minha conta › Pedidos; você também pode preencher clicando no aluno.
 </span></div></div>
 <?php endif; ?>
 <div class="table-wrap"><table class="table">
@@ -96,7 +97,7 @@ $noCenter = $client['pj'] ? count(array_filter($active, static fn ($r) => $r['na
 <tbody>
 <?php foreach ($rows as $r): ?>
 <tr>
-<td><?php if ($r['enrollment_id']): ?><a href="<?= e(url('/admin/matriculas/' . $r['enrollment_id'])) ?>"><?= $r['name'] !== '' ? e($r['name']) : '<em>Aluno a indicar</em>' ?></a><?php else: ?><em>Aluno a indicar</em><?php endif; ?></td>
+<td><?php if ($r['enrollment_id']): ?><a href="<?= e(url('/admin/matriculas/' . $r['enrollment_id'])) ?>"><?= $r['name'] !== '' ? e($r['name']) : '<em>Aluno a indicar</em>' ?></a><?php else: ?><em>Aluno a indicar</em><?php endif; ?><?php if ($r['job_title'] !== ''): ?><span class="sub"><?= e($r['job_title']) ?></span><?php endif; ?></td>
 <td class="mono"><?= $r['cpf'] !== '' ? e(document_display($r['cpf'])) : '' ?></td>
 <td><?= e($r['course']) ?><span class="sub"><?= (int) $r['hours'] ?> h · pedido <?= e($r['order']) ?></span></td>
 <td><?= e($r['kind']) ?></td>

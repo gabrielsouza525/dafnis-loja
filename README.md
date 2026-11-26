@@ -115,12 +115,18 @@ Rode `db:fresh --demo` antes de cada um: eles criam pedidos e mudam o estado do 
      checkout, que vale só para aquele CNPJ. O pedido nasce **faturado**: as vagas são criadas e o acesso
      é liberado na hora, sem passar pelo Mercado Pago. Em *Painel › Faturamento*, a equipe vê quanto cada
      cliente gastou no mês (pedidos pagos e faturados, pela data do pedido) e as faturas em aberto, abre o
-     demonstrativo de cada cliente (na tela, para imprimir ou salvar em PDF, e em planilha CSV) e, quando o
-     pagamento chega, dá a baixa da fatura do mês: os pedidos faturados passam a pagos, sem e-mail ao cliente.
-     O demonstrativo traz a razão social e o CNPJ do cliente e uma linha por aluno: nome e CPF, curso,
-     formação ou reciclagem, data da certificação e centro de custo, com o total por centro de custo. O
-     centro de custo (departamento) é informado pela empresa ao indicar cada participante, obrigatório na
-     fatura mensal e corrigível depois da liberação; a equipe também edita na matrícula.
+     demonstrativo de cada cliente (na tela, para imprimir ou salvar em PDF, e na planilha de medição em
+     Excel) e, quando o pagamento chega, dá a baixa da fatura do mês: os pedidos faturados passam a pagos,
+     sem e-mail ao cliente. O demonstrativo traz a razão social e o CNPJ do cliente e uma linha por aluno:
+     nome, CPF e função, curso, formação ou reciclagem, data da certificação e centro de custo, com o total
+     por centro de custo. A planilha de medição (.xlsx, gerada sem a extensão zip do PHP) segue o formato
+     que a empresa recebe com a nota: CNPJ, Razão Social, Nome, CPF, Função, Centro de Custo, Treinamento,
+     Data Realizada, REC/FOR e Valor, uma linha por treinamento de cada aluno, o total com fórmula e,
+     embaixo, o valor e a carga de cada treinamento em formação e em reciclagem. A coluna Treinamento usa
+     a **sigla na planilha de medição** do curso (*Painel › Cursos*, ex.: NR10SEP) ou, em branco, o código
+     da NR (NR10). A função e o centro de custo (departamento) são informados pela empresa ao indicar cada
+     participante, obrigatórios na fatura mensal e corrigíveis depois da liberação; a equipe também edita
+     na matrícula.
      O cliente não cancela um pedido faturado; a equipe cancela em *Painel › Pedidos*, e as vagas dele
      também são canceladas.
 4. Com o pagamento confirmado (ou o pedido faturado) são criadas as **vagas**. Compra de pessoa física com 1 vaga já fica no

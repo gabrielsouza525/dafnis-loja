@@ -28,7 +28,8 @@ $statusOptions = Enrollment::STATUS;
 <?= partial('field', ['name' => 'participant_email', 'label' => 'E-mail', 'type' => 'email', 'value' => $e['participant_email']]) ?>
 <?= partial('field', ['name' => 'participant_document', 'label' => 'CPF', 'value' => $e['participant_document'] ? document_display($e['participant_document']) : '', 'mask' => 'cpf']) ?>
 <?php if ($order['buyer_type'] === 'pj'): ?>
-<div class="full"><?= partial('field', ['name' => 'cost_center', 'label' => 'Centro de custo (departamento)', 'value' => $e['cost_center'], 'optional' => true, 'attrs' => ['maxlength' => 80], 'hint' => 'Vai no demonstrativo do Faturamento enviado à empresa.']) ?></div>
+<?= partial('field', ['name' => 'job_title', 'label' => 'Função (cargo)', 'value' => $e['job_title'], 'optional' => true, 'attrs' => ['maxlength' => 100], 'hint' => 'Vai na planilha de medição do Faturamento.']) ?>
+<?= partial('field', ['name' => 'cost_center', 'label' => 'Centro de custo (departamento)', 'value' => $e['cost_center'], 'optional' => true, 'attrs' => ['maxlength' => 80], 'hint' => 'Vai no demonstrativo e na planilha enviados à empresa.']) ?>
 <?php endif; ?>
 <?= partial('field', ['name' => 'status', 'label' => 'Situação', 'type' => 'select', 'value' => $e['status'], 'options' => $statusOptions]) ?>
 <?= partial('field', ['name' => 'progress', 'label' => 'Progresso (%)', 'type' => 'number', 'value' => (int) $e['progress'], 'attrs' => ['min' => 0, 'max' => 100]]) ?>

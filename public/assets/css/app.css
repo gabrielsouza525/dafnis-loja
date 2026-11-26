@@ -1045,8 +1045,7 @@ html:not(.js) .pw-meter,html:not(.js) .pw-meta{display:none}
 .seat .fields{grid-template-columns:1.2fr 1.2fr .9fr auto;align-items:end}
 .seat .fields .btn{height:46px}
 .seat .fields.has-cc{grid-template-columns:1.2fr 1.2fr .9fr}
-.seat .fields.has-cc .field-cc{grid-column:span 2}
-.seat .fields.cc-only{grid-template-columns:minmax(0,1fr) auto;margin-top:12px}
+.seat .fields.cc-only{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;margin-top:12px}
 /* Minha conta: seções com contagem, atalhos, certificados em cartões, lista de pedidos e o detalhe do pedido */
 .acc-sec + .acc-sec{margin-top:36px}
 .acc-sec-title{display:flex;align-items:center;gap:10px;font-size:19px;margin-bottom:16px}
@@ -1516,9 +1515,8 @@ html:not(.js) .pw-meter,html:not(.js) .pw-meta{display:none}
   .auth-grid{grid-template-columns:minmax(0,1fr) 420px;gap:40px}
   .seat .fields,.seat .fields.has-cc{grid-template-columns:1fr 1fr}
   .seat .fields .btn{grid-column:1 / -1}
-  .seat .fields.has-cc .field-cc{grid-column:auto}
-  .seat .fields.cc-only{grid-template-columns:minmax(0,1fr) auto}
-  .seat .fields.cc-only .btn{grid-column:auto}
+  .seat .fields.has-cc .field-cc{grid-column:1 / -1}
+  .seat .fields.cc-only{grid-template-columns:1fr 1fr}
 }
 /* ===== compacto: menu hambúrguer e filtros em painel ===== */
 @media (max-width: 940px){

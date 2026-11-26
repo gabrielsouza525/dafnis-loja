@@ -154,9 +154,9 @@ final class AccountController extends Controller
             'participant_document' => 'required|cpf',
         ];
         if ($order['buyer_type'] === 'pj') {
-            $rules['cost_center'] = self::costCenterRule($order);
+            $rules += self::companyRules($order);
         }
-        $data = $this->validate($rules, ['participant_name' => 'nome do participante', 'participant_email' => 'e-mail do participante', 'participant_document' => 'CPF do participante', 'cost_center' => 'centro de custo']);
+        $data = $this->validate($rules, ['participant_name' => 'nome do participante', 'participant_email' => 'e-mail do participante', 'participant_document' => 'CPF do participante', 'job_title' => 'função', 'cost_center' => 'centro de custo']);
         $released = Enrollments::assignParticipant($seat, $data);
         $who = first_name($data['participant_name']);
         $message = $released
@@ -166,26 +166,30 @@ final class AccountController extends Controller
     }
 
     /**
-     * Centro de custo de uma vaga já liberada (o participante não muda mais, mas a empresa ainda
-     * pode informar ou corrigir o departamento que vai no demonstrativo da fatura).
+     * Função e centro de custo de uma vaga já liberada (o participante não muda mais, mas a empresa
+     * ainda pode informar ou corrigir o que vai no demonstrativo e na planilha de medição da fatura).
      */
-    public function seatCostCenter(int $id): Response
+    public function seatCompanyData(int $id): Response
     {
         $seat = Enrollment::find($id);
         $order = $seat ? Order::find((int) $seat['order_id']) : null;
         if (!$seat || (int) $seat['buyer_user_id'] !== Auth::id() || $order['buyer_type'] !== 'pj' || $seat['status'] === 'cancelled') {
             $this->notFound('Vaga não encontrada.');
         }
-        $data = $this->validate(['cost_center' => self::costCenterRule($order)], ['cost_center' => 'centro de custo']);
-        Database::update('enrollments', ['cost_center' => $data['cost_center']], ['id' => $id]);
-        Activity::log('enrollment.cost_center', 'enrollment', $id, 'Centro de custo: ' . ($data['cost_center'] ?? '—'));
-        return $this->success('Centro de custo salvo.', '/minha-conta/pedidos/' . $seat['order_number'] . '#vaga-' . $id);
+        $data = $this->validate(self::companyRules($order), ['job_title' => 'função', 'cost_center' => 'centro de custo']);
+        Database::update('enrollments', ['job_title' => $data['job_title'], 'cost_center' => $data['cost_center']], ['id' => $id]);
+        Activity::log('enrollment.company_data', 'enrollment', $id, 'Função: ' . ($data['job_title'] ?? '—') . ' · Centro de custo: ' . ($data['cost_center'] ?? '—'));
+        return $this->success('Função e centro de custo salvos.', '/minha-conta/pedidos/' . $seat['order_number'] . '#vaga-' . $id);
     }
 
-    /** Na fatura mensal o centro de custo é obrigatório: ele vai no demonstrativo enviado à empresa. */
-    private static function costCenterRule(array $order): string
+    /**
+     * Função e centro de custo do participante, que vão no demonstrativo e na planilha de medição
+     * enviados à empresa: obrigatórios na fatura mensal.
+     */
+    private static function companyRules(array $order): array
     {
-        return ($order['payment_method'] === 'invoice' ? 'required' : 'nullable') . '|max:80';
+        $rule = $order['payment_method'] === 'invoice' ? 'required' : 'nullable';
+        return ['job_title' => $rule . '|max:100', 'cost_center' => $rule . '|max:80'];
     }
 
     public function profile(): Response

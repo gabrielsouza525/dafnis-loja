@@ -11,10 +11,12 @@ foreach ($seats as $s) {
 $method = Order::METHODS[$order['payment_method']] ?? ['label' => $order['payment_method'], 'icon' => 'card'];
 $filled = count(array_filter($seats, static fn ($s) => $s['participant_email'] && $s['status'] !== 'cancelled'));
 $open = count(array_filter($seats, static fn ($s) => $s['status'] !== 'cancelled'));
-// Empresa informa o centro de custo de cada participante (obrigatório na fatura mensal: vai no demonstrativo).
+// Empresa informa a função e o centro de custo de cada participante (obrigatórios na fatura mensal:
+// vão no demonstrativo e na planilha de medição).
 $pj = $order['buyer_type'] === 'pj';
 $ccRequired = $order['payment_method'] === 'invoice';
-$ccField = static fn (array $s, string $scope) => partial('field', ['name' => 'cost_center', 'scope' => $scope, 'id' => 'cc-' . $s['id'], 'label' => 'Centro de custo (departamento)', 'value' => $s['cost_center'], 'required' => $ccRequired, 'optional' => !$ccRequired, 'placeholder' => 'Ex.: Manutenção elétrica', 'attrs' => ['maxlength' => 80], 'class' => 'field-cc']);
+$companyFields = static fn (array $s, string $scope) => partial('field', ['name' => 'job_title', 'scope' => $scope, 'id' => 'jt-' . $s['id'], 'label' => 'Função (cargo)', 'value' => $s['job_title'], 'required' => $ccRequired, 'optional' => !$ccRequired, 'placeholder' => 'Ex.: Eletricista de manutenção', 'attrs' => ['maxlength' => 100]])
+    . partial('field', ['name' => 'cost_center', 'scope' => $scope, 'id' => 'cc-' . $s['id'], 'label' => 'Centro de custo (departamento)', 'value' => $s['cost_center'], 'required' => $ccRequired, 'optional' => !$ccRequired, 'placeholder' => 'Ex.: Manutenção elétrica', 'attrs' => ['maxlength' => 80], 'class' => 'field-cc']);
 ?>
 <div class="screen">
 <?= partial('account-shell-open', get_defined_vars()) ?>
@@ -36,7 +38,7 @@ $ccField = static fn (array $s, string $scope) => partial('field', ['name' => 'c
 <div class="seat-progress">
 <div class="seat-progress-row"><strong><?= $filled ?> de <?= $open ?></strong> <?= $open === 1 ? 'vaga com participante' : 'vagas com participante' ?><?php if ($open > $filled): ?><span><?= e(pluralize($open - $filled, 'falta indicar', 'faltam indicar')) ?></span><?php endif; ?></div>
 <div class="progress<?= $open > 0 && $filled === $open ? ' done' : '' ?>" role="progressbar" aria-valuenow="<?= $filled ?>" aria-valuemin="0" aria-valuemax="<?= $open ?>" aria-label="Vagas com participante"><span style="width:<?= $open ? round($filled / $open * 100) : 0 ?>%"></span></div>
-<p>Informe quem vai fazer cada treinamento. O participante recebe o acesso por e-mail e, criando uma conta com esse e-mail, acompanha o curso e baixa o certificado.<?= $pj && $ccRequired ? ' Informe também o centro de custo (departamento) de cada um: ele vai no demonstrativo da fatura mensal.' : '' ?></p>
+<p>Informe quem vai fazer cada treinamento. O participante recebe o acesso por e-mail e, criando uma conta com esse e-mail, acompanha o curso e baixa o certificado.<?= $pj && $ccRequired ? ' Informe também a função e o centro de custo (departamento) de cada um: eles vão no demonstrativo da fatura mensal.' : '' ?></p>
 </div>
 <?php foreach ($items as $i): if (empty($seatsByItem[$i['id']])) { continue; } ?>
 <h3 class="seat-course"><?php if ($i['course']): ?><?= partial('cover', ['course' => $i['course'], 'variant' => 'thumb']) ?><?php else: ?><span class="thumb order-thumb"><?= icon('book') ?></span><?php endif; ?><span><?= e(($i['course_code'] ? $i['course_code'] . ' — ' : '') . $i['course_title']) ?></span></h3>
@@ -51,18 +53,18 @@ $ccField = static fn (array $s, string $scope) => partial('field', ['name' => 'c
 <?= partial('field', ['name' => 'participant_name', 'scope' => 'seat-' . $s['id'], 'id' => 'pn-' . $s['id'], 'label' => 'Nome completo', 'value' => $s['participant_name'], 'required' => true]) ?>
 <?= partial('field', ['name' => 'participant_email', 'scope' => 'seat-' . $s['id'], 'id' => 'pe-' . $s['id'], 'label' => 'E-mail', 'type' => 'email', 'value' => $s['participant_email'], 'required' => true]) ?>
 <?= partial('field', ['name' => 'participant_document', 'scope' => 'seat-' . $s['id'], 'id' => 'pd-' . $s['id'], 'label' => 'CPF', 'value' => $s['participant_document'] ? document_display($s['participant_document']) : '', 'required' => true, 'mask' => 'cpf']) ?>
-<?= $pj ? $ccField($s, 'seat-' . $s['id']) : '' ?>
+<?= $pj ? $companyFields($s, 'seat-' . $s['id']) : '' ?>
 <button class="btn <?= $s['participant_email'] ? 'btn-outline' : 'btn-navy' ?>" type="submit"><?= $s['participant_email'] ? 'Atualizar' : 'Salvar' ?></button>
 </div>
 </form>
 <?php else: ?>
 <dl class="dl"><dt>Participante</dt><dd><?= e((string) $s['participant_name']) ?> · <?= e((string) $s['participant_email']) ?></dd><?php if ($s['status'] !== 'cancelled'): ?><dt>Progresso</dt><dd><?= (int) $s['progress'] ?>%</dd><?php endif; ?></dl>
 <?php if ($pj && $s['status'] !== 'cancelled'): ?>
-<form method="post" action="<?= e(url('/minha-conta/vagas/' . $s['id'] . '/centro-de-custo')) ?>" data-loading-form>
+<form method="post" action="<?= e(url('/minha-conta/vagas/' . $s['id'] . '/empresa')) ?>" data-loading-form>
 <?= csrf_field() ?>
 <input type="hidden" name="_scope" value="cc-<?= (int) $s['id'] ?>">
 <div class="fields cc-only">
-<?= $ccField($s, 'cc-' . $s['id']) ?>
+<?= $companyFields($s, 'cc-' . $s['id']) ?>
 <button class="btn btn-outline" type="submit">Salvar</button>
 </div>
 </form>
