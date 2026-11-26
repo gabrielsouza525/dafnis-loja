@@ -145,6 +145,7 @@ return static function (Router $r): void {
         $r->get('/usuarios', [Admin\UserController::class, 'index']);
         $r->get('/usuarios/{id:\d+}', [Admin\UserController::class, 'show']);
         $r->post('/usuarios/{id:\d+}', [Admin\UserController::class, 'update']);
+        $r->post('/usuarios/{id:\d+}/dados', [Admin\UserController::class, 'updateData']);
         $r->post('/usuarios/{id:\d+}/duas-etapas/desativar', [Admin\UserController::class, 'disableTwoFactor']);
         $r->post('/usuarios/{id:\d+}/fatura', [Admin\UserController::class, 'invoice']);
 

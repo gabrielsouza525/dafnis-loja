@@ -10,6 +10,7 @@ use App\Models\Enrollment;
 use App\Models\Order;
 use App\Services\Activity;
 use App\Services\Auth;
+use App\Services\Notify;
 use App\Services\TwoFactor;
 
 final class UserController extends AdminController
@@ -76,6 +77,51 @@ final class UserController extends AdminController
         Database::update('users', ['invoice_cnpj' => $cnpj], ['id' => $id]);
         Activity::log('user.invoice', 'user', $id, $cnpj ? 'fatura mensal autorizada para o CNPJ ' . document_display($cnpj) : 'fatura mensal desativada');
         return $this->success($cnpj ? 'Fatura mensal autorizada para ' . $user['name'] . ' no CNPJ ' . document_display($cnpj) . '.' : 'Fatura mensal desativada para esta conta.', '/admin/usuarios/' . $id);
+    }
+
+    /**
+     * Corrigir os dados cadastrais (nome, e-mail, telefone, CPF). Os cursos são ligados ao e-mail
+     * do participante e acompanham a troca; pedidos e certificados guardam os dados da compra e da matrícula.
+     */
+    public function updateData(int $id): Response
+    {
+        $user = $this->findOr404(Database::first('SELECT * FROM users WHERE id = :id', ['id' => $id]), 'Usuário não encontrado.');
+        $data = $this->validate([
+            'name' => 'required|min:3|max:120',
+            'email' => 'required|email|unique:users,email,' . $id,
+            'phone' => 'nullable|phone',
+            'document' => 'nullable|cpf',
+        ], ['name' => 'nome', 'email' => 'e-mail', 'phone' => 'telefone', 'document' => 'CPF'], [
+            'email.unique' => 'Já existe outra conta com este e-mail.',
+        ]);
+
+        $labels = ['name' => 'nome', 'email' => 'e-mail', 'phone' => 'telefone', 'document' => 'CPF'];
+        $changed = array_keys(array_filter($labels, static fn ($label, $field) => (string) ($data[$field] ?? '') !== (string) ($user[$field] ?? ''), ARRAY_FILTER_USE_BOTH));
+        if (!$changed) {
+            return $this->success('Nenhum dado foi alterado.', '/admin/usuarios/' . $id);
+        }
+        $emailChanged = in_array('email', $changed, true);
+        $moved = 0;
+        Database::transaction(static function () use ($id, $user, $data, $emailChanged, &$moved) {
+            Database::update('users', $data, ['id' => $id]);
+            if ($emailChanged) {
+                $moved = Database::update('enrollments', ['participant_email' => $data['email']], ['participant_email' => $user['email']]);
+            }
+        });
+        $details = implode(', ', array_map(static fn ($field) => $labels[$field], $changed));
+        if ($emailChanged) {
+            $details .= ' · e-mail ' . $user['email'] . ' → ' . $data['email'];
+            Notify::emailChangedByTeam($user, $data['email']);
+        }
+        Activity::log('user.data', 'user', $id, 'dados alterados pela equipe: ' . $details);
+        if ($id === Auth::id()) {
+            Auth::reset();
+        }
+        $message = 'Dados de ' . $data['name'] . ' atualizados.';
+        if ($emailChanged) {
+            $message .= ' Agora o login é ' . $data['email'] . ($moved ? ' e os cursos foram junto' : '') . '. A pessoa recebeu um aviso nos dois e-mails.';
+        }
+        return $this->success($message, '/admin/usuarios/' . $id);
     }
 
     public function update(int $id): Response

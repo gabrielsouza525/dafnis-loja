@@ -439,5 +439,48 @@ check('desativada pela equipe, a pessoa ativa de novo para abrir o painel', $r['
 $admin->request('POST', '/admin/usuarios/' . $userId, ['role' => 'student', 'is_active' => '1']);
 }
 
+// A equipe corrige os dados de um usuário: o e-mail novo vira o login e leva os cursos junto
+echo "\nEquipe corrige os dados do usuário\n";
+$joaoEmail = 'joao.participante@example.com';
+$list = $admin->request('GET', '/admin/usuarios?q=' . rawurlencode($joaoEmail))['body'];
+$joaoId = preg_match('#/admin/usuarios/(\d+)#', $list, $m) ? $m[1] : '0';
+$dataUrl = '/admin/usuarios/' . $joaoId . '/dados';
+$page = $admin->request('GET', '/admin/usuarios/' . $joaoId)['body'];
+check('página do usuário tem o formulário de dados', str_contains($page, 'action="' . $base . $dataUrl . '"') || str_contains($page, $dataUrl . '"'));
+check('formulário vem preenchido', str_contains($page, 'value="João Participante"') && str_contains($page, 'value="' . $joaoEmail . '"') && str_contains($page, 'value="(18) 99999-0001"'));
+$admin->request('POST', $dataUrl, ['_scope' => 'dados', 'name' => 'João Participante', 'email' => $email, 'phone' => '', 'document' => '']);
+check('não aceita o e-mail de outra conta', str_contains($admin->request('GET', '/admin/usuarios/' . $joaoId)['body'], 'Já existe outra conta com este e-mail.'));
+$admin->request('POST', $dataUrl, ['_scope' => 'dados', 'name' => 'João Participante', 'email' => $joaoEmail, 'phone' => '', 'document' => '111.111.111-11']);
+check('não aceita CPF inválido', str_contains($admin->request('GET', '/admin/usuarios/' . $joaoId)['body'], 'CPF inválido.'));
+check('com erro, nada muda', (new Client($base))->login($joaoEmail, 'senha1234'));
+
+$mailDir = dirname(__DIR__) . '/storage/mail';
+$mailsBefore = glob($mailDir . '/*.html') ?: [];
+$newEmail = 'joao.novo' . time() . '@example.com';
+$r = $admin->request('POST', $dataUrl, ['_scope' => 'dados', 'name' => 'João Participante Silva', 'email' => strtoupper($newEmail), 'phone' => '(18) 98888-0002', 'document' => '529.982.247-25']);
+check('salvar dados redireciona para o usuário', $r['status'] === 302 && str_ends_with($r['location'], '/admin/usuarios/' . $joaoId), $r['location']);
+$page = $admin->request('GET', '/admin/usuarios/' . $joaoId)['body'];
+check('salva nome, e-mail (em minúsculas), telefone e CPF', str_contains($page, 'value="João Participante Silva"') && str_contains($page, 'value="' . $newEmail . '"') && str_contains($page, 'value="(18) 98888-0002"') && str_contains($page, 'value="529.982.247-25"'));
+check('mensagem diz que os cursos foram junto', str_contains($page, 'os cursos foram junto'));
+check('os cursos acompanham o e-mail novo no painel', str_contains($page, 'Espaços Confinados'));
+$newMails = array_diff(glob($mailDir . '/*.html') ?: [], $mailsBefore);
+$notices = array_filter($newMails, static fn ($f) => str_contains((string) file_get_contents($f), 'Seu e-mail de acesso foi alterado'));
+check('aviso vai para o e-mail antigo e para o novo', count($notices) === 2, (string) count($notices));
+check('o e-mail antigo deixa de entrar', !(new Client($base))->login($joaoEmail, 'senha1234'));
+$joaoNew = new Client($base);
+check('o e-mail novo entra com a mesma senha', $joaoNew->login($newEmail, 'senha1234'));
+check('e vê o curso em Meus cursos', str_contains($joaoNew->request('GET', '/minha-conta/cursos')['body'], 'Espaços Confinados'));
+check('e o certificado', str_contains($joaoNew->request('GET', '/minha-conta/certificados')['body'], '/minha-conta/certificados/' . $certId . '/baixar'));
+check('Meus dados mostra o nome corrigido', str_contains($joaoNew->request('GET', '/minha-conta/dados')['body'], 'value="João Participante Silva"'));
+$admin->request('POST', $dataUrl, ['_scope' => 'dados', 'name' => 'João Participante Silva', 'email' => $newEmail, 'phone' => '(18) 98888-0002', 'document' => '529.982.247-25']);
+check('sem mudança, avisa que nada foi alterado', str_contains($admin->request('GET', '/admin/usuarios/' . $joaoId)['body'], 'Nenhum dado foi alterado.'));
+$joaoNew->request('GET', '/minha-conta');
+$r = $joaoNew->request('POST', $dataUrl, ['name' => 'Invasor', 'email' => 'invasor@example.com']);
+check('aluno não altera dados pelo painel', $r['status'] !== 200 || !str_contains($r['body'], 'atualizados'), (string) $r['status']);
+check('e os dados continuam os mesmos', str_contains($admin->request('GET', '/admin/usuarios/' . $joaoId)['body'], 'value="' . $newEmail . '"'));
+// volta o e-mail original
+$admin->request('POST', $dataUrl, ['_scope' => 'dados', 'name' => 'João Participante', 'email' => $joaoEmail, 'phone' => '(18) 99999-0001', 'document' => '']);
+check('voltar o e-mail original', (new Client($base))->login($joaoEmail, 'senha1234'));
+
 echo "\n$checks verificações, $failures falha(s).\n";
 exit($failures ? 1 : 0);

@@ -9,7 +9,9 @@ protótipo *"Dafnis Treinamentos — Loja NR"* (Claude Design).
 2. **Área do aluno** (`/minha-conta`): painel, meus cursos com progresso, certificados, pedidos,
    indicação dos participantes de cada vaga (compras para empresas) e dados pessoais.
 3. **Painel da equipe** (`/admin`): pedidos e baixa de pagamento, matrículas (liberar acesso,
-   progresso, anexar certificado), cursos, categorias, cupons, usuários, contatos e configurações.
+   progresso, anexar certificado), cursos, categorias, cupons, usuários (corrigir nome, e-mail,
+   telefone e CPF; o e-mail novo vira o login, leva os cursos junto e a pessoa é avisada nos dois
+   endereços), contatos e configurações.
 
 Os cursos são feitos na **plataforma de ensino white label**: a loja vende, registra as vagas e leva o
 aluno até a plataforma pelo botão "Continuar". Os **cursos próprios** da Dafnis (feitos no Rise 360,

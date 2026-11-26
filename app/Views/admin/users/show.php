@@ -25,10 +25,23 @@ use App\Models\Order;
 </div>
 </div>
 <aside>
-<div class="panel"><div class="panel-head"><h2>Dados</h2></div><div class="panel-body">
+<form class="panel" method="post" action="<?= e(url('/admin/usuarios/' . $u['id'] . '/dados')) ?>" id="dados" data-loading-form>
+<?= csrf_field() ?>
+<input type="hidden" name="_scope" value="dados">
+<div class="panel-head"><h2>Dados</h2></div>
+<div class="panel-body">
+<div class="fields">
+<div class="full"><?= partial('field', ['name' => 'name', 'scope' => 'dados', 'id' => 'u-name', 'label' => 'Nome completo', 'value' => $u['name'], 'required' => true, 'attrs' => ['autocomplete' => 'off']]) ?></div>
+<div class="full"><?= partial('field', ['name' => 'email', 'scope' => 'dados', 'id' => 'u-email', 'label' => 'E-mail', 'type' => 'email', 'value' => $u['email'], 'required' => true, 'hint' => 'É o login da pessoa. Ao trocar, os cursos dela vão junto e ela recebe um aviso no e-mail antigo e no novo.', 'attrs' => ['autocomplete' => 'off']]) ?></div>
+<div class="full"><?= partial('field', ['name' => 'phone', 'scope' => 'dados', 'id' => 'u-phone', 'label' => 'Telefone / WhatsApp', 'type' => 'tel', 'value' => $u['phone'] ? phone_display($u['phone']) : '', 'mask' => 'phone', 'optional' => true, 'attrs' => ['autocomplete' => 'off']]) ?></div>
+<div class="full"><?= partial('field', ['name' => 'document', 'scope' => 'dados', 'id' => 'u-document', 'label' => 'CPF', 'value' => $u['document'] ? document_display($u['document']) : '', 'mask' => 'cpf', 'optional' => true, 'attrs' => ['autocomplete' => 'off']]) ?></div>
+</div>
+<p class="hint">Pedidos já feitos guardam os dados da compra. O nome e o CPF do certificado são os da matrícula: para corrigir, abra o curso em "Cursos como participante".</p>
+<button class="btn btn-navy btn-sm" type="submit" style="margin-top:14px">Salvar dados</button>
+</div>
+</form>
+<div class="panel"><div class="panel-head"><h2>Conta</h2></div><div class="panel-body">
 <dl class="dl">
-<dt>Telefone</dt><dd><?= e($u['phone'] ? phone_display($u['phone']) : '—') ?></dd>
-<dt>CPF</dt><dd><?= e($u['document'] ? document_display($u['document']) : '—') ?></dd>
 <dt>Último acesso</dt><dd><?= e($u['last_login_at'] ? date_br($u['last_login_at'], true) : 'Nunca entrou') ?></dd>
 <dt>Duas etapas</dt><dd><?= $u['two_factor_enabled_at'] ? 'Ativada em ' . e(date_br($u['two_factor_enabled_at'])) : ($u['role'] === 'admin' && $teamRequired ? 'Pendente (obrigatória para a equipe)' : 'Desativada') ?></dd>
 </dl>

@@ -52,6 +52,19 @@ final class Notify
         ]);
     }
 
+    /** A equipe trocou o e-mail de acesso: avisa no antigo (segurança) e no novo (o novo login). */
+    public static function emailChangedByTeam(array $user, string $newEmail): void
+    {
+        foreach (array_unique([$user['email'], $newEmail]) as $to) {
+            Mailer::send($to, 'O e-mail de acesso da sua conta foi alterado', 'email-changed', [
+                'name' => $user['name'],
+                'old' => $user['email'],
+                'new' => $newEmail,
+                'url' => absolute_url('/login'),
+            ]);
+        }
+    }
+
     public static function orderCreated(array $order): void
     {
         $items = Order::items((int) $order['id']);
