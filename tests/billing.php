@@ -85,9 +85,27 @@ check('as vagas são criadas na hora', (int) Database::value('SELECT COUNT(*) FR
 $p = $rh->request('GET', '/pedido/' . $number)['body'];
 check('a página do pedido mostra o pedido faturado e a indicação dos participantes', str_contains($p, 'Pedido faturado') && str_contains($p, 'fatura mensal') && str_contains($p, 'Indicar participantes'));
 $seat = (int) Database::value('SELECT id FROM enrollments WHERE order_id = :o ORDER BY id LIMIT 1', ['o' => $orderId]);
+$accountOrder = $rh->request('GET', '/minha-conta/pedidos/' . $number)['body'];
+check('a vaga da fatura pede o centro de custo', str_contains($accountOrder, 'name="cost_center"') && str_contains($accountOrder, 'Centro de custo (departamento)'));
+$participant = ['participant_name' => 'Joana Pereira', 'participant_email' => 'joana@example.com', 'participant_document' => '529.982.247-25'];
+$rh->request('POST', '/minha-conta/vagas/' . $seat, $participant + ['_scope' => 'seat-' . $seat]);
+check('na fatura, o centro de custo é obrigatório', Database::value('SELECT participant_name FROM enrollments WHERE id = :id', ['id' => $seat]) === null
+    && str_contains($rh->request('GET', '/minha-conta/pedidos/' . $number)['body'], 'Preencha o campo centro de custo'));
+$rh->request('POST', '/minha-conta/vagas/' . $seat, $participant + ['cost_center' => 'Manutenção elétrica']);
+$seatRow = Database::first('SELECT participant_name, cost_center, status FROM enrollments WHERE id = :id', ['id' => $seat]);
+check('o comprador indica o participante e o centro de custo', $seatRow['participant_name'] === 'Joana Pereira' && $seatRow['cost_center'] === 'Manutenção elétrica');
+// Vaga já liberada: o participante não muda mais, mas o centro de custo ainda pode ser corrigido.
+Database::update('enrollments', ['status' => 'active'], ['id' => $seat]);
 $rh->request('GET', '/minha-conta/pedidos/' . $number);
-$rh->request('POST', '/minha-conta/vagas/' . $seat, ['participant_name' => 'Joana Pereira', 'participant_email' => 'joana@example.com', 'participant_document' => '529.982.247-25']);
-check('o comprador indica o participante da vaga faturada', Database::value('SELECT participant_name FROM enrollments WHERE id = :id', ['id' => $seat]) === 'Joana Pereira');
+$rh->request('POST', '/minha-conta/vagas/' . $seat . '/centro-de-custo', ['cost_center' => '4102']);
+check('o centro de custo da vaga liberada pode ser corrigido', Database::value('SELECT cost_center FROM enrollments WHERE id = :id', ['id' => $seat]) === '4102');
+$otherBuyer = new Client($base);
+$otherBuyer->login('ana@example.com', 'dafnis123');
+$otherBuyer->request('GET', '/minha-conta');
+check('outra conta não muda o centro de custo da vaga', $otherBuyer->request('POST', '/minha-conta/vagas/' . $seat . '/centro-de-custo', ['cost_center' => 'X'])['status'] === 404
+    && Database::value('SELECT cost_center FROM enrollments WHERE id = :id', ['id' => $seat]) === '4102');
+check('a matrícula no painel mostra o centro de custo', str_contains($admin->request('GET', '/admin/matriculas/' . $seat)['body'], 'value="4102"'));
+Database::insert('certificates', ['enrollment_id' => $seat, 'code' => 'FATURATESTE1', 'issued_at' => date('Y-m-d')]);
 $rh->request('GET', '/minha-conta/pedidos/' . $number);
 $rh->request('POST', '/pedido/' . $number . '/cancelar');
 check('o cliente não cancela o pedido faturado', Database::value('SELECT status FROM orders WHERE id = :id', ['id' => $orderId]) === 'invoiced');
@@ -105,11 +123,20 @@ check('as faturas em aberto mostram o pedido faturado', str_contains($bill['body
 check('mês inválido volta para o mês atual', str_contains($admin->request('GET', '/admin/faturamento?mes=2026-13')['body'], e(month_br($month, true))));
 $q = '?doc=' . $cnpj . '&mes=' . $month;
 $client = $admin->request('GET', '/admin/faturamento/cliente' . $q)['body'];
-check('o demonstrativo lista o pedido, o participante e o total', str_contains($client, $number) && str_contains($client, 'Joana Pereira') && str_contains($client, '1 vaga sem participante') && str_contains($client, money($expected)));
+$today = date_br(date('Y-m-d'));
+check('o demonstrativo lista o pedido, o aluno e o total', str_contains($client, $number) && str_contains($client, 'Joana Pereira') && preg_match('/\d+ vagas? ainda sem aluno/', $client) === 1 && str_contains($client, money($expected)));
+check('o demonstrativo traz CPF, formação, certificação e centro de custo do aluno', str_contains($client, '529.982.247-25') && str_contains($client, 'Formação')
+    && str_contains($client, $today) && str_contains($client, '4102') && str_contains($client, 'Aguardando o aluno'));
+check('o demonstrativo soma por centro de custo', str_contains($client, 'Por centro de custo') && preg_match('#<td>4102</td><td class="num">1</td>#', $client) === 1);
 $print = $admin->request('GET', '/admin/faturamento/cliente' . $q . '&imprimir=1');
 check('o demonstrativo para imprimir sai sem o menu do painel', $print['status'] === 200 && str_contains($print['body'], 'Demonstrativo de treinamentos') && str_contains($print['body'], 'Joana Pereira') && !str_contains($print['body'], 'adm-side'));
+check('o demonstrativo para imprimir tem os dados pedidos pela empresa', str_contains($print['body'], 'Razão social') && str_contains($print['body'], 'Metalúrgica Exemplo Ltda') && str_contains($print['body'], '11.222.333/0001-81')
+    && str_contains($print['body'], '529.982.247-25') && str_contains($print['body'], 'Formação ou reciclagem') && str_contains($print['body'], 'Data da certificação')
+    && str_contains($print['body'], $today) && str_contains($print['body'], '4102'));
 $csv = $admin->request('GET', '/admin/faturamento/cliente' . $q . '&formato=csv');
-check('a planilha sai em CSV para o Excel', str_starts_with((string) Client::header($csv, 'Content-Type'), 'text/csv') && str_starts_with($csv['body'], "\xEF\xBB\xBF") && str_contains($csv['body'], '"Joana Pereira"') && str_contains($csv['body'], '"Total";"' . money($expected, false) . '"'));
+check('a planilha sai em CSV para o Excel', str_starts_with((string) Client::header($csv, 'Content-Type'), 'text/csv') && str_starts_with($csv['body'], "\xEF\xBB\xBF") && str_contains($csv['body'], '"Total";"' . money($expected, false) . '"'));
+check('a planilha tem uma linha por aluno com os dados da fatura', str_contains($csv['body'], '"CNPJ";"Razão social";"Aluno";"CPF do aluno";"Curso";"Formação ou reciclagem";"Data da certificação";"Centro de custo"')
+    && str_contains($csv['body'], '"11.222.333/0001-81";"Metalúrgica Exemplo Ltda";"Joana Pereira";"529.982.247-25";') && str_contains($csv['body'], '"Formação";"' . $today . '";"4102"'));
 check('cliente sem pedidos no mês volta ao Faturamento', $admin->request('GET', '/admin/faturamento/cliente?doc=' . $cnpj . '&mes=2020-01')['status'] === 302);
 check('documento inválido não abre demonstrativo', $admin->request('GET', '/admin/faturamento/cliente?doc=123&mes=' . $month)['status'] === 404);
 

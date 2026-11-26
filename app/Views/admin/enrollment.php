@@ -27,6 +27,9 @@ $statusOptions = Enrollment::STATUS;
 <div class="full"><?= partial('field', ['name' => 'participant_name', 'label' => 'Nome do participante', 'value' => $e['participant_name']]) ?></div>
 <?= partial('field', ['name' => 'participant_email', 'label' => 'E-mail', 'type' => 'email', 'value' => $e['participant_email']]) ?>
 <?= partial('field', ['name' => 'participant_document', 'label' => 'CPF', 'value' => $e['participant_document'] ? document_display($e['participant_document']) : '', 'mask' => 'cpf']) ?>
+<?php if ($order['buyer_type'] === 'pj'): ?>
+<div class="full"><?= partial('field', ['name' => 'cost_center', 'label' => 'Centro de custo (departamento)', 'value' => $e['cost_center'], 'optional' => true, 'attrs' => ['maxlength' => 80], 'hint' => 'Vai no demonstrativo do Faturamento enviado à empresa.']) ?></div>
+<?php endif; ?>
 <?= partial('field', ['name' => 'status', 'label' => 'Situação', 'type' => 'select', 'value' => $e['status'], 'options' => $statusOptions]) ?>
 <?= partial('field', ['name' => 'progress', 'label' => 'Progresso (%)', 'type' => 'number', 'value' => (int) $e['progress'], 'attrs' => ['min' => 0, 'max' => 100]]) ?>
 <div class="full"><?= partial('field', ['name' => 'access_url', 'label' => 'Link de acesso deste participante', 'type' => 'url', 'value' => $e['access_url'], 'optional' => true, 'hint' => $accessUrl && !$e['access_url'] ? 'Vazio: usa ' . $accessUrl : 'Vazio: usa o link do curso ou o link geral da plataforma (Configurações).']) ?></div>

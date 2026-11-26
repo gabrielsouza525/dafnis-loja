@@ -72,12 +72,16 @@ final class Enrollments
         if ($duplicate) {
             throw ValidationException::with('participant_email', 'Este participante já ocupa outra vaga deste mesmo curso.');
         }
-        Database::update('enrollments', [
+        $fields = [
             'participant_name' => $data['participant_name'],
             'participant_email' => $email,
             'participant_document' => $data['participant_document'] ?? null,
             'status' => 'processing',
-        ], ['id' => $enrollment['id']]);
+        ];
+        if (array_key_exists('cost_center', $data)) {
+            $fields['cost_center'] = $data['cost_center'];
+        }
+        Database::update('enrollments', $fields, ['id' => $enrollment['id']]);
         Activity::log('enrollment.participant', 'enrollment', (int) $enrollment['id'], $data['participant_name'] . ' <' . $email . '>');
         return self::autoRelease((int) $enrollment['id']);
     }
@@ -102,6 +106,9 @@ final class Enrollments
             'progress' => $progress,
             'access_url' => $data['access_url'],
         ];
+        if (array_key_exists('cost_center', $data)) {
+            $fields['cost_center'] = $data['cost_center'];
+        }
         if ($status === 'active' && $before['status'] !== 'active' && !$before['released_at']) {
             $fields['released_at'] = date('Y-m-d H:i:s');
         }

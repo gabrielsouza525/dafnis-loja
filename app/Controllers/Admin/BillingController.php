@@ -147,8 +147,10 @@ final class BillingController extends AdminController
     }
 
     /**
-     * Pedidos pagos e faturados do cliente no mês, com os itens e os participantes de cada vaga.
-     * @return array{client: array, orders: array, total: float, open: float, paid: float, seats: int}
+     * Pedidos pagos e faturados do cliente no mês e uma linha por vaga (aluno), com o que a empresa
+     * pede na fatura: nome e CPF do aluno, curso, formação ou reciclagem, data da certificação e
+     * centro de custo. Também o total por centro de custo.
+     * @return array{client: array, orders: array, rows: array, centers: array, discounts: float, total: float, open: float, paid: float, seats: int}
      */
     public static function statement(string $doc, string $month): array
     {
@@ -158,26 +160,70 @@ final class BillingController extends AdminController
             ['d' => $doc, 's' => $start, 'e' => $end]
         );
         $people = [];
+        $types = [];
         if ($orders) {
             $ids = implode(',', array_map(static fn ($o) => (int) $o['id'], $orders));
-            foreach (Database::select("SELECT order_item_id, participant_name, status FROM enrollments WHERE order_id IN ($ids) ORDER BY id") as $e) {
+            foreach (Database::select(
+                "SELECT e.id, e.order_item_id, e.participant_name, e.participant_document, e.cost_center, e.status, c.issued_at AS certified_at
+                   FROM enrollments e LEFT JOIN certificates c ON c.enrollment_id = e.id
+                  WHERE e.order_id IN ($ids) ORDER BY e.id"
+            ) as $e) {
                 $people[(int) $e['order_item_id']][] = $e;
+            }
+            foreach (Database::select("SELECT DISTINCT c.id, c.training_type FROM courses c JOIN order_items i ON i.course_id = c.id WHERE i.order_id IN ($ids)") as $c) {
+                $types[(int) $c['id']] = $c['training_type'];
             }
         }
         $seats = 0;
+        $rows = [];
+        $discounts = 0.0;
         foreach ($orders as &$o) {
             $o['items'] = Order::items((int) $o['id']);
             $lines = 0.0;
-            foreach ($o['items'] as &$item) {
-                $item['people'] = $people[(int) $item['id']] ?? [];
+            $o['seats'] = 0;
+            foreach ($o['items'] as $item) {
                 $lines += (float) $item['line_total'];
-                $seats += (int) $item['quantity'];
+                $o['seats'] += (int) $item['quantity'];
+                $list = $people[(int) $item['id']] ?? [];
+                $type = $types[(int) $item['course_id']] ?? null;
+                // Curso apagado do catálogo: o título diz se era reciclagem.
+                $recycling = $type !== null ? $type === 'periodico' : str_contains(mb_strtolower($item['course_title']), 'reciclagem');
+                for ($i = 0; $i < (int) $item['quantity']; $i++) {
+                    $p = $list[$i] ?? null;
+                    $rows[] = [
+                        'enrollment_id' => $p ? (int) $p['id'] : null,
+                        'name' => $p ? (string) $p['participant_name'] : '',
+                        'cpf' => $p ? (string) $p['participant_document'] : '',
+                        'cost_center' => $p ? trim((string) $p['cost_center']) : '',
+                        'status' => $p ? $p['status'] : 'awaiting_participant',
+                        'certified_at' => $p ? $p['certified_at'] : null,
+                        'course' => ($item['course_code'] ? $item['course_code'] . ' — ' : '') . $item['course_title'],
+                        'hours' => (int) $item['course_hours'],
+                        'kind' => $recycling ? 'Reciclagem' : 'Formação',
+                        'value' => (float) $item['unit_price'],
+                        'order' => $o['number'],
+                        'order_id' => (int) $o['id'],
+                        'order_date' => $o['created_at'],
+                        'order_status' => $o['status'],
+                    ];
+                }
             }
-            unset($item);
+            $seats += $o['seats'];
             // Desconto do pedido (cupom) além dos preços dos itens.
             $o['order_discount'] = max(0.0, round($lines - (float) $o['total'], 2));
+            $discounts += $o['order_discount'];
         }
         unset($o);
+        $centers = [];
+        foreach ($rows as $r) {
+            // Prefixo na chave: centro de custo só com números ("4102") não vira índice numérico.
+            $key = 'cc:' . $r['cost_center'];
+            $centers[$key] ??= ['name' => $r['cost_center'], 'people' => 0, 'value' => 0.0];
+            $centers[$key]['people']++;
+            $centers[$key]['value'] += $r['value'];
+        }
+        // Em ordem alfabética, com os não informados no fim.
+        usort($centers, static fn ($a, $b) => ($a['name'] === '') <=> ($b['name'] === '') ?: strnatcasecmp($a['name'], $b['name']));
         $last = $orders ? end($orders) : null;
         return [
             'client' => [
@@ -188,6 +234,9 @@ final class BillingController extends AdminController
                 'email' => $last ? $last['buyer_email'] : '',
             ],
             'orders' => $orders,
+            'rows' => $rows,
+            'centers' => $centers,
+            'discounts' => round($discounts, 2),
             'total' => array_sum(array_map(static fn ($o) => (float) $o['total'], $orders)),
             'open' => array_sum(array_map(static fn ($o) => $o['status'] === 'invoiced' ? (float) $o['total'] : 0.0, $orders)),
             'paid' => array_sum(array_map(static fn ($o) => $o['status'] === 'paid' ? (float) $o['total'] : 0.0, $orders)),
@@ -195,29 +244,45 @@ final class BillingController extends AdminController
         ];
     }
 
+    /** O que vai na coluna "Data da certificação": a data, ou em que pé está a vaga. */
+    public static function certification(array $row): string
+    {
+        return match (true) {
+            !empty($row['certified_at']) => date_br($row['certified_at']),
+            $row['status'] === 'cancelled' => 'Vaga cancelada',
+            $row['status'] === 'awaiting_participant' => 'Aguardando o aluno',
+            default => 'Em andamento',
+        };
+    }
+
     /** Planilha para o Excel em português: separador ";", vírgula decimal e BOM para os acentos. */
     private static function csv(array $data): string
     {
-        $rows = [['Data', 'Pedido', 'Situação', 'Treinamento', 'Carga horária (h)', 'Participante', 'Valor (R$)']];
+        $client = $data['client'];
+        $rows = [[$client['pj'] ? 'CNPJ' : 'CPF do cliente', $client['pj'] ? 'Razão social' : 'Cliente', 'Aluno', 'CPF do aluno', 'Curso',
+            'Formação ou reciclagem', 'Data da certificação', 'Centro de custo', 'Carga horária (h)', 'Pedido', 'Data do pedido', 'Situação', 'Valor (R$)']];
+        $head = [document_display($client['doc']), $client['name']];
+        foreach ($data['rows'] as $r) {
+            $rows[] = array_merge($head, [
+                $r['name'] !== '' ? $r['name'] : 'Aluno a indicar',
+                $r['cpf'] !== '' ? document_display($r['cpf']) : '',
+                $r['course'],
+                $r['kind'],
+                self::certification($r),
+                $r['cost_center'],
+                (string) $r['hours'],
+                $r['order'],
+                date_br($r['order_date']),
+                Order::statusLabel($r['order_status']),
+                money($r['value'], false),
+            ]);
+        }
         foreach ($data['orders'] as $o) {
-            $status = Order::statusLabel($o['status']);
-            foreach ($o['items'] as $item) {
-                $title = ($item['course_code'] ? $item['course_code'] . ' — ' : '') . $item['course_title'];
-                $people = $item['people'] ?: [];
-                for ($i = 0; $i < (int) $item['quantity']; $i++) {
-                    $person = $people[$i] ?? null;
-                    $name = $person ? ((string) $person['participant_name'] ?: 'Vaga sem participante indicado') : 'Vaga sem participante indicado';
-                    if ($person && $person['status'] === 'cancelled') {
-                        $name .= ' (vaga cancelada)';
-                    }
-                    $rows[] = [date_br($o['created_at']), $o['number'], $status, $title, (string) (int) $item['course_hours'], $name, money($item['unit_price'], false)];
-                }
-            }
             if ($o['order_discount'] > 0) {
-                $rows[] = [date_br($o['created_at']), $o['number'], $status, 'Desconto' . ($o['coupon_code'] ? ' (cupom ' . $o['coupon_code'] . ')' : ''), '', '', '-' . money($o['order_discount'], false)];
+                $rows[] = array_merge($head, ['Desconto' . ($o['coupon_code'] ? ' (cupom ' . $o['coupon_code'] . ')' : ''), '', '', '', '', '', '', $o['number'], date_br($o['created_at']), Order::statusLabel($o['status']), '-' . money($o['order_discount'], false)]);
             }
         }
-        $rows[] = ['', '', '', '', '', 'Total', money($data['total'], false)];
+        $rows[] = ['', '', '', '', '', '', '', '', '', '', '', 'Total', money($data['total'], false)];
         $out = "\xEF\xBB\xBF";
         foreach ($rows as $row) {
             $out .= implode(';', array_map(static function ($v) {

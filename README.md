@@ -117,6 +117,10 @@ Rode `db:fresh --demo` antes de cada um: eles criam pedidos e mudam o estado do 
      cliente gastou no mês (pedidos pagos e faturados, pela data do pedido) e as faturas em aberto, abre o
      demonstrativo de cada cliente (na tela, para imprimir ou salvar em PDF, e em planilha CSV) e, quando o
      pagamento chega, dá a baixa da fatura do mês: os pedidos faturados passam a pagos, sem e-mail ao cliente.
+     O demonstrativo traz a razão social e o CNPJ do cliente e uma linha por aluno: nome e CPF, curso,
+     formação ou reciclagem, data da certificação e centro de custo, com o total por centro de custo. O
+     centro de custo (departamento) é informado pela empresa ao indicar cada participante, obrigatório na
+     fatura mensal e corrigível depois da liberação; a equipe também edita na matrícula.
      O cliente não cancela um pedido faturado; a equipe cancela em *Painel › Pedidos*, e as vagas dele
      também são canceladas.
 4. Com o pagamento confirmado (ou o pedido faturado) são criadas as **vagas**. Compra de pessoa física com 1 vaga já fica no

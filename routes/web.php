@@ -87,6 +87,7 @@ return static function (Router $r): void {
         $r->get('/pedidos', [AccountController::class, 'orders']);
         $r->get('/pedidos/{number:DF\d{6}}', [AccountController::class, 'order']);
         $r->post('/vagas/{id:\d+}', [AccountController::class, 'assignSeat']);
+        $r->post('/vagas/{id:\d+}/centro-de-custo', [AccountController::class, 'seatCostCenter']);
         $r->get('/dados', [AccountController::class, 'profile']);
         $r->post('/dados', [AccountController::class, 'updateProfile']);
         $r->post('/senha', [AccountController::class, 'updatePassword']);
